@@ -70,6 +70,8 @@
   .submission-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
   .submission-card .vc-title{font-weight:700;font-size:14px;margin-bottom:6px;}
   .submission-card .vc-meta{font-size:11.5px;color:var(--text-dim);margin-bottom:10px;}
+  .star-row{display:flex;gap:2px;font-size:20px;color:#ffe14f;letter-spacing:2px;}
+  button.star-btn{background:none;border:none;font-size:22px;color:#ffe14f;padding:0 2px;line-height:1;}
 
   .btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
   .btn:hover{border-color:var(--accent);}
@@ -176,7 +178,7 @@
   footer.app-footer{text-align:center;color:var(--text-dim);font-size:11.5px;padding:20px;}
 
   /* ---- section nav ---- */
-  .section-nav{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;}
+  .section-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;}
   .nav-tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-dim);
     font-size:13.5px;font-weight:600;padding:8px 14px;border-radius:6px 6px 0 0;}
   .nav-tab:hover{color:var(--text);}
@@ -188,7 +190,7 @@
   .tier-rank-label{font-family:var(--font-display);font-weight:800;font-size:20px;line-height:1.2;}
   .tier-rank-points{font-size:11px;color:var(--text-dim);}
   .tier-groups{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
-  .tier-group-label{font-size:11.5px;color:var(--text-dim);margin-bottom:5px;}
+  .tier-group-label{font-size:12px;font-weight:700;color:#ffffff;margin-bottom:5px;}
   .tier-edit-group{margin-top:10px;}
   .lr-mark{position:absolute;left:0;bottom:0;background:rgba(10,11,18,.85);color:#ffe14f;font-size:9px;
     padding:1px 3px;border-radius:0 5px 0 0;letter-spacing:-.02em;}
@@ -209,6 +211,15 @@
   .ptier-name{flex:1;min-width:0;font-size:13px;word-break:break-word;}
   .ptier-count{font-size:11px;color:var(--text-dim);flex:none;}
   .ptier-points{font-family:var(--font-display);font-weight:700;color:var(--accent);flex:none;font-size:13px;}
+
+  .lr-corner-badge{position:absolute;top:12px;right:14px;font-size:11.5px;font-weight:700;color:#ffe14f;
+    border:1px solid #ffe14f;border-radius:6px;padding:3px 8px;background:rgba(10,11,18,.6);}
+  .ptier-grid{display:flex;flex-wrap:wrap;gap:10px;}
+  .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:112px;}
+  .ptier-cell .ptier-badge-thumb{width:112px;height:40px;}
+  .ptier-cell-name{font-size:10px;color:var(--text-dim);text-align:center;word-break:break-word;line-height:1.3;}
+  .ptier-badge-thumb.no-img{background:var(--panel-2);}
+  .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
   .tier-total-table{display:flex;flex-direction:column;gap:4px;}
   .tier-total-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);
     border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-size:12.5px;}
@@ -336,6 +347,10 @@
      ユーザーが一度アップロードした画像を曲名ごとにこの端末内でキャッシュして再利用する） ---- */
   var SONG_MASTER_LIST = [{"name":"7 Wonders","level":"14+"},{"name":"Xaleid◆scopiX","level":"14+"},{"name":"World’s end BLACKBOX","level":"14+"},{"name":"宙天","level":"14+"},{"name":"raputa","level":"14+"},{"name":"Latent Kingdom","level":"14+"},{"name":"World’s end loneliness","level":"14+"},{"name":"sølips","level":"14+"},{"name":"躯樹の墓守","level":"14+"},{"name":"PANDORA PARADOXXX","level":"14+"},{"name":"the EmpErroR","level":"14+"},{"name":"Schwarzschild","level":"14+"},{"name":"QZKago Requiem","level":"14+"},{"name":"Aegisfortia","level":"14+"},{"name":"False Amber(from the Black Bazaar, Or by A Kervan Trader from the Lands Afar, Or Buried Beneath the Shifting Sands That Lead Everywhere but Nowhere)","level":"14+"},{"name":"Customized Justice","level":"14+"},{"name":"FLΛME/FRΦST","level":"14+"},{"name":"Divide et impera!","level":"14+"},{"name":"氷滅の135小節","level":"14+"},{"name":"ℝ∈Χ LUNATiCA","level":"14+"},{"name":"Straight into the lights","level":"14+"},{"name":"VeRForTe αRtE:VEiN","level":"14+"},{"name":"WiPE OUT MEMORIES","level":"14+"},{"name":"チューリングの跡","level":"14+"},{"name":"Heavenly Blast","level":"14+"},{"name":"封焔の135秒","level":"14+"},{"name":"SILENT BLUE","level":"14+"},{"name":"larva","level":"14+"},{"name":"Excalibur ～Revived resolution～","level":"14+"},{"name":"Our Wrenally","level":"14+"},{"name":"Glorious Crown","level":"14+"},{"name":"怒槌","level":"14+"},{"name":"In Chaos","level":"14+"},{"name":"雷切-RAIKIRI-","level":"14+"},{"name":"Alea jacta est!","level":"14+"},{"name":"Garakuta Doll Play","level":"14+"},{"name":"Re:Unknown X","level":"14+"},{"name":"ANiMA","level":"14+"},{"name":"End Time","level":"14+"},{"name":"Break The Speakers","level":"14+"},{"name":"Sky Trails","level":"14+"},{"name":"ATLAS RUSH","level":"14+"},{"name":"系ぎて","level":"14+"},{"name":"KHYMΞXΛ","level":"14+"},{"name":"康莊大道","level":"14+"},{"name":"Metamorphosism","level":"14+"},{"name":"GIGANTØMAKHIA","level":"14+"},{"name":"Lia=Fail","level":"14+"},{"name":"VIIIbit Explorer","level":"14+"},{"name":"Regulus","level":"14+"},{"name":"Valsqotch","level":"14+"},{"name":"TEmPTaTiON","level":"14+"},{"name":"AMAZING MIGHTYYYY!!!!","level":"14+"},{"name":"VERTeX","level":"14+"},{"name":"Apollo","level":"14+"},{"name":"LAMIA","level":"14+"},{"name":"ガラテアの螺旋","level":"14+"},{"name":"零號車輛","level":"14+"},{"name":"神威","level":"14+"},{"name":"Credits","level":"14+"},{"name":"Get U ♭ack","level":"14+"},{"name":"Åntinomiε","level":"14+"},{"name":"雨露霜雪","level":"14+"},{"name":"Cryptarithm","level":"14+"},{"name":"IF:U","level":"14+"},{"name":"超熊猫的周遊記（ワンダーパンダートラベラー）","level":"14+"},{"name":"VERTeX （rintaro soma deconstructed remix）","level":"14+"},{"name":"ViRTUS","level":"14+"},{"name":"ジングルベル","level":"14+"},{"name":"mystique as iris","level":"14+"},{"name":"Yorugao","level":"14+"},{"name":"BLACK SWAN","level":"14+"},{"name":"BREaK! BREaK! BREaK!","level":"14+"},{"name":"AMABIE","level":"14+"},{"name":"渦状銀河のシンフォニエッタ","level":"14+"},{"name":"Prophesy One","level":"14+"},{"name":"ラストピースに祝福と栄光を","level":"14+"},{"name":"Λzure Vixen","level":"14+"},{"name":"脳天直撃","level":"14+"},{"name":"Titania","level":"14+"},{"name":"TiamaT:F minor","level":"14+"},{"name":"源平大戦絵巻テーマソング","level":"14+"},{"name":"Fragrance","level":"14+"},{"name":"ヤミナベ!!!!","level":"14"},{"name":"初音ミクの消失","level":"14"},{"name":"初音ミクの激唱","level":"14"},{"name":"Myosotis","level":"14"},{"name":"Hurtling Boys","level":"14"},{"name":"MYTH Re：LEASE","level":"14"},{"name":"Abstruse Dilemma","level":"14"},{"name":"QUATTUORUX","level":"14"},{"name":"ouroboros -twin stroke of the end-","level":"14"},{"name":"最強STRONGER","level":"14"},{"name":"Aegleseeker","level":"14"},{"name":"BATTLE NO.1","level":"14"},{"name":"FUJIN Rumble","level":"14"},{"name":"Ignis Danse","level":"14"},{"name":"RONDØ","level":"14"},{"name":"RondeauX of RagnaroQ","level":"14"},{"name":"Bloody Trail","level":"14"},{"name":"VIIIbit Explorer","level":"14"},{"name":"Sage","level":"14"},{"name":"Strive against fate","level":"14"},{"name":"Raven Emperor","level":"14"},{"name":"BIRTH","level":"14"},{"name":"Sqlupp(Camellia's Sqleipd*Hiytex Remix)","level":"14"},{"name":"アポカリプスに反逆の焔を焚べろ","level":"14"},{"name":"ねぇ、壊れタ人形ハ何処へ棄テらレるノ？","level":"14"},{"name":"CITRUS MONSTER","level":"14"},{"name":"Oshama Scramble!","level":"14"},{"name":"Axeria","level":"14"},{"name":"MarbleBlue.","level":"14"},{"name":"Falsum Atlantis.","level":"14"},{"name":"Dragoon","level":"14"},{"name":"Beat of getting entangled","level":"14"},{"name":"FFT","level":"14"},{"name":"AMAZING MIGHTYYYY!!!!","level":"14"},{"name":"AiAe","level":"14"},{"name":"Retribution ～ Cycle of Redemption ～","level":"14"},{"name":"天使光輪","level":"14"},{"name":"PUPA","level":"14"},{"name":"Mjölnir","level":"14"},{"name":"Re：End of a Dream","level":"14"},{"name":"CO5M1C R4ILR0AD","level":"14"},{"name":"felys -final remix-","level":"14"},{"name":"極圏","level":"14"},{"name":"華天月兎","level":"14"},{"name":"有明/Ariake","level":"14"},{"name":"Deicide","level":"14"},{"name":"QuiQ","level":"14"},{"name":"Energizing Flame","level":"14"},{"name":"Rising on the horizon","level":"14"},{"name":"#狂った民族２ PRAVARGYAZOOQA","level":"14"},{"name":"Trick tear","level":"14"},{"name":"ほしぞらスペクタクル","level":"14"},{"name":"≠彡\"/了→","level":"14"},{"name":"ARAIS","level":"14"},{"name":"UniTas","level":"14"},{"name":"Alea jacta est!","level":"14"},{"name":"Moon of Noon","level":"14"},{"name":"Panopticon","level":"14"},{"name":"Contrapasso -paradiso-","level":"14"},{"name":"7thSense","level":"14"},{"name":"MYTHOS","level":"14"},{"name":"System “Z”","level":"14"},{"name":"ジングルベル","level":"14"},{"name":"Zitronectar","level":"14"},{"name":"GEOMETRIC DANCE","level":"14"},{"name":"FLUFFY FLASH","level":"14"},{"name":"スピカの天秤","level":"14"},{"name":"YURUSHITE","level":"14"},{"name":"ナイト・オブ・ナイツ","level":"14"},{"name":"YA・DA・YO ［Reborn］","level":"14"},{"name":"Revive The Rave","level":"14"},{"name":"バーチャルダム ネーション","level":"14"},{"name":"るろうらんる","level":"14"},{"name":"ZEUS","level":"14"},{"name":"ニルヴの心臓","level":"14"},{"name":"∀","level":"14"},{"name":"Destined Marionette","level":"14"},{"name":"田中","level":"14"},{"name":"Halcyon","level":"14"},{"name":"終幕の傀儡","level":"14"},{"name":"クロノイデア","level":"14"},{"name":"DEVOTION","level":"14"},{"name":"渦状銀河のシンフォニエッタ","level":"14"},{"name":"Party☆People☆Princess","level":"14"},{"name":"地球","level":"14"},{"name":"VSpook!","level":"14"},{"name":"“411Ψ892”","level":"14"},{"name":"Swift Swing","level":"14"},{"name":"N3V3R G3T OV3R","level":"14"},{"name":"U&iVERSE -銀河鸞翔-","level":"14"},{"name":"チエルカ／エソテリカ","level":"14"},{"name":"Xenovcipher","level":"14"},{"name":"STEEL TRANSONIC","level":"14"},{"name":"Schwarzschild","level":"14"},{"name":"花と、雪と、ドラムンベース。","level":"14"},{"name":"HERA","level":"14"},{"name":"Aiolos","level":"14"},{"name":"Caliburne ～Story of the Legendary sword～","level":"14"},{"name":"Galaxy Blaster","level":"14"},{"name":"SQUAD-Phvntom-","level":"14"},{"name":"Trrricksters!!","level":"14"},{"name":"Hainuwele","level":"14"},{"name":"電光石火","level":"14"},{"name":"SUPER AMBULANCE","level":"14"},{"name":"宿星審判","level":"14"},{"name":"MEGATON BLAST","level":"14"},{"name":"Climax","level":"14"},{"name":"Xevel","level":"14"},{"name":"World Vanquisher","level":"14"},{"name":"エンドマークに希望と涙を添えて","level":"14"},{"name":"マツヨイナイトバグ","level":"14"},{"name":"記憶、記録","level":"14"},{"name":"Blows Up Everything","level":"14"},{"name":"デッドマンズバラッド","level":"14"},{"name":"Absolute Queen","level":"14"},{"name":"Calamity Fortune","level":"14"},{"name":"Overjoy ★ OVERDOSE!!","level":"14"},{"name":"Chronomia","level":"14"},{"name":"ミラクルポップ☆アドベンチャー!!!!!","level":"14"},{"name":"BULK UP (GAME EXCLUSIVE EDIT)","level":"14"},{"name":"Cthugha","level":"14"},{"name":"Destr0yer","level":"14"},{"name":"竹","level":"14"},{"name":"Grievous Lady","level":"14"},{"name":"Maboroshi","level":"14"},{"name":"B.M.S.","level":"14"},{"name":"Scarlet Lance","level":"14"},{"name":"conflict","level":"14"},{"name":"きたさいたま2000","level":"14"},{"name":"SERAPHIC SYNDROME","level":"14"},{"name":"殿ッ！？ご乱心！？","level":"14"},{"name":"AFTER PANDORA","level":"14"},{"name":"忙シー日","level":"14"},{"name":"勦滅","level":"14"},{"name":"Garakuta Doll Play","level":"14"},{"name":"Fragrance","level":"14"},{"name":"Daredevil Glaive","level":"14"},{"name":"Dazzle hop","level":"14"},{"name":"Elemental Ethnic","level":"14"},{"name":"インパアフェクシオン・ホワイトガアル","level":"14"},{"name":"蜘蛛の糸","level":"14"},{"name":"Desperado Waltz","level":"14"},{"name":"ロストワンの号哭","level":"14"},{"name":"FLOWER","level":"14"},{"name":"Beat Of Mind","level":"14"},{"name":"MAXRAGE","level":"14"},{"name":"Death Scythe","level":"14"},{"name":"おべんきょうたいむ","level":"14"},{"name":"脳漿炸裂ガール","level":"14"},{"name":"幻想のサテライト","level":"14"},{"name":"JINGLE DEATH","level":"14"},{"name":"Eureka","level":"14"},{"name":"Synthesis.","level":"14"},{"name":"HYP3RTRIBE","level":"14"},{"name":"Love’s Theme of BADASS ～バッド・アス 愛のテーマ～","level":"14"},{"name":"BLUE ZONE","level":"14"},{"name":"FREEDOM DiVE (tpz Overcute Remix)","level":"14"},{"name":"麒麟","level":"14"},{"name":"METATRON","level":"14"},{"name":"Got more raves？","level":"14"},{"name":"Jack-the-Ripper◆","level":"14"},{"name":"ソテリア","level":"14"},{"name":"鬼女紅妖","level":"14"},{"name":"IMBRUED:FLUX","level":"14"},{"name":"火炎地獄","level":"14"},{"name":"HECATONCHEIR","level":"14"},{"name":"NAGAREBOSHI☆ROCKET","level":"14"},{"name":"ワンダーシャッフェンの法則","level":"14"},{"name":"Ragnarok","level":"14"},{"name":"Lividi","level":"14"},{"name":"Nerverakes","level":"14"},{"name":"色彩過剰のダイアリーミュージック","level":"14"},{"name":"R'N'R Monsta","level":"14"},{"name":"美夜月鏡","level":"14"},{"name":"Don't Fight The Music","level":"14"},{"name":"エータ・ベータ・イータ","level":"14"},{"name":"Good bye, Merry-Go-Round.","level":"14"},{"name":"カゲロウデイズ","level":"14"},{"name":"Unwelcome School","level":"14"},{"name":"Aetheric Energy","level":"14"},{"name":"Now or Never","level":"14"},{"name":"幸せになれる隠しコマンドがあるらしい","level":"14"},{"name":"超ナイト・オブ・ナイツ","level":"14"},{"name":"taboo tears you up","level":"14"},{"name":"もうみんなしねばいいのに","level":"14"},{"name":"ウサテイ","level":"14"},{"name":"DATAERR0R","level":"14"},{"name":"INFiNiTE ENERZY -Overdoze-","level":"14"},{"name":"Vallista","level":"14"},{"name":"ULTRA SYNERGY MATRIX","level":"14"},{"name":"僕の和風本当上手","level":"14"},{"name":"Luminaria","level":"14"},{"name":"魔法少女になるしかねぇ","level":"14"},{"name":"人里に下ったアタイがいつの間にか社畜になっていた件","level":"14"},{"name":"Maxi","level":"14"},{"name":"夜明けまであと３秒","level":"14"},{"name":"B.B.K.K.B.K.K.","level":"14"},{"name":"Outlaw's Lullaby","level":"14"},{"name":"Ref:rain (for 7th Heaven)","level":"14"},{"name":"砂の函","level":"14"},{"name":"184億回のマルチトニック","level":"14"},{"name":"The Great Banquet","level":"14"},{"name":"Horoscope Express","level":"14"},{"name":"Beat Opera op.1","level":"14"},{"name":"Tricolor⁂circuS","level":"14"},{"name":"パラマウント☆ショータイム！！","level":"14"},{"name":"Alcyone","level":"14"},{"name":"星詠みとデスペラード","level":"14"},{"name":"Starry Colors","level":"14"},{"name":"Mutation","level":"14"},{"name":"Justified","level":"14"},{"name":"Ultranova","level":"14"},{"name":"天火明命","level":"14"},{"name":"分からない","level":"14"},{"name":"Jumble Rumble","level":"14"},{"name":"Nitrous Fury","level":"14"},{"name":"JIGOKU STATION CENTRAL GATE","level":"14"},{"name":"Ai C","level":"14"},{"name":"WE’RE BACK!!","level":"14"},{"name":"The wheel to the right","level":"14"},{"name":"シリウスの輝きのように","level":"14"},{"name":"Sun Dance","level":"14"},{"name":"患部で止まってすぐ溶ける～狂気の優曇華院","level":"14"},{"name":"一か罰","level":"14"},{"name":"アージェントシンメトリー","level":"14"}];
 
+  /* ---- 制覇系プレートのマスターデータ（極/将/神/舞舞） ---- */
+  var PLATE_MASTER_LIST = [{"name":"真極","cat":"極","ver":"maimai PLUS まで"},{"name":"真神","cat":"神","ver":"maimai PLUS まで"},{"name":"真舞舞","cat":"舞舞","ver":"maimai PLUS まで"},{"name":"超極","cat":"極","ver":"maimai GreeN"},{"name":"超将","cat":"将","ver":"maimai GreeN"},{"name":"超神","cat":"神","ver":"maimai GreeN"},{"name":"超舞舞","cat":"舞舞","ver":"maimai GreeN"},{"name":"檄極","cat":"極","ver":"maimai GreeN PLUS"},{"name":"檄将","cat":"将","ver":"maimai GreeN PLUS"},{"name":"檄神","cat":"神","ver":"maimai GreeN PLUS"},{"name":"檄舞舞","cat":"舞舞","ver":"maimai GreeN PLUS"},{"name":"橙極","cat":"極","ver":"maimai ORANGE"},{"name":"橙将","cat":"将","ver":"maimai ORANGE"},{"name":"橙神","cat":"神","ver":"maimai ORANGE"},{"name":"橙舞舞","cat":"舞舞","ver":"maimai ORANGE"},{"name":"暁極","cat":"極","ver":"maimai ORANGE PLUS"},{"name":"暁将","cat":"将","ver":"maimai ORANGE PLUS"},{"name":"暁神","cat":"神","ver":"maimai ORANGE PLUS"},{"name":"暁舞舞","cat":"舞舞","ver":"maimai ORANGE PLUS"},{"name":"桃極","cat":"極","ver":"maimai PiNK"},{"name":"桃将","cat":"将","ver":"maimai PiNK"},{"name":"桃神","cat":"神","ver":"maimai PiNK"},{"name":"桃舞舞","cat":"舞舞","ver":"maimai PiNK"},{"name":"櫻極","cat":"極","ver":"maimai PiNK PLUS"},{"name":"櫻将","cat":"将","ver":"maimai PiNK PLUS"},{"name":"櫻神","cat":"神","ver":"maimai PiNK PLUS"},{"name":"櫻舞舞","cat":"舞舞","ver":"maimai PiNK PLUS"},{"name":"紫極","cat":"極","ver":"maimai MURASAKi"},{"name":"紫将","cat":"将","ver":"maimai MURASAKi"},{"name":"紫神","cat":"神","ver":"maimai MURASAKi"},{"name":"紫舞舞","cat":"舞舞","ver":"maimai MURASAKi"},{"name":"菫極","cat":"極","ver":"maimai MURASAKi PLUS"},{"name":"菫将","cat":"将","ver":"maimai MURASAKi PLUS"},{"name":"菫神","cat":"神","ver":"maimai MURASAKi PLUS"},{"name":"菫舞舞","cat":"舞舞","ver":"maimai MURASAKi PLUS"},{"name":"白極","cat":"極","ver":"maimai MiLK"},{"name":"白将","cat":"将","ver":"maimai MiLK"},{"name":"白神","cat":"神","ver":"maimai MiLK"},{"name":"白舞舞","cat":"舞舞","ver":"maimai MiLK"},{"name":"雪極","cat":"極","ver":"maimai MiLK PLUS"},{"name":"雪将","cat":"将","ver":"maimai MiLK PLUS"},{"name":"雪神","cat":"神","ver":"maimai MiLK PLUS"},{"name":"雪舞舞","cat":"舞舞","ver":"maimai MiLK PLUS"},{"name":"輝極","cat":"極","ver":"maimai FiNALE"},{"name":"輝将","cat":"将","ver":"maimai FiNALE"},{"name":"輝神","cat":"神","ver":"maimai FiNALE"},{"name":"輝舞舞","cat":"舞舞","ver":"maimai FiNALE"},{"name":"舞極","cat":"極","ver":"FiNALEまでのスタンダード譜面"},{"name":"舞将","cat":"将","ver":"FiNALEまでのスタンダード譜面"},{"name":"舞神","cat":"神","ver":"FiNALEまでのスタンダード譜面"},{"name":"舞舞舞","cat":"舞舞","ver":"FiNALEまでのスタンダード譜面"},{"name":"熊極","cat":"極","ver":"maimai でらっくす"},{"name":"熊将","cat":"将","ver":"maimai でらっくす"},{"name":"熊神","cat":"神","ver":"maimai でらっくす"},{"name":"熊舞舞","cat":"舞舞","ver":"maimai でらっくす"},{"name":"華極","cat":"極","ver":"maimai でらっくす PLUS"},{"name":"華将","cat":"将","ver":"maimai でらっくす PLUS"},{"name":"華神","cat":"神","ver":"maimai でらっくす PLUS"},{"name":"華舞舞","cat":"舞舞","ver":"maimai でらっくす PLUS"},{"name":"爽極","cat":"極","ver":"maimai でらっくす Splash"},{"name":"爽将","cat":"将","ver":"maimai でらっくす Splash"},{"name":"爽神","cat":"神","ver":"maimai でらっくす Splash"},{"name":"爽舞舞","cat":"舞舞","ver":"maimai でらっくす Splash"},{"name":"煌極","cat":"極","ver":"maimai でらっくす Splash PLUS"},{"name":"煌将","cat":"将","ver":"maimai でらっくす Splash PLUS"},{"name":"煌神","cat":"神","ver":"maimai でらっくす Splash PLUS"},{"name":"煌舞舞","cat":"舞舞","ver":"maimai でらっくす Splash PLUS"},{"name":"宙極","cat":"極","ver":"maimai でらっくす UNiVERSE"},{"name":"宙将","cat":"将","ver":"maimai でらっくす UNiVERSE"},{"name":"宙神","cat":"神","ver":"maimai でらっくす UNiVERSE"},{"name":"宙舞舞","cat":"舞舞","ver":"maimai でらっくす UNiVERSE"},{"name":"星極","cat":"極","ver":"maimai でらっくす UNiVERSE PLUS"},{"name":"星将","cat":"将","ver":"maimai でらっくす UNiVERSE PLUS"},{"name":"星神","cat":"神","ver":"maimai でらっくす UNiVERSE PLUS"},{"name":"星舞舞","cat":"舞舞","ver":"maimai でらっくす UNiVERSE PLUS"},{"name":"祭極","cat":"極","ver":"maimai でらっくす FESTiVAL"},{"name":"祭将","cat":"将","ver":"maimai でらっくす FESTiVAL"},{"name":"祭神","cat":"神","ver":"maimai でらっくす FESTiVAL"},{"name":"祭舞舞","cat":"舞舞","ver":"maimai でらっくす FESTiVAL"},{"name":"祝極","cat":"極","ver":"maimai でらっくす FESTiVAL PLUS"},{"name":"祝将","cat":"将","ver":"maimai でらっくす FESTiVAL PLUS"},{"name":"祝神","cat":"神","ver":"maimai でらっくす FESTiVAL PLUS"},{"name":"祝舞舞","cat":"舞舞","ver":"maimai でらっくす FESTiVAL PLUS"},{"name":"双極","cat":"極","ver":"maimai でらっくす BUDDiES"},{"name":"双将","cat":"将","ver":"maimai でらっくす BUDDiES"},{"name":"双神","cat":"神","ver":"maimai でらっくす BUDDiES"},{"name":"双舞舞","cat":"舞舞","ver":"maimai でらっくす BUDDiES"},{"name":"宴極","cat":"極","ver":"maimai でらっくす BUDDiES PLUS"},{"name":"宴将","cat":"将","ver":"maimai でらっくす BUDDiES PLUS"},{"name":"宴神","cat":"神","ver":"maimai でらっくす BUDDiES PLUS"},{"name":"宴舞舞","cat":"舞舞","ver":"maimai でらっくす BUDDiES PLUS"},{"name":"鏡極","cat":"極","ver":"maimai でらっくす PRiSM"},{"name":"鏡将","cat":"将","ver":"maimai でらっくす PRiSM"},{"name":"鏡神","cat":"神","ver":"maimai でらっくす PRiSM"},{"name":"鏡舞舞","cat":"舞舞","ver":"maimai でらっくす PRiSM"},{"name":"彩極","cat":"極","ver":"maimai でらっくす PRiSM PLUS"},{"name":"彩将","cat":"将","ver":"maimai でらっくす PRiSM PLUS"},{"name":"彩神","cat":"神","ver":"maimai でらっくす PRiSM PLUS"},{"name":"彩舞舞","cat":"舞舞","ver":"maimai でらっくす PRiSM PLUS"},{"name":"丸極","cat":"極","ver":"maimai でらっくす CiRCLE"},{"name":"丸将","cat":"将","ver":"maimai でらっくす CiRCLE"},{"name":"丸神","cat":"神","ver":"maimai でらっくす CiRCLE"},{"name":"丸舞舞","cat":"舞舞","ver":"maimai でらっくす CiRCLE"}];
+  var PLATE_CATEGORIES = ['極','将','神','舞舞'];
+
   var SONG_IMAGE_CACHE_KEY = 'mmplate_song_image_cache_v1';
   function loadSongImageCache(){
     if (!storageOK) return {};
@@ -424,10 +439,10 @@
   }
 
   /* 登録曲（Lv.14 / Lv.14+）から選択するピッカー。選択すると onPick(songMasterEntry) が呼ばれる */
-  function openSongPicker(onPick){
+  function openSongPicker(onPick, levelFilter){
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
-    box.appendChild(el('p', {text:'登録曲から選択（Lv.14 / Lv.14+）', style:{marginBottom:'8px'}}));
+    box.appendChild(el('p', {text: levelFilter ? ('登録曲から選択（Lv.' + levelFilter + '）') : '登録曲から選択（Lv.14 / Lv.14+）', style:{marginBottom:'8px'}}));
 
     var searchInput = el('input', {type:'text', placeholder:'曲名で検索', class:'song-picker-search'});
     box.appendChild(searchInput);
@@ -443,8 +458,9 @@
       listWrap.textContent = '';
       var q = searchInput.value.trim().toLowerCase();
       var matches = SONG_MASTER_LIST.filter(function(s){
+        if (levelFilter && s.level !== levelFilter) return false;
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
-      }).slice(0, 80);
+      }).slice(0, 120);
       if (matches.length === 0){
         listWrap.appendChild(el('div', {class:'note', text:'該当する曲がありません'}));
         return;
@@ -454,6 +470,51 @@
           class:'song-pick-row',
           text: s.name + '　[Lv.' + s.level + ']',
           onclick: function(){ closeModal(backdrop); onPick(s); }
+        }));
+      });
+    }
+    searchInput.addEventListener('input', renderResults);
+    renderResults();
+
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    searchInput.focus();
+  }
+
+  /* 制覇系プレートのピッカー。categoryで絞り込む（極/将/神/舞舞） */
+  function openPlatePicker(category, onPick){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('p', {text:'「' + category + '」プレートから選択', style:{marginBottom:'8px'}}));
+
+    var searchInput = el('input', {type:'text', placeholder:'プレート名・バージョン名で検索', class:'song-picker-search'});
+    box.appendChild(searchInput);
+
+    var listWrap = el('div', {class:'song-picker-list'});
+    box.appendChild(listWrap);
+
+    var closeBtn = el('div', {class:'modal-actions', style:{marginTop:'10px'}});
+    closeBtn.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+    box.appendChild(closeBtn);
+
+    function renderResults(){
+      listWrap.textContent = '';
+      var q = searchInput.value.trim().toLowerCase();
+      var matches = PLATE_MASTER_LIST.filter(function(p){
+        if (p.cat !== category) return false;
+        if (!q) return true;
+        return p.name.toLowerCase().indexOf(q) >= 0 || p.ver.toLowerCase().indexOf(q) >= 0;
+      });
+      if (matches.length === 0){
+        listWrap.appendChild(el('div', {class:'note', text:'該当するプレートがありません'}));
+        return;
+      }
+      matches.forEach(function(p){
+        listWrap.appendChild(el('button', {
+          class:'song-pick-row',
+          text: p.name + '　（' + p.ver + '）',
+          onclick: function(){ closeModal(backdrop); onPick(p); }
         }));
       });
     }
@@ -516,6 +577,25 @@
     }
   }
 
+  var PLATE_TIER_STORAGE_KEY = 'mmplate_platetiers_v1';
+  function loadPlateTiers(){
+    if (!storageOK) return [];
+    try{
+      var raw = localStorage.getItem(PLATE_TIER_STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  function persistPlateTiers(){
+    if (!storageOK) return;
+    try{
+      localStorage.setItem(PLATE_TIER_STORAGE_KEY, JSON.stringify(allPlateTiers));
+      quotaWarning = '';
+    }catch(e){
+      quotaWarning = '保存容量の上限に達した可能性があります。「全データをエクスポート」でバックアップを取り、画像の数を減らすことをおすすめします。';
+    }
+  }
+
   /* ========================= クラウド同期（Firebase） =========================
      この機能を使うには、無料のFirebaseプロジェクトを自分で作成し、設定情報を
      「☁ 同期設定」から貼り付ける必要があります（Anthropicはサーバーを提供しません）。
@@ -543,9 +623,11 @@
     error: '',
     unsubVersions: null,
     unsubTiers: null,
-    unsubSubmissions: null
+    unsubSubmissions: null,
+    unsubReviews: null
   };
   var allSubmissions = [];
+  var allReviews = [];
 
   function canEdit(){
     return !syncState.connected || syncState.isAdmin;
@@ -598,6 +680,15 @@
         syncState.error = '同期エラー（投稿一覧）: ' + err.message;
         renderApp();
       });
+      if (syncState.unsubReviews) syncState.unsubReviews();
+      syncState.unsubReviews = syncState.db.collection('reviews').onSnapshot(function(snap){
+        allReviews = snap.docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
+        allReviews.sort(function(a,b){ return (b.submittedAt||0) - (a.submittedAt||0); });
+        renderApp();
+      }, function(err){
+        syncState.error = '同期エラー（レビュー一覧）: ' + err.message;
+        renderApp();
+      });
     }
   }
 
@@ -640,8 +731,10 @@
     if (syncState.unsubVersions) syncState.unsubVersions();
     if (syncState.unsubTiers) syncState.unsubTiers();
     if (syncState.unsubSubmissions) syncState.unsubSubmissions();
-    syncState = { connected:false, connecting:false, isAdmin:false, db:null, error:'', unsubVersions:null, unsubTiers:null, unsubSubmissions:null };
+    if (syncState.unsubReviews) syncState.unsubReviews();
+    syncState = { connected:false, connecting:false, isAdmin:false, db:null, error:'', unsubVersions:null, unsubTiers:null, unsubSubmissions:null, unsubReviews:null };
     allSubmissions = [];
+    allReviews = [];
     clearSyncSettings();
     allVersions = loadVersions();
     allTiers = loadTiers();
@@ -704,6 +797,33 @@
     });
   }
 
+  /* 誰でも送れる「開発者へのレビュー」。Firestoreのreviewsコレクションに作成専用で書き込む */
+  function submitReview(message, rating, onDone){
+    if (!syncState.connected || !syncState.db){
+      onDone(new Error('同期が設定されていないため送信できません。'));
+      return;
+    }
+    if (!message || !message.trim()){
+      onDone(new Error('内容を入力してください。'));
+      return;
+    }
+    syncState.db.collection('reviews').add({
+      message: message.trim(),
+      rating: rating || 0,
+      submittedAt: Date.now()
+    }).then(function(){
+      onDone(null);
+    }).catch(function(e){
+      onDone(e);
+    });
+  }
+  function deleteReview(rev){
+    if (!syncState.db || !rev._docId) return;
+    showConfirm('このレビューを削除しますか？', function(){
+      syncState.db.collection('reviews').doc(rev._docId).delete().catch(function(){});
+    });
+  }
+
   /* ========================= data model ========================= */
   function defaultVersion(){
     return {
@@ -740,7 +860,7 @@
     { label: 'C',  points: 20,  color: '#3fd0ff', plateThreshold: 0 }
   ];
 
-  function defaultTier(showLeftRight){
+  function defaultTier(showLeftRight, songLevel){
     var ranks = DEFAULT_RANK_DEFS.map(function(r){
       return {
         id: uid(),
@@ -755,6 +875,28 @@
     return {
       id: uid(),
       title: '新しい楽曲難易度表',
+      songLevel: songLevel || '14',   // '14+' | '14'
+      showLeftRight: !!showLeftRight,
+      ranks: ranks,
+      updatedAt: Date.now()
+    };
+  }
+
+  /* プレート難易度表：極/将/神/舞舞のいずれか1カテゴリ専用 */
+  function defaultPlateTier(category, showLeftRight){
+    var ranks = DEFAULT_RANK_DEFS.map(function(r){
+      return {
+        id: uid(),
+        label: r.label,
+        color: r.color,
+        jiriki: [],   // 地力  { id, name, img, leftRight }
+        kojinsa: []   // 個人差
+      };
+    });
+    return {
+      id: uid(),
+      title: category + 'プレート難易度表',
+      category: category,
       showLeftRight: !!showLeftRight,
       ranks: ranks,
       updatedAt: Date.now()
@@ -763,8 +905,9 @@
 
   var allVersions = loadVersions();
   var allTiers = loadTiers();
+  var allPlateTiers = loadPlateTiers();
 
-  var section = 'plates';  // 'plates' | 'tiers'
+  var section = 'plates';  // 'plates' | 'tiers' | 'plateTiers' | 'submissions' | 'reviews'
   var view = 'list';       // 'list' | 'detail' | 'edit'
   var currentId = null;
   var draft = null;
@@ -773,14 +916,18 @@
   var tierCurrentId = null;
   var tierDraft = null;
 
-  var plateTierView = 'list';   // 'list' | 'detail'
+  var plateTierView = 'list';   // 'list' | 'detail' | 'edit'
   var plateTierCurrentId = null;
+  var plateTierDraft = null;
 
   function findVersion(id){
     return allVersions.filter(function(v){ return v.id === id; })[0] || null;
   }
   function findTier(id){
     return allTiers.filter(function(t){ return t.id === id; })[0] || null;
+  }
+  function findPlateTier(id){
+    return allPlateTiers.filter(function(t){ return t.id === id; })[0] || null;
   }
 
   /* ========================= navigation ========================= */
@@ -874,10 +1021,11 @@
   function goTierList(){ tierView = 'list'; tierCurrentId = null; tierDraft = null; renderApp(); }
   function goTierDetail(id){ tierView = 'detail'; tierCurrentId = id; renderApp(); }
   var tierEditTarget = 'tiers'; // 'tiers' | 'submissions'
-  function goTierEditNew(showLeftRight){
+  function goTierEditNew(showLeftRight, songLevel){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     tierEditTarget = 'tiers';
-    tierDraft = defaultTier(showLeftRight);
+    tierDraft = defaultTier(showLeftRight, songLevel);
+    tierDraft.title = 'Lv.' + (songLevel || '14') + ' 楽曲難易度表';
     tierCurrentId = null;
     tierView = 'edit';
     renderApp();
@@ -961,9 +1109,57 @@
     });
   }
 
-  /* ---- プレート難易度メーカー ナビゲーション（楽曲難易度メーカーのデータを元に自動算出） ---- */
-  function goPlateTierList(){ plateTierView = 'list'; plateTierCurrentId = null; renderApp(); }
+  /* ---- プレート難易度メーカー ナビゲーション ---- */
+  function goPlateTierList(){ plateTierView = 'list'; plateTierCurrentId = null; plateTierDraft = null; renderApp(); }
   function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); }
+  function goPlateTierEditNew(category, showLeftRight){
+    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    plateTierDraft = defaultPlateTier(category, showLeftRight);
+    plateTierCurrentId = null;
+    plateTierView = 'edit';
+    renderApp();
+  }
+  function goPlateTierEditExisting(id){
+    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    var t = findPlateTier(id);
+    if (!t) return;
+    plateTierDraft = JSON.parse(JSON.stringify(t));
+    plateTierCurrentId = id;
+    plateTierView = 'edit';
+    renderApp();
+  }
+  function goPlateTierDuplicate(id){
+    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    var t = findPlateTier(id);
+    if (!t) return;
+    var copy = JSON.parse(JSON.stringify(t));
+    copy.id = uid();
+    copy.title = t.title + '（コピー）';
+    plateTierDraft = copy;
+    plateTierCurrentId = null;
+    plateTierView = 'edit';
+    renderApp();
+  }
+  function savePlateTierDraft(){
+    if (!plateTierDraft.title || !plateTierDraft.title.trim()){
+      showAlert('タイトルを入力してください。');
+      return;
+    }
+    plateTierDraft.updatedAt = Date.now();
+    var idx = -1;
+    allPlateTiers.forEach(function(t,i){ if (t.id === plateTierDraft.id) idx = i; });
+    if (idx >= 0) allPlateTiers[idx] = plateTierDraft; else allPlateTiers.push(plateTierDraft);
+    persistPlateTiers();
+    goPlateTierDetail(plateTierDraft.id);
+  }
+  function deletePlateTier(id){
+    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    showConfirm('このプレート難易度表を削除しますか？この操作は取り消せません。', function(){
+      allPlateTiers = allPlateTiers.filter(function(t){ return t.id !== id; });
+      persistPlateTiers();
+      goPlateTierList();
+    });
+  }
 
   /* ---- 難易度表の集計（プレート難易度順） ---- */
   function tierSongEntries(tier){
@@ -976,41 +1172,6 @@
       });
     });
     return out;
-  }
-
-  function tierPlateTotals(tier){
-    var map = {};
-    tierSongEntries(tier).forEach(function(entry){
-      var plate = (entry.song.plate || '').trim() || '（未設定）';
-      if (!map[plate]) map[plate] = { plate: plate, total: 0, count: 0 };
-      map[plate].total += Number(entry.rank.points) || 0;
-      map[plate].count += 1;
-    });
-    var list = Object.keys(map).map(function(k){ return map[k]; });
-    list.sort(function(a,b){ return b.total - a.total; });
-    return list;
-  }
-
-  /* プレートの合計点を、各ランクの「プレート判定しきい値」でSS/S/A/B/C…の帯に振り分ける */
-  function tierPlateBands(tier){
-    var totals = tierPlateTotals(tier);
-    var bands = tier.ranks.map(function(rank){
-      return { rank: rank, plates: [] };
-    });
-    var unranked = [];
-    totals.forEach(function(row){
-      var placed = false;
-      for (var i = 0; i < tier.ranks.length; i++){
-        var threshold = Number(tier.ranks[i].plateThreshold);
-        if (!isNaN(threshold) && row.total >= threshold){
-          bands[i].plates.push(row);
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) unranked.push(row);
-    });
-    return { bands: bands, unranked: unranked };
   }
 
   /* ---- プレートのバッジ画像キャッシュ（プレート名ごと。ユーザーがアップロードした画像をこの端末内で記憶） ---- */
@@ -1165,7 +1326,7 @@
 
   /* ========================= backup JSON (all versions) ========================= */
   function exportAllJSON(){
-    var payload = { format: 'mmplate-backup-v2', versions: allVersions, tiers: allTiers };
+    var payload = { format: 'mmplate-backup-v3', versions: allVersions, tiers: allTiers, plateTiers: allPlateTiers };
     var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
@@ -1180,22 +1341,26 @@
     reader.onload = function(){
       try{
         var loaded = JSON.parse(reader.result);
-        var newVersions, newTiers;
+        var newVersions, newTiers, newPlateTiers;
         if (Array.isArray(loaded)){
           /* 旧形式（バージョン配列のみ）にも対応 */
           newVersions = loaded;
           newTiers = allTiers;
+          newPlateTiers = allPlateTiers;
         } else if (loaded && Array.isArray(loaded.versions)){
           newVersions = loaded.versions;
           newTiers = Array.isArray(loaded.tiers) ? loaded.tiers : [];
+          newPlateTiers = Array.isArray(loaded.plateTiers) ? loaded.plateTiers : [];
         } else {
           throw new Error('invalid');
         }
-        showConfirm('保存されている内容を、読み込んだファイル（プレート表 ' + newVersions.length + '件 / 難易度表 ' + newTiers.length + '件）で置き換えます。よろしいですか？', function(){
+        showConfirm('保存されている内容を、読み込んだファイル（プレート表 ' + newVersions.length + '件 / 楽曲難易度表 ' + newTiers.length + '件 / プレート難易度表 ' + newPlateTiers.length + '件）で置き換えます。よろしいですか？', function(){
           allVersions = newVersions;
           allTiers = newTiers;
+          allPlateTiers = newPlateTiers;
           persistVersions();
           persistTiers();
+          persistPlateTiers();
           goList();
         });
       }catch(e){
@@ -1697,19 +1862,60 @@
     root.appendChild(grid);
   }
 
-  /* 作成開始時に左右差の有無を選ばせる */
+  /* 楽曲難易度表：作成開始時にレベル（14+ / 14）と左右差の有無を選ばせる */
   function askLeftRightThenCreate(){
+    var chosenLevel = null;
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box'});
-    box.appendChild(el('p', {text:'この楽曲難易度表に「左右差あり／なし」を表示する欄を設けますか？\n（作成後は各楽曲ごとに切り替えできます）'}));
+    var msg = el('p', {text:'どのレベルの楽曲難易度表を作りますか？'});
+    box.appendChild(msg);
     var actions = el('div', {class:'modal-actions'});
-    actions.appendChild(el('button', {class:'btn btn-ghost', text:'設けない', onclick: function(){
-      closeModal(backdrop); goTierEditNew(false);
-    }}));
-    actions.appendChild(el('button', {class:'btn btn-primary', text:'設ける', onclick: function(){
-      closeModal(backdrop); goTierEditNew(true);
-    }}));
     box.appendChild(actions);
+
+    function step2(){
+      msg.textContent = 'Lv.' + chosenLevel + ' の表に「左右差あり／なし」を表示する欄を設けますか？\n（作成後は各楽曲ごとに切り替えできます）';
+      actions.textContent = '';
+      actions.appendChild(el('button', {class:'btn btn-ghost', text:'設けない', onclick: function(){
+        closeModal(backdrop); goTierEditNew(false, chosenLevel);
+      }}));
+      actions.appendChild(el('button', {class:'btn btn-primary', text:'設ける', onclick: function(){
+        closeModal(backdrop); goTierEditNew(true, chosenLevel);
+      }}));
+    }
+
+    actions.appendChild(el('button', {class:'btn', text:'Lv.14+', onclick: function(){ chosenLevel = '14+'; step2(); }}));
+    actions.appendChild(el('button', {class:'btn', text:'Lv.14', onclick: function(){ chosenLevel = '14'; step2(); }}));
+
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
+  /* プレート難易度表：作成開始時にカテゴリ（極/将/神/舞舞）と左右差の有無を選ばせる */
+  function askPlateCategoryThenCreate(){
+    var chosenCat = null;
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    var msg = el('p', {text:'どの制覇系プレートの難易度表を作りますか？\n（1つの表には選んだ種類のプレートだけを入れられます）'});
+    box.appendChild(msg);
+    var actions = el('div', {class:'modal-actions', style:{flexWrap:'wrap'}});
+    box.appendChild(actions);
+
+    function step2(){
+      msg.textContent = '「' + chosenCat + '」の表に「左右差あり／なし」を表示する欄を設けますか？\n（作成後は各プレートごとに切り替えできます）';
+      actions.textContent = '';
+      actions.appendChild(el('button', {class:'btn btn-ghost', text:'設けない', onclick: function(){
+        closeModal(backdrop); goPlateTierEditNew(chosenCat, false);
+      }}));
+      actions.appendChild(el('button', {class:'btn btn-primary', text:'設ける', onclick: function(){
+        closeModal(backdrop); goPlateTierEditNew(chosenCat, true);
+      }}));
+    }
+
+    PLATE_CATEGORIES.forEach(function(cat){
+      actions.appendChild(el('button', {class:'btn', text: cat, onclick: function(){ chosenCat = cat; step2(); }}));
+    });
+
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
     document.body.appendChild(backdrop);
@@ -1717,8 +1923,9 @@
 
   /* ========================= 難易度表: 表示用ノード ========================= */
   function buildTierPreviewNode(t){
-    var card = el('div', {id:'previewCard'});
-    card.appendChild(el('div', {class:'pv-title', text: t.title}));
+    var card = el('div', {id:'previewCard', style:{position:'relative'}});
+    card.appendChild(el('div', {class:'lr-corner-badge', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
+    card.appendChild(el('div', {class:'pv-title', text: t.title + (t.songLevel ? '　[Lv.' + t.songLevel + ']' : '')}));
 
     t.ranks.forEach(function(rank){
       var block = el('div', {class:'tier-row'});
@@ -1763,69 +1970,63 @@
     return card;
   }
 
-  /* ========================= プレート難易度: 表示用ノード（楽曲難易度メーカーのデータから自動算出） ========================= */
+  /* ========================= プレート難易度: 表示用ノード ========================= */
   function buildPlateTierPreviewNode(t){
-    var card = el('div', {id:'previewCard'});
-    card.appendChild(el('div', {class:'pv-title', text: t.title + '　プレート難易度順'}));
-    card.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'「' + t.title + '」の楽曲ランク点数をプレートごとに合算し、各ランクの「プレート判定しきい値」で帯分けしています。バッジ画像はクリックして登録できます。'}));
+    var card = el('div', {id:'previewCard', style:{position:'relative'}});
+    card.appendChild(el('div', {class:'lr-corner-badge', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
+    card.appendChild(el('div', {class:'pv-title', text: t.title}));
+    card.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'制覇系プレート「' + t.category + '」の難易度表'}));
 
-    var result = tierPlateBands(t);
-    var any = result.bands.some(function(b){ return b.plates.length > 0; }) || result.unranked.length > 0;
-
+    var any = t.ranks.some(function(r){
+      return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
+    });
     if (!any){
-      card.appendChild(el('div', {class:'pv-empty', text:'（この楽曲難易度表にはまだプレート名が入力された曲がありません）'}));
+      card.appendChild(el('div', {class:'pv-empty', text:'（まだプレートが追加されていません）'}));
       return card;
     }
 
-    function renderPlateRow(row){
-      var r = el('div', {class:'ptier-row'});
-      var cachedImg = getCachedPlateBadge(row.plate);
-      var thumb = el('div', {class:'ptier-badge-thumb', title:'クリックしてバッジ画像を登録'});
-      if (cachedImg){
-        thumb.appendChild(el('img', {src: cachedImg, alt:''}));
-      } else {
-        thumb.appendChild(el('span', {text:'＋'}));
-      }
-      var fileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
-      fileInput.addEventListener('change', function(){
-        var f = fileInput.files && fileInput.files[0];
-        if (!f) return;
-        resizeImageFile(f, 200, 0.85).then(function(url){
-          setCachedPlateBadge(row.plate, url);
-          renderApp();
-        }).catch(function(){
-          showAlert('画像の読み込みに失敗しました。別の画像でお試しください。');
-        });
-      });
-      thumb.addEventListener('click', function(){ fileInput.click(); });
-      r.appendChild(thumb);
-      r.appendChild(fileInput);
-      r.appendChild(el('span', {class:'ptier-name', text: row.plate}));
-      r.appendChild(el('span', {class:'ptier-count', text: row.count + '曲'}));
-      r.appendChild(el('span', {class:'ptier-points', text: row.total + ' pt'}));
-      return r;
-    }
+    t.ranks.forEach(function(rank){
+      var jiriki = rank.jiriki || [];
+      var kojinsa = rank.kojinsa || [];
+      if (jiriki.length === 0 && kojinsa.length === 0) return;
 
-    result.bands.forEach(function(band){
-      if (band.plates.length === 0) return;
       var section = el('div', {class:'ptier-band'});
       var head = el('div', {class:'ptier-band-head'});
-      head.appendChild(el('div', {class:'ptier-band-label', style:{color: band.rank.color}, text: band.rank.label}));
-      head.appendChild(el('div', {class:'ptier-band-meta', text: (Number(band.rank.plateThreshold) || 0) + ' pt以上　' + band.plates.length + '枚'}));
+      head.appendChild(el('div', {class:'ptier-band-label', style:{color: rank.color}, text: rank.label}));
+      head.appendChild(el('div', {class:'ptier-band-meta', text: (jiriki.length + kojinsa.length) + '枚'}));
       section.appendChild(head);
-      band.plates.forEach(function(row){ section.appendChild(renderPlateRow(row)); });
+
+      [['jiriki','地力'], ['kojinsa','個人差']].forEach(function(pair){
+        var key = pair[0], name = pair[1];
+        var plates = rank[key] || [];
+        var g = el('div', {class:'tier-group', style:{marginBottom:'10px'}});
+        g.appendChild(el('div', {class:'tier-group-label', text: name + ' ' + rank.label}));
+        if (plates.length === 0){
+          g.appendChild(el('div', {class:'pv-empty', text:'（なし）'}));
+        } else {
+          var grid = el('div', {class:'ptier-grid'});
+          plates.forEach(function(p){
+            var cell = el('div', {class:'ptier-cell'});
+            var thumb = el('div', {class:'ptier-badge-thumb' + (p.img ? '' : ' no-img')});
+            if (p.img){
+              thumb.appendChild(el('img', {src: p.img, alt:''}));
+            } else {
+              thumb.appendChild(el('span', {class:'placeholder-text', text: p.name}));
+            }
+            if (t.showLeftRight && p.leftRight){
+              thumb.appendChild(el('div', {class:'lr-mark', text:'左右差'}));
+            }
+            cell.appendChild(thumb);
+            cell.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
+            grid.appendChild(cell);
+          });
+          g.appendChild(grid);
+        }
+        section.appendChild(g);
+      });
+
       card.appendChild(section);
     });
-
-    if (result.unranked.length > 0){
-      var uSection = el('div', {class:'ptier-band'});
-      var uHead = el('div', {class:'ptier-band-head'});
-      uHead.appendChild(el('div', {class:'ptier-band-label', text:'未分類'}));
-      uHead.appendChild(el('div', {class:'ptier-band-meta', text:'しきい値未満、または未設定　' + result.unranked.length + '枚'}));
-      uSection.appendChild(uHead);
-      result.unranked.forEach(function(row){ uSection.appendChild(renderPlateRow(row)); });
-      card.appendChild(uSection);
-    }
 
     return card;
   }
@@ -1931,12 +2132,6 @@
         head.appendChild(pointsInput);
         head.appendChild(el('span', {class:'note', text:'pt/曲'}));
 
-        var thresholdInput = el('input', {type:'number', style:{width:'80px'}, title:'プレート判定しきい値（このランクに入れるための合計点の最低ライン）'});
-        thresholdInput.value = rank.plateThreshold || 0;
-        thresholdInput.addEventListener('input', function(){ rank.plateThreshold = Number(thresholdInput.value) || 0; refreshTierPreview(); });
-        head.appendChild(thresholdInput);
-        head.appendChild(el('span', {class:'note', text:'pt以上でプレート判定'}));
-
         var rColor = el('input', {type:'color'});
         rColor.value = rank.color || '#8890a4';
         rColor.addEventListener('input', function(){ rank.color = rColor.value; refreshTierPreview(); });
@@ -2037,7 +2232,7 @@
             });
           });
           grid2.appendChild(el('div', {class:'thumb-add', text:'＋', title:'画像をアップロードして追加', onclick: function(){ fileInput.click(); }}));
-          grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'Lv.14 / Lv.14+ の登録曲から選ぶ', onclick: function(){
+          grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'Lv.' + (tierDraft.songLevel || '14') + ' の登録曲から選ぶ', onclick: function(){
             openSongPicker(function(picked){
               rank[key].push({
                 id: uid(),
@@ -2047,7 +2242,7 @@
                 plate: ''
               });
               renderRanksEditor(); refreshTierPreview();
-            });
+            }, tierDraft.songLevel);
           }}));
           groupWrap.appendChild(grid2);
           groupWrap.appendChild(fileInput);
@@ -2065,27 +2260,45 @@
   /* ========================= プレート難易度メーカー: 一覧 ========================= */
   function renderPlateTierListView(root){
     var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('h2', {text:'プレート難易度表'}));
-    bar.appendChild(el('div', {class:'note', text:'「楽曲難易度メーカー」で作った表を元に、プレートごとの合計点を自動算出して難易度順を表示します。プレート名は各曲の「プレート名」欄から拾います。'}));
+    bar.appendChild(el('h2', {text:'プレート難易度表（' + allPlateTiers.length + '件）'}));
+    if (canEdit()){
+      bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 新しいプレート難易度表を作る', onclick: askPlateCategoryThenCreate}));
+    }
+    bar.appendChild(el('div', {class:'note', text:'極 / 将 / 神 / 舞舞 それぞれ別の表として作成します。1つの表には選んだ種類のプレートだけを入れられます。'}));
     root.appendChild(bar);
 
-    if (allTiers.length === 0){
+    if (allPlateTiers.length === 0){
       var empty = el('div', {class:'empty-state'});
-      empty.appendChild(el('h3', {text:'元になる楽曲難易度表がありません'}));
-      empty.appendChild(el('div', {text:'先に「楽曲難易度メーカー」で表を作成し、各曲に「プレート名」を入力してください。'}));
-      empty.appendChild(el('button', {class:'btn btn-primary', style:{marginTop:'14px'}, text:'楽曲難易度メーカーへ', onclick: function(){ goSection('tiers'); }}));
+      empty.appendChild(el('h3', {text:'まだプレート難易度表がありません'}));
+      if (canEdit()){
+        var ol = el('ol');
+        ol.appendChild(el('li', {text:'「＋ 新しいプレート難易度表を作る」を押し、極/将/神/舞舞のどれを作るか選びます'}));
+        ol.appendChild(el('li', {text:'続けて「左右差あり／なし」の欄を使うか選びます'}));
+        ol.appendChild(el('li', {text:'SS / S / A / B / C … のランクごとにプレートを追加していきます'}));
+        empty.appendChild(ol);
+        empty.appendChild(el('button', {class:'btn btn-primary', text:'＋ 最初のプレート難易度表を作る', onclick: askPlateCategoryThenCreate}));
+      } else {
+        empty.appendChild(el('div', {text:'まだ公開されているプレート難易度表がありません。'}));
+      }
       root.appendChild(empty);
       return;
     }
 
     var grid = el('div', {class:'versions-grid'});
-    allTiers.forEach(function(t){
-      var totals = tierPlateTotals(t);
+    allPlateTiers.forEach(function(t){
+      var count = t.ranks.reduce(function(s, r){ return s + (r.jiriki ? r.jiriki.length : 0) + (r.kojinsa ? r.kojinsa.length : 0); }, 0);
       var card = el('div', {class:'version-card', onclick: function(){ goPlateTierDetail(t.id); }});
       card.appendChild(el('div', {class:'vc-swatch', style:{background: (t.ranks[0] && t.ranks[0].color) || '#7ee787'}}));
       card.appendChild(el('div', {class:'vc-title', text: t.title}));
-      card.appendChild(el('div', {class:'vc-meta', text: 'プレート数 ' + totals.length + '　更新 ' + fmtDate(t.updatedAt)}));
-      card.appendChild(el('button', {class:'btn btn-sm', text:'開く', onclick: function(e){ e.stopPropagation(); goPlateTierDetail(t.id); }}));
+      card.appendChild(el('div', {class:'vc-meta', text:
+        '種類 ' + t.category + '　プレート数 ' + count + '　左右差欄 ' + (t.showLeftRight ? 'あり' : 'なし') + '　更新 ' + fmtDate(t.updatedAt)}));
+      if (canEdit()){
+        var actions = el('div', {class:'vc-actions'});
+        actions.appendChild(el('button', {class:'btn btn-sm', text:'編集', onclick: function(e){ e.stopPropagation(); goPlateTierEditExisting(t.id); }}));
+        actions.appendChild(el('button', {class:'btn btn-sm', text:'複製', onclick: function(e){ e.stopPropagation(); goPlateTierDuplicate(t.id); }}));
+        actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(e){ e.stopPropagation(); deletePlateTier(t.id); }}));
+        card.appendChild(actions);
+      }
       grid.appendChild(card);
     });
     root.appendChild(grid);
@@ -2099,19 +2312,199 @@
     bar.appendChild(el('div', {style:{flex:'1'}}));
     var statusEl = el('span', {class:'note', style:{width:'auto'}});
     var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
-    pngBtn.addEventListener('click', function(){ exportPNG({versionName: t.title + '_プレート難易度順'}, statusEl, pngBtn); });
+    pngBtn.addEventListener('click', function(){ exportPNG({versionName: t.title}, statusEl, pngBtn); });
     bar.appendChild(pngBtn);
     if (canEdit()){
-      bar.appendChild(el('button', {class:'btn', text:'元の楽曲難易度表を編集', onclick: function(){ goTierEditExisting(t.id); }}));
+      bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
+      bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goPlateTierDuplicate(t.id); }}));
+      bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deletePlateTier(t.id); }}));
     }
     root.appendChild(bar);
     root.appendChild(statusEl);
     root.appendChild(buildPlateTierPreviewNode(t));
+    root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(t.updatedAt)}));
+  }
+
+  /* ========================= プレート難易度メーカー: 編集 ========================= */
+  function renderPlateTierEditView(root){
+    var isNew = !plateTierCurrentId;
+    var bar = el('div', {class:'view-topbar'});
+    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){ isNew ? goPlateTierList() : goPlateTierDetail(plateTierCurrentId); }}));
+    bar.appendChild(el('h2', {text: (isNew ? '新しいプレート難易度表' : 'プレート難易度表を編集') + '（' + plateTierDraft.category + '）'}));
+    bar.appendChild(el('button', {class:'btn btn-primary', text:'保存する', onclick: savePlateTierDraft}));
+    root.appendChild(bar);
+
+    var grid = el('div', {class:'edit-grid'});
+    var editorCol = el('div', {});
+    var previewCol = el('div', {class:'edit-preview-col'});
+    grid.appendChild(editorCol);
+    grid.appendChild(previewCol);
+    root.appendChild(grid);
+
+    function refreshPreview(){
+      previewCol.textContent = '';
+      previewCol.appendChild(buildPlateTierPreviewNode(plateTierDraft));
+    }
+
+    /* 基本情報 */
+    var infoCard = el('div', {class:'card'});
+    infoCard.appendChild(el('h2', {text:'基本情報'}));
+    var titleField = el('div', {class:'field'});
+    titleField.appendChild(el('label', {text:'タイトル'}));
+    var titleInput = el('input', {type:'text'});
+    titleInput.value = plateTierDraft.title;
+    titleInput.addEventListener('input', function(){ plateTierDraft.title = titleInput.value; refreshPreview(); });
+    titleField.appendChild(titleInput);
+    infoCard.appendChild(titleField);
+    infoCard.appendChild(el('div', {class:'note', text:'プレートの種類：' + plateTierDraft.category + '（作成時に選択したもので固定されます）'}));
+
+    var lrRow = el('div', {class:'field', style:{marginTop:'10px'}});
+    lrRow.appendChild(el('label', {text:'左右差の欄'}));
+    var lrBtn = el('button', {
+      class: 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on'),
+      text: plateTierDraft.showLeftRight ? '使う' : '使わない'
+    });
+    lrBtn.addEventListener('click', function(){
+      plateTierDraft.showLeftRight = !plateTierDraft.showLeftRight;
+      lrBtn.textContent = plateTierDraft.showLeftRight ? '使う' : '使わない';
+      lrBtn.className = 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on');
+      renderRanksEditor();
+      refreshPreview();
+    });
+    lrRow.appendChild(lrBtn);
+    infoCard.appendChild(lrRow);
+    editorCol.appendChild(infoCard);
+
+    /* ランク編集 */
+    var ranksCard = el('div', {class:'card'});
+    var ranksHead = el('h2', {text:'ランク '});
+    ranksHead.appendChild(el('span', {class:'hint', text:'（上から難しい順）'}));
+    ranksCard.appendChild(ranksHead);
+    var ranksContainer = el('div', {});
+    ranksCard.appendChild(ranksContainer);
+    ranksCard.appendChild(el('button', {class:'btn btn-ghost', text:'＋ ランクを追加', onclick: function(){
+      plateTierDraft.ranks.push({ id: uid(), label: '新規', color: '#8890a4', jiriki: [], kojinsa: [] });
+      renderRanksEditor();
+      refreshPreview();
+    }}));
+    editorCol.appendChild(ranksCard);
+
+    function renderRanksEditor(){
+      ranksContainer.textContent = '';
+      plateTierDraft.ranks.forEach(function(rank, rIdx){
+        var block = el('div', {class:'level-block'});
+
+        var head = el('div', {class:'level-block-head'});
+        var labelInput = el('input', {type:'text'});
+        labelInput.value = rank.label;
+        labelInput.addEventListener('input', function(){ rank.label = labelInput.value; refreshPreview(); });
+        head.appendChild(labelInput);
+
+        var rColor = el('input', {type:'color'});
+        rColor.value = rank.color || '#8890a4';
+        rColor.addEventListener('input', function(){ rank.color = rColor.value; refreshPreview(); });
+        head.appendChild(rColor);
+
+        head.appendChild(el('div', {class:'spacer'}));
+        head.appendChild(el('button', {class:'btn btn-sm', text:'▲', disabled: rIdx===0, onclick: function(){
+          var tmp = plateTierDraft.ranks[rIdx-1];
+          plateTierDraft.ranks[rIdx-1] = plateTierDraft.ranks[rIdx];
+          plateTierDraft.ranks[rIdx] = tmp;
+          renderRanksEditor(); refreshPreview();
+        }}));
+        head.appendChild(el('button', {class:'btn btn-sm', text:'▼', disabled: rIdx===plateTierDraft.ranks.length-1, onclick: function(){
+          var tmp = plateTierDraft.ranks[rIdx+1];
+          plateTierDraft.ranks[rIdx+1] = plateTierDraft.ranks[rIdx];
+          plateTierDraft.ranks[rIdx] = tmp;
+          renderRanksEditor(); refreshPreview();
+        }}));
+        head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
+          plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
+          renderRanksEditor(); refreshPreview();
+        }}));
+        block.appendChild(head);
+
+        [['jiriki','地力'], ['kojinsa','個人差']].forEach(function(pair){
+          var key = pair[0], groupName = pair[1];
+          var groupWrap = el('div', {class:'tier-edit-group'});
+          groupWrap.appendChild(el('div', {class:'tier-group-label', text: groupName + ' ' + rank.label}));
+
+          var grid2 = el('div', {class:'thumb-grid'});
+          (rank[key] || []).forEach(function(p){
+            var item = el('div', {class:'thumb-item', style:{width:'92px'}});
+            var thumb = el('div', {class:'thumb' + (p.img ? '' : ' no-img'), style:{width:'92px', height:'34px'}});
+
+            var perFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
+            perFileInput.addEventListener('change', function(){
+              var f = perFileInput.files && perFileInput.files[0];
+              if (!f) return;
+              resizeImageFile(f, 300, 0.85).then(function(url){
+                p.img = url;
+                setCachedPlateBadge(p.name, url);
+                renderRanksEditor(); refreshPreview();
+              }).catch(function(){
+                showAlert('画像の読み込みに失敗しました。別の画像でお試しください。');
+              });
+            });
+
+            if (p.img){
+              thumb.appendChild(el('img', {src: p.img, alt:'', style:{objectFit:'contain'}}));
+            } else {
+              thumb.appendChild(el('div', {class:'placeholder-text', text: p.name}));
+              thumb.title = 'クリックして画像を追加';
+              thumb.addEventListener('click', function(e){
+                if (e.target.tagName === 'BUTTON') return;
+                perFileInput.click();
+              });
+            }
+            if (plateTierDraft.showLeftRight && p.leftRight) thumb.appendChild(el('div', {class:'lr-mark', text:'左右差'}));
+            thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
+              rank[key] = rank[key].filter(function(x){ return x.id !== p.id; });
+              renderRanksEditor(); refreshPreview();
+            }}));
+            item.appendChild(thumb);
+            item.appendChild(perFileInput);
+            item.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
+
+            if (plateTierDraft.showLeftRight){
+              var controls = el('div', {class:'thumb-controls'});
+              controls.appendChild(el('button', {
+                class: 'tbtn' + (p.leftRight ? ' active-lr' : ''),
+                text:'左右', title:'左右差あり/なし',
+                onclick: function(){ p.leftRight = !p.leftRight; renderRanksEditor(); refreshPreview(); }
+              }));
+              item.appendChild(controls);
+            }
+
+            grid2.appendChild(item);
+          });
+
+          grid2.appendChild(el('div', {class:'thumb-pick-add', style:{width:'92px', height:'34px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
+            openPlatePicker(plateTierDraft.category, function(picked){
+              rank[key].push({
+                id: uid(),
+                name: picked.name,
+                img: getCachedPlateBadge(picked.name),
+                leftRight: false
+              });
+              renderRanksEditor(); refreshPreview();
+            });
+          }}));
+          groupWrap.appendChild(grid2);
+          block.appendChild(groupWrap);
+        });
+
+        ranksContainer.appendChild(block);
+      });
+    }
+
+    renderRanksEditor();
+    refreshPreview();
   }
 
   /* ========================= app root render ========================= */
   /* ========================= 同期設定モーダル ========================= */
-  var FIRESTORE_RULES_TEXT = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /plates/{id} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /tiers/{id} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /submissions/{id} {\n      allow create: if true;\n      allow read, update, delete: if request.auth != null;\n    }\n  }\n}";
+  var FIRESTORE_RULES_TEXT = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /plates/{id} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /tiers/{id} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /submissions/{id} {\n      allow create: if true;\n      allow read, update, delete: if request.auth != null;\n    }\n    match /reviews/{id} {\n      allow create: if true;\n      allow read, update, delete: if request.auth != null;\n    }\n  }\n}";
 
   function openSyncSettingsModal(){
     var backdrop = el('div', {class:'modal-backdrop'});
@@ -2231,14 +2624,14 @@
     root.appendChild(bar);
 
     if (syncState.connected && !syncState.isAdmin){
-      root.appendChild(el('div', {class:'readonly-banner', text:'これは閲覧専用の公開版です。内容の編集はできません。自分の難易度表を作りたい場合は「投稿」から送ることができます。'}));
+      root.appendChild(el('div', {class:'readonly-banner', text:'これは閲覧専用の公開版です。内容の編集はできません。自分の難易度表を作りたい場合は「難易度表の投稿」、ツールへの感想・要望は「レビュー」から送ることができます。'}));
     }
   }
 
-  /* ========================= 投稿セクション ========================= */
+  /* ========================= 投稿セクション（難易度表） ========================= */
   function renderSubmissionsSection(root){
     var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('h2', {text:'投稿'}));
+    bar.appendChild(el('h2', {text:'難易度表の投稿'}));
     root.appendChild(bar);
 
     if (syncState.connected && syncState.isAdmin){
@@ -2272,6 +2665,82 @@
     }
   }
 
+  /* ========================= レビューセクション（ツールへのフィードバック） ========================= */
+  function renderReviewsSection(root){
+    var bar = el('div', {class:'view-topbar'});
+    bar.appendChild(el('h2', {text:'レビュー'}));
+    root.appendChild(bar);
+
+    if (syncState.connected && syncState.isAdmin){
+      root.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'このツールについて訪問者から届いた感想・要望の一覧です（開発者だけが見られます）。'}));
+      if (allReviews.length === 0){
+        var empty = el('div', {class:'empty-state'});
+        empty.appendChild(el('h3', {text:'届いているレビューはありません'}));
+        root.appendChild(empty);
+        return;
+      }
+      allReviews.forEach(function(rev){
+        var card = el('div', {class:'submission-card'});
+        if (rev.rating){
+          card.appendChild(el('div', {class:'star-row', text: '★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}));
+        }
+        card.appendChild(el('div', {style:{fontSize:'13px', margin:'6px 0', whiteSpace:'pre-wrap'}, text: rev.message}));
+        card.appendChild(el('div', {class:'vc-meta', text: fmtDate(rev.submittedAt)}));
+        var actions = el('div', {class:'vc-actions'});
+        actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){ deleteReview(rev); }}));
+        card.appendChild(actions);
+        root.appendChild(card);
+      });
+      return;
+    }
+
+    if (!syncState.connected){
+      var box0 = el('div', {class:'empty-state'});
+      box0.appendChild(el('h3', {text:'このツールへのレビュー'}));
+      box0.appendChild(el('div', {text:'レビュー機能を使うには、このサイトが「☁ 同期設定」で接続されている必要があります（サイト作成者側の設定です）。'}));
+      root.appendChild(box0);
+      return;
+    }
+
+    var card2 = el('div', {class:'card'});
+    card2.appendChild(el('h2', {text:'このツールへの感想・要望を送る'}));
+    card2.appendChild(el('div', {class:'note', style:{marginBottom:'10px'}, text:'開発者だけが読むことができます。'}));
+
+    var selectedRating = 0;
+    var starRow = el('div', {class:'star-row'});
+    var starButtons = [];
+    for (var i = 1; i <= 5; i++){
+      (function(n){
+        var b = el('button', {class:'star-btn', text:'☆', title: n + '点'});
+        b.addEventListener('click', function(){
+          selectedRating = n;
+          starButtons.forEach(function(sb, idx){ sb.textContent = (idx < n) ? '★' : '☆'; });
+        });
+        starButtons.push(b);
+        starRow.appendChild(b);
+      })(i);
+    }
+    card2.appendChild(starRow);
+
+    var msgArea = el('textarea', {placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel-2)', border:'1px solid var(--border)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
+    card2.appendChild(msgArea);
+
+    var sendBtn = el('button', {class:'btn btn-primary', style:{marginTop:'10px'}, text:'送信する'});
+    sendBtn.addEventListener('click', function(){
+      sendBtn.disabled = true;
+      submitReview(msgArea.value, selectedRating, function(err){
+        sendBtn.disabled = false;
+        if (err){ showAlert('送信に失敗しました: ' + err.message); return; }
+        msgArea.value = '';
+        selectedRating = 0;
+        starButtons.forEach(function(sb){ sb.textContent = '☆'; });
+        showAlert('送信しました。ありがとうございます！');
+      });
+    });
+    card2.appendChild(sendBtn);
+    root.appendChild(card2);
+  }
+
   function renderSectionNav(root){
     var nav = el('div', {class:'section-nav'});
     nav.appendChild(el('button', {
@@ -2291,8 +2760,13 @@
     }));
     nav.appendChild(el('button', {
       class: 'nav-tab' + (section === 'submissions' ? ' active' : ''),
-      text: '投稿',
+      text: '難易度表の投稿',
       onclick: function(){ goSection('submissions'); }
+    }));
+    nav.appendChild(el('button', {
+      class: 'nav-tab' + (section === 'reviews' ? ' active' : ''),
+      text: 'レビュー',
+      onclick: function(){ goSection('reviews'); }
     }));
     root.appendChild(nav);
   }
@@ -2320,9 +2794,12 @@
       else if (tierView === 'edit') renderTierEditView(root);
     } else if (section === 'plateTiers'){
       if (plateTierView === 'list') renderPlateTierListView(root);
-      else renderPlateTierDetailView(root, findTier(plateTierCurrentId));
-    } else {
+      else if (plateTierView === 'edit') renderPlateTierEditView(root);
+      else renderPlateTierDetailView(root, findPlateTier(plateTierCurrentId));
+    } else if (section === 'submissions'){
       renderSubmissionsSection(root);
+    } else {
+      renderReviewsSection(root);
     }
   }
 
