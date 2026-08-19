@@ -524,7 +524,6 @@
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
     document.body.appendChild(backdrop);
-    searchInput.focus();
   }
 
   /* ========================= storage ========================= */
@@ -1827,7 +1826,7 @@
       empty.appendChild(el('h3', {text:'まだ難易度表がありません'}));
       if (canEdit()){
         var ol = el('ol');
-        ol.appendChild(el('li', {text:'「＋ 新しい楽曲難易度表を作る」を押し、左右差の欄を使うかどうかを選びます'}));
+        ol.appendChild(el('li', {text:'「＋ 新しい楽曲難易度表を作る」を押し、レベルと左右差のあり／なしを選びます'}));
         ol.appendChild(el('li', {text:'SS / S / A / B / C … のランクごとに「地力」「個人差」へ楽曲画像を追加します'}));
         ol.appendChild(el('li', {text:'各楽曲にプレート名を入れると、プレートごとの合計点と難易度順が自動で出ます'}));
         empty.appendChild(ol);
@@ -1871,13 +1870,13 @@
     box.appendChild(actions);
 
     function step2(){
-      msg.textContent = 'Lv.' + chosenLevel + ' の表に「左右差あり／なし」を表示する欄を設けますか？\n（作成後は各楽曲ごとに切り替えできます）';
+      msg.textContent = '作成するLv.' + chosenLevel + ' 楽曲難易度表の左右差について';
       actions.textContent = '';
-      actions.appendChild(el('button', {class:'btn btn-ghost', text:'設けない', onclick: function(){
-        closeModal(backdrop); goTierEditNew(false, chosenLevel);
-      }}));
-      actions.appendChild(el('button', {class:'btn btn-primary', text:'設ける', onclick: function(){
+      actions.appendChild(el('button', {class:'btn btn-primary', text:'あり', onclick: function(){
         closeModal(backdrop); goTierEditNew(true, chosenLevel);
+      }}));
+      actions.appendChild(el('button', {class:'btn btn-ghost', text:'なし', onclick: function(){
+        closeModal(backdrop); goTierEditNew(false, chosenLevel);
       }}));
     }
 
@@ -1900,13 +1899,13 @@
     box.appendChild(actions);
 
     function step2(){
-      msg.textContent = '「' + chosenCat + '」の表に「左右差あり／なし」を表示する欄を設けますか？\n（作成後は各プレートごとに切り替えできます）';
+      msg.textContent = '作成する' + chosenCat + 'プレート難易度表の左右差について';
       actions.textContent = '';
-      actions.appendChild(el('button', {class:'btn btn-ghost', text:'設けない', onclick: function(){
-        closeModal(backdrop); goPlateTierEditNew(chosenCat, false);
-      }}));
-      actions.appendChild(el('button', {class:'btn btn-primary', text:'設ける', onclick: function(){
+      actions.appendChild(el('button', {class:'btn btn-primary', text:'あり', onclick: function(){
         closeModal(backdrop); goPlateTierEditNew(chosenCat, true);
+      }}));
+      actions.appendChild(el('button', {class:'btn btn-ghost', text:'なし', onclick: function(){
+        closeModal(backdrop); goPlateTierEditNew(chosenCat, false);
       }}));
     }
 
@@ -2261,7 +2260,7 @@
       if (canEdit()){
         var ol = el('ol');
         ol.appendChild(el('li', {text:'「＋ 新しいプレート難易度表を作る」を押し、極/将/神/舞舞のどれを作るか選びます'}));
-        ol.appendChild(el('li', {text:'続けて「左右差あり／なし」の欄を使うか選びます'}));
+        ol.appendChild(el('li', {text:'続けて左右差のあり／なしを選びます'}));
         ol.appendChild(el('li', {text:'SS / S / A / B / C … のランクごとにプレートを追加していきます'}));
         empty.appendChild(ol);
         empty.appendChild(el('button', {class:'btn btn-primary', text:'＋ 最初のプレート難易度表を作る', onclick: askPlateCategoryThenCreate}));
