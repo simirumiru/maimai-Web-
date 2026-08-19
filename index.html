@@ -853,11 +853,11 @@
   }
 
   var DEFAULT_RANK_DEFS = [
-    { label: 'SS', points: 100, color: '#ff4fd8', plateThreshold: 500 },
-    { label: 'S',  points: 80,  color: '#ffb84f', plateThreshold: 350 },
-    { label: 'A',  points: 60,  color: '#ffe14f', plateThreshold: 200 },
-    { label: 'B',  points: 40,  color: '#7ee787', plateThreshold: 100 },
-    { label: 'C',  points: 20,  color: '#3fd0ff', plateThreshold: 0 }
+    { label: 'SS', color: '#ff4fd8' },
+    { label: 'S',  color: '#ffb84f' },
+    { label: 'A',  color: '#ffe14f' },
+    { label: 'B',  color: '#7ee787' },
+    { label: 'C',  color: '#3fd0ff' }
   ];
 
   function defaultTier(showLeftRight, songLevel){
@@ -865,9 +865,7 @@
       return {
         id: uid(),
         label: r.label,
-        points: r.points,
         color: r.color,
-        plateThreshold: r.plateThreshold,
         jiriki: [],   // 地力
         kojinsa: []   // 個人差
       };
@@ -1931,7 +1929,6 @@
       var block = el('div', {class:'tier-row'});
       var labelCell = el('div', {class:'tier-rank-cell', style:{borderColor: rank.color}});
       labelCell.appendChild(el('div', {class:'tier-rank-label', style:{color: rank.color}, text: rank.label}));
-      labelCell.appendChild(el('div', {class:'tier-rank-points', text: (Number(rank.points) || 0) + ' pt'}));
       block.appendChild(labelCell);
 
       var groupsWrap = el('div', {class:'tier-groups'});
@@ -2013,11 +2010,8 @@
             } else {
               thumb.appendChild(el('span', {class:'placeholder-text', text: p.name}));
             }
-            if (t.showLeftRight && p.leftRight){
-              thumb.appendChild(el('div', {class:'lr-mark', text:'左右差'}));
-            }
             cell.appendChild(thumb);
-            cell.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
+            if (p.img) cell.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
             grid.appendChild(cell);
           });
           g.appendChild(grid);
@@ -2085,14 +2079,14 @@
     infoCard.appendChild(titleField);
 
     var lrRow = el('div', {class:'field'});
-    lrRow.appendChild(el('label', {text:'左右差の欄'}));
+    lrRow.appendChild(el('label', {text:'左右差'}));
     var lrBtn = el('button', {
       class: 'btn btn-sm' + (tierDraft.showLeftRight ? '' : ' btn-hidden-on'),
-      text: tierDraft.showLeftRight ? '使う' : '使わない'
+      text: tierDraft.showLeftRight ? 'あり' : 'なし'
     });
     lrBtn.addEventListener('click', function(){
       tierDraft.showLeftRight = !tierDraft.showLeftRight;
-      lrBtn.textContent = tierDraft.showLeftRight ? '使う' : '使わない';
+      lrBtn.textContent = tierDraft.showLeftRight ? 'あり' : 'なし';
       lrBtn.className = 'btn btn-sm' + (tierDraft.showLeftRight ? '' : ' btn-hidden-on');
       renderRanksEditor();
       refreshTierPreview();
@@ -2104,12 +2098,12 @@
     /* ランク編集 */
     var ranksCard = el('div', {class:'card'});
     var ranksHead = el('h2', {text:'ランク '});
-    ranksHead.appendChild(el('span', {class:'hint', text:'（上から難しい順・点数は合計点の計算に使われます）'}));
+    ranksHead.appendChild(el('span', {class:'hint', text:'（上から難しい順）'}));
     ranksCard.appendChild(ranksHead);
     var ranksContainer = el('div', {});
     ranksCard.appendChild(ranksContainer);
     ranksCard.appendChild(el('button', {class:'btn btn-ghost', text:'＋ ランクを追加', onclick: function(){
-      tierDraft.ranks.push({ id: uid(), label: '新規', points: 0, color: '#8890a4', plateThreshold: 0, jiriki: [], kojinsa: [] });
+      tierDraft.ranks.push({ id: uid(), label: '新規', color: '#8890a4', jiriki: [], kojinsa: [] });
       renderRanksEditor();
       refreshTierPreview();
     }}));
@@ -2125,12 +2119,6 @@
         labelInput.value = rank.label;
         labelInput.addEventListener('input', function(){ rank.label = labelInput.value; refreshTierPreview(); });
         head.appendChild(labelInput);
-
-        var pointsInput = el('input', {type:'number', style:{width:'70px'}});
-        pointsInput.value = rank.points;
-        pointsInput.addEventListener('input', function(){ rank.points = Number(pointsInput.value) || 0; refreshTierPreview(); });
-        head.appendChild(pointsInput);
-        head.appendChild(el('span', {class:'note', text:'pt/曲'}));
 
         var rColor = el('input', {type:'color'});
         rColor.value = rank.color || '#8890a4';
@@ -2359,14 +2347,14 @@
     infoCard.appendChild(el('div', {class:'note', text:'プレートの種類：' + plateTierDraft.category + '（作成時に選択したもので固定されます）'}));
 
     var lrRow = el('div', {class:'field', style:{marginTop:'10px'}});
-    lrRow.appendChild(el('label', {text:'左右差の欄'}));
+    lrRow.appendChild(el('label', {text:'左右差'}));
     var lrBtn = el('button', {
       class: 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on'),
-      text: plateTierDraft.showLeftRight ? '使う' : '使わない'
+      text: plateTierDraft.showLeftRight ? 'あり' : 'なし'
     });
     lrBtn.addEventListener('click', function(){
       plateTierDraft.showLeftRight = !plateTierDraft.showLeftRight;
-      lrBtn.textContent = plateTierDraft.showLeftRight ? '使う' : '使わない';
+      lrBtn.textContent = plateTierDraft.showLeftRight ? 'あり' : 'なし';
       lrBtn.className = 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on');
       renderRanksEditor();
       refreshPreview();
@@ -2457,24 +2445,12 @@
                 perFileInput.click();
               });
             }
-            if (plateTierDraft.showLeftRight && p.leftRight) thumb.appendChild(el('div', {class:'lr-mark', text:'左右差'}));
             thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
               rank[key] = rank[key].filter(function(x){ return x.id !== p.id; });
               renderRanksEditor(); refreshPreview();
             }}));
             item.appendChild(thumb);
             item.appendChild(perFileInput);
-            item.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
-
-            if (plateTierDraft.showLeftRight){
-              var controls = el('div', {class:'thumb-controls'});
-              controls.appendChild(el('button', {
-                class: 'tbtn' + (p.leftRight ? ' active-lr' : ''),
-                text:'左右', title:'左右差あり/なし',
-                onclick: function(){ p.leftRight = !p.leftRight; renderRanksEditor(); refreshPreview(); }
-              }));
-              item.appendChild(controls);
-            }
 
             grid2.appendChild(item);
           });
