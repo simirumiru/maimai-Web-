@@ -176,6 +176,9 @@
   .pv-caption{margin-top:14px;font-size:11px;color:var(--text-dim);}
 
   footer.app-footer{text-align:center;color:var(--text-dim);font-size:11.5px;padding:20px;}
+  .footer-link{background:none;border:none;color:var(--text-dim);font-size:11px;text-decoration:underline;
+    margin-top:6px;padding:4px;opacity:.55;}
+  .footer-link:hover{color:var(--accent);opacity:1;}
 
   /* ---- section nav ---- */
   .section-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;}
@@ -267,7 +270,7 @@
 
 <div id="app"></div>
 
-<footer class="app-footer">半年ごとのプレート表作成を、このサイトの中だけで完結できるように。</footer>
+<footer class="app-footer">半年ごとのプレート表作成を、このサイトの中だけで完結できるように。<br><button id="footerSyncLink" class="footer-link">同期設定</button></footer>
 
 <script>
 (function(){
@@ -762,13 +765,14 @@
   }
 
   /* 誰でも投稿できる「難易度表の投稿」。Firestoreのsubmissionsコレクションに作成専用で書き込む */
-  function submitTierForReview(tierObj, onDone){
+  function submitTierForReview(tierObj, onDone, kind){
     if (!syncState.connected || !syncState.db){
       onDone(new Error('同期が設定されていないため投稿できません。'));
       return;
     }
     var payload = JSON.parse(JSON.stringify(tierObj));
     payload.submittedAt = Date.now();
+    payload.kind = kind || (tierObj.category ? 'plateTier' : 'songTier');
     syncState.db.collection('submissions').add(payload).then(function(){
       onDone(null);
     }).catch(function(e){
@@ -777,17 +781,27 @@
   }
   function adoptSubmission(sub){
     var copy = JSON.parse(JSON.stringify(sub));
+    var isPlate = (copy.kind === 'plateTier') || !!copy.category;
     delete copy._docId;
     delete copy.submittedAt;
+    delete copy.kind;
     copy.id = uid();
     copy.updatedAt = Date.now();
-    allTiers.push(copy);
-    persistTiers();
-    syncWriteTier(copy);
     if (syncState.db && sub._docId){
       syncState.db.collection('submissions').doc(sub._docId).delete().catch(function(){});
     }
-    goTierDetail(copy.id);
+    if (isPlate){
+      allPlateTiers.push(copy);
+      persistPlateTiers();
+      section = 'plateTiers';
+      goPlateTierDetail(copy.id);
+    } else {
+      allTiers.push(copy);
+      persistTiers();
+      syncWriteTier(copy);
+      section = 'tiers';
+      goTierDetail(copy.id);
+    }
   }
   function deleteSubmission(sub){
     if (!syncState.db || !sub._docId) return;
@@ -916,6 +930,7 @@
   var plateTierView = 'list';   // 'list' | 'detail' | 'edit'
   var plateTierCurrentId = null;
   var plateTierDraft = null;
+  var plateTierEditTarget = 'plateTiers'; // 'plateTiers' | 'submissions'
 
   function findVersion(id){
     return allVersions.filter(function(v){ return v.id === id; })[0] || null;
@@ -1052,7 +1067,7 @@
   }
   function goSubmitNew(){
     if (!syncState.connected){
-      showAlert('投稿機能を使うには、まず「☁ 同期設定」で接続してください。');
+      showAlert('投稿機能は現在利用できません（サイト側の同期設定が必要です）。');
       return;
     }
     tierEditTarget = 'submissions';
@@ -1060,6 +1075,48 @@
     tierDraft.title = '';
     tierCurrentId = null;
     tierView = 'edit';
+    renderApp();
+  }
+  /* 投稿用のプレート難易度表を作成する（カテゴリと左右差を選んでから編集画面へ） */
+  function goSubmitPlateNew(){
+    if (!syncState.connected){
+      showAlert('投稿機能は現在利用できません（サイト側の同期設定が必要です）。');
+      return;
+    }
+    var chosenCat = null;
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    var msg = el('p', {text:'投稿するプレート難易度表の種類を選んでください'});
+    box.appendChild(msg);
+    var actions = el('div', {class:'modal-actions', style:{flexWrap:'wrap'}});
+    box.appendChild(actions);
+
+    function step2(){
+      msg.textContent = '作成する' + chosenCat + 'プレート難易度表の左右差について';
+      actions.textContent = '';
+      actions.appendChild(el('button', {class:'btn btn-primary', text:'あり', onclick: function(){
+        closeModal(backdrop); startPlateSubmission(chosenCat, true);
+      }}));
+      actions.appendChild(el('button', {class:'btn btn-ghost', text:'なし', onclick: function(){
+        closeModal(backdrop); startPlateSubmission(chosenCat, false);
+      }}));
+    }
+
+    PLATE_CATEGORIES.forEach(function(cat){
+      actions.appendChild(el('button', {class:'btn', text: cat, onclick: function(){ chosenCat = cat; step2(); }}));
+    });
+
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+  function startPlateSubmission(category, showLeftRight){
+    plateTierEditTarget = 'submissions';
+    plateTierDraft = defaultPlateTier(category, showLeftRight);
+    plateTierDraft.title = '';
+    plateTierCurrentId = null;
+    plateTierView = 'edit';
+    section = 'plateTiers';
     renderApp();
   }
   function saveTierDraft(){
@@ -1111,6 +1168,7 @@
   function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); }
   function goPlateTierEditNew(category, showLeftRight){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    plateTierEditTarget = 'plateTiers';
     plateTierDraft = defaultPlateTier(category, showLeftRight);
     plateTierCurrentId = null;
     plateTierView = 'edit';
@@ -1118,6 +1176,7 @@
   }
   function goPlateTierEditExisting(id){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    plateTierEditTarget = 'plateTiers';
     var t = findPlateTier(id);
     if (!t) return;
     plateTierDraft = JSON.parse(JSON.stringify(t));
@@ -1127,6 +1186,7 @@
   }
   function goPlateTierDuplicate(id){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
+    plateTierEditTarget = 'plateTiers';
     var t = findPlateTier(id);
     if (!t) return;
     var copy = JSON.parse(JSON.stringify(t));
@@ -1143,6 +1203,18 @@
       return;
     }
     plateTierDraft.updatedAt = Date.now();
+    if (plateTierEditTarget === 'submissions'){
+      submitTierForReview(plateTierDraft, function(err){
+        if (err){ showAlert('投稿に失敗しました: ' + err.message); return; }
+        plateTierEditTarget = 'plateTiers';
+        plateTierDraft = null;
+        plateTierView = 'list';
+        section = 'submissions';
+        renderApp();
+        showAlert('投稿ありがとうございます！\n管理者が確認後、一覧に反映されます。');
+      });
+      return;
+    }
     var idx = -1;
     allPlateTiers.forEach(function(t,i){ if (t.id === plateTierDraft.id) idx = i; });
     if (idx >= 0) allPlateTiers[idx] = plateTierDraft; else allPlateTiers.push(plateTierDraft);
@@ -2315,10 +2387,14 @@
   /* ========================= プレート難易度メーカー: 編集 ========================= */
   function renderPlateTierEditView(root){
     var isNew = !plateTierCurrentId;
+    var isSubmission = (plateTierEditTarget === 'submissions');
     var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){ isNew ? goPlateTierList() : goPlateTierDetail(plateTierCurrentId); }}));
-    bar.appendChild(el('h2', {text: (isNew ? '新しいプレート難易度表' : 'プレート難易度表を編集') + '（' + plateTierDraft.category + '）'}));
-    bar.appendChild(el('button', {class:'btn btn-primary', text:'保存する', onclick: savePlateTierDraft}));
+    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){
+      if (isSubmission){ plateTierEditTarget = 'plateTiers'; plateTierDraft = null; section = 'submissions'; renderApp(); return; }
+      isNew ? goPlateTierList() : goPlateTierDetail(plateTierCurrentId);
+    }}));
+    bar.appendChild(el('h2', {text: (isSubmission ? '投稿するプレート難易度表' : (isNew ? '新しいプレート難易度表' : 'プレート難易度表を編集')) + '（' + plateTierDraft.category + '）'}));
+    bar.appendChild(el('button', {class:'btn btn-primary', text: isSubmission ? '投稿する' : '保存する', onclick: savePlateTierDraft}));
     root.appendChild(bar);
 
     var grid = el('div', {class:'edit-grid'});
@@ -2590,14 +2666,8 @@
   }
 
   function renderSyncBar(root){
-    var bar = el('div', {class:'sync-bar'});
-    var dotClass = !syncState.connected ? 'off' : (syncState.isAdmin ? 'admin' : 'readonly');
-    bar.appendChild(el('div', {class:'sync-dot ' + dotClass}));
-    var label = !syncState.connected ? 'この端末のみ（未接続）' : (syncState.isAdmin ? '同期中・管理者' : '同期中・閲覧専用（公開版）');
-    bar.appendChild(el('div', {class:'sync-text', text: label}));
-    bar.appendChild(el('button', {class:'btn btn-sm', text:'☁ 同期設定', onclick: openSyncSettingsModal}));
-    root.appendChild(bar);
-
+    /* ホームの同期設定バーは非表示（同期未使用のため）。
+       再表示したくなった場合は renderApp() 内の呼び出しを戻す。 */
     if (syncState.connected && !syncState.isAdmin){
       root.appendChild(el('div', {class:'readonly-banner', text:'これは閲覧専用の公開版です。内容の編集はできません。自分の難易度表を作りたい場合は「難易度表の投稿」、ツールへの感想・要望は「レビュー」から送ることができます。'}));
     }
@@ -2618,9 +2688,13 @@
         return;
       }
       allSubmissions.forEach(function(sub){
+        var isPlate = (sub.kind === 'plateTier') || !!sub.category;
         var card = el('div', {class:'submission-card'});
         card.appendChild(el('div', {class:'vc-title', text: sub.title || '（無題）'}));
-        card.appendChild(el('div', {class:'vc-meta', text: 'ランク ' + (sub.ranks ? sub.ranks.length : 0) + '段　投稿日時 ' + fmtDate(sub.submittedAt)}));
+        var kindLabel = isPlate
+          ? ('プレート難易度表（' + (sub.category || '種類不明') + '）')
+          : ('楽曲難易度表' + (sub.songLevel ? '（Lv.' + sub.songLevel + '）' : ''));
+        card.appendChild(el('div', {class:'vc-meta', text: kindLabel + '　ランク ' + (sub.ranks ? sub.ranks.length : 0) + '段　左右差 ' + (sub.showLeftRight ? 'あり' : 'なし') + '　投稿日時 ' + fmtDate(sub.submittedAt)}));
         var actions = el('div', {class:'vc-actions'});
         actions.appendChild(el('button', {class:'btn btn-sm btn-primary', text:'取り込む', onclick: function(){ adoptSubmission(sub); }}));
         actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){ deleteSubmission(sub); }}));
@@ -2630,11 +2704,14 @@
     } else {
       var box = el('div', {class:'empty-state'});
       box.appendChild(el('h3', {text:'難易度表を投稿する'}));
-      box.appendChild(el('div', {text:'このサイトの管理者に、あなたが作った楽曲難易度表を送ることができます。管理者が確認のうえ一覧に反映します。'}));
+      box.appendChild(el('div', {text:'このサイトの管理者に、あなたが作った難易度表を送ることができます。管理者が確認のうえ一覧に反映します。'}));
       if (!syncState.connected){
-        box.appendChild(el('div', {class:'note', style:{marginTop:'10px'}, text:'投稿機能を使うには、このサイトが「☁ 同期設定」で接続されている必要があります（サイト作成者側の設定です）。'}));
+        box.appendChild(el('div', {class:'note', style:{marginTop:'10px'}, text:'投稿機能は現在準備中です（サイト側の設定が完了すると使えるようになります）。'}));
       } else {
-        box.appendChild(el('button', {class:'btn btn-primary', style:{marginTop:'14px'}, text:'＋ 難易度表を投稿する', onclick: goSubmitNew}));
+        var btnRow = el('div', {style:{display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginTop:'14px'}});
+        btnRow.appendChild(el('button', {class:'btn btn-primary', text:'＋ 楽曲難易度表を投稿する', onclick: goSubmitNew}));
+        btnRow.appendChild(el('button', {class:'btn btn-primary', text:'＋ プレート難易度表を投稿する', onclick: goSubmitPlateNew}));
+        box.appendChild(btnRow);
       }
       root.appendChild(box);
     }
@@ -2777,6 +2854,9 @@
       renderReviewsSection(root);
     }
   }
+
+  var footerSyncLink = document.getElementById('footerSyncLink');
+  if (footerSyncLink) footerSyncLink.addEventListener('click', openSyncSettingsModal);
 
   var storedSyncSettings = loadSyncSettings();
   if (storedSyncSettings && storedSyncSettings.configJson){
