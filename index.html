@@ -173,6 +173,10 @@
   .pv-badges{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;}
   .pv-badge-img{height:46px;border-radius:7px;overflow:hidden;border:1px solid var(--border);background:#0d0f16;box-shadow:0 2px 6px rgba(0,0,0,.35);}
   .pv-badge-img img{height:100%;width:auto;display:block;object-fit:contain;}
+  .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;min-width:140px;background:var(--panel-2);}
+  .pv-badge-img.no-img .placeholder-text{font-size:11px;color:var(--text-dim);padding:0 10px;}
+  .badge-thumb.no-img{display:flex;align-items:center;justify-content:center;}
+  .badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
   .pv-caption{margin-top:14px;font-size:11px;color:var(--text-dim);}
 
   footer.app-footer{text-align:center;color:var(--text-dim);font-size:11.5px;padding:20px;}
@@ -367,6 +371,35 @@
   function getCachedSongImage(name){ return (name && songImageCache[name]) ? songImageCache[name] : ''; }
   function setCachedSongImage(name, dataUrl){ if (!name) return; songImageCache[name] = dataUrl; persistSongImageCache(); }
 
+  /* ---- 開発者があらかじめ用意した楽曲ジャケット画像 ----
+     index.html と同じ場所に songs/ フォルダを置き、「曲名.png」で画像を入れておくと、
+     曲名を選んだ時点で全ての閲覧者にその画像が自動で表示されます（1枚置けば全箇所に反映）。 */
+  var SONG_IMAGE_DIR = 'songs/';
+  var IMAGE_EXT = '.png';
+  function getBundledSongImage(name){
+    if (!name) return '';
+    return SONG_IMAGE_DIR + encodeURIComponent(name) + IMAGE_EXT;
+  }
+  /* 優先順位: 開発者が用意した画像 → 各自がアップロードした画像 */
+  function resolveSongImage(name){
+    return getBundledSongImage(name) || getCachedSongImage(name);
+  }
+  /* 読み込み失敗時にフォールバックする <img> を作る共通関数 */
+  function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed){
+    var img = el('img', {src: primarySrc, alt:''});
+    var triedFallback = false;
+    img.addEventListener('error', function(){
+      if (!triedFallback && fallbackDataUrl && fallbackDataUrl !== primarySrc){
+        triedFallback = true;
+        img.src = fallbackDataUrl;
+        return;
+      }
+      if (img.parentNode) img.parentNode.removeChild(img);
+      if (onAllFailed) onAllFailed();
+    });
+    return img;
+  }
+
   /* ---- 曲数からの自動計算（下埋め時間・料金） ---- */
   var COLOR_ORDER = ['緑','黄','赤','紫','白'];
   var SEC_PER_CHART = 204; // 3分24秒（基準タイム）
@@ -523,6 +556,79 @@
     }
     searchInput.addEventListener('input', renderResults);
     renderResults();
+
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
+  /* バージョンを選ぶと、そのバージョンの制覇系プレート（極/将/神/舞舞）をまとめて返すピッカー */
+  function openVersionPlatePicker(onPick){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('p', {text:'バージョンを選ぶと、そのプレートをまとめて配置します', style:{marginBottom:'8px'}}));
+
+    var listWrap = el('div', {class:'song-picker-list'});
+    box.appendChild(listWrap);
+
+    var seen = [];
+    PLATE_MASTER_LIST.forEach(function(p){
+      if (seen.indexOf(p.ver) < 0) seen.push(p.ver);
+    });
+    seen.forEach(function(ver){
+      var plates = PLATE_MASTER_LIST.filter(function(p){ return p.ver === ver; });
+      listWrap.appendChild(el('button', {
+        class:'song-pick-row',
+        text: ver + '　（' + plates.map(function(p){ return p.name; }).join(' / ') + '）',
+        onclick: function(){ closeModal(backdrop); onPick(plates); }
+      }));
+    });
+
+    var actions = el('div', {class:'modal-actions', style:{marginTop:'10px'}});
+    actions.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+    box.appendChild(actions);
+
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
+  /* 全カテゴリからプレートを1枚選ぶピッカー */
+  function openAnyPlatePicker(onPick){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('p', {text:'プレートを選択', style:{marginBottom:'8px'}}));
+
+    var searchInput = el('input', {type:'text', placeholder:'プレート名・バージョン名で検索', class:'song-picker-search'});
+    box.appendChild(searchInput);
+    var listWrap = el('div', {class:'song-picker-list'});
+    box.appendChild(listWrap);
+
+    function renderResults(){
+      listWrap.textContent = '';
+      var q = searchInput.value.trim().toLowerCase();
+      var matches = PLATE_MASTER_LIST.filter(function(p){
+        if (!q) return true;
+        return p.name.toLowerCase().indexOf(q) >= 0 || p.ver.toLowerCase().indexOf(q) >= 0;
+      });
+      if (matches.length === 0){
+        listWrap.appendChild(el('div', {class:'note', text:'該当するプレートがありません'}));
+        return;
+      }
+      matches.forEach(function(p){
+        listWrap.appendChild(el('button', {
+          class:'song-pick-row',
+          text: p.name + '　（' + p.ver + '）',
+          onclick: function(){ closeModal(backdrop); onPick(p); }
+        }));
+      });
+    }
+    searchInput.addEventListener('input', renderResults);
+    renderResults();
+
+    var actions = el('div', {class:'modal-actions', style:{marginTop:'10px'}});
+    actions.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+    box.appendChild(actions);
 
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
@@ -1257,6 +1363,26 @@
   function getCachedPlateBadge(name){ return (name && plateBadgeCache[name]) ? plateBadgeCache[name] : ''; }
   function setCachedPlateBadge(name, dataUrl){ if (!name) return; plateBadgeCache[name] = dataUrl; persistPlateBadgeCache(); }
 
+  /* ---- 開発者があらかじめ用意したプレート画像 ----
+     index.html と同じ場所に plates/ フォルダを置き、「プレート名.png」で画像を入れておくと、
+     プレート名を選んだ時点で全ての閲覧者にその画像が自動で表示されます。
+     例: plates/超極.png, plates/舞舞舞.png
+     画像が無い場合はエラーにならず、これまで通り各自のアップロード画像／名前表示にフォールバックします。 */
+  var PLATE_IMAGE_DIR = 'plates/';
+  var PLATE_IMAGE_EXT = '.png';
+  function getBundledPlateImage(name){
+    if (!name) return '';
+    return PLATE_IMAGE_DIR + encodeURIComponent(name) + PLATE_IMAGE_EXT;
+  }
+  /* 優先順位: 開発者が用意した画像 → 各自がアップロードした画像 */
+  function resolvePlateImage(name){
+    return getBundledPlateImage(name) || getCachedPlateBadge(name);
+  }
+  /* 画像の読み込みに失敗したら、キャッシュ画像→名前表示の順にフォールバックする img を作る */
+  function makePlateImg(plateName, fallbackDataUrl, onAllFailed){
+    return makeResolvedImg(resolvePlateImage(plateName), fallbackDataUrl, onAllFailed);
+  }
+
   /* ---- 楽曲名から、いずれかの楽曲難易度表での判定ランクを検索（実績プレート表との連携表示に使用） ---- */
   function findSongRankInfo(name){
     if (!name) return null;
@@ -1334,10 +1460,15 @@
         var grid = el('div', {class:'pv-thumb-grid'});
         visibleSongs.forEach(function(song){
           var wrap = el('div', {style:{display:'flex', flexDirection:'column', alignItems:'center', gap:'2px'}});
-          var t = el('div', {class:'pv-thumb' + (song.img ? '' : ' no-img')});
-          if (song.img){
-            t.appendChild(el('img', {src: song.img, alt:''}));
+          var t = el('div', {class:'pv-thumb'});
+          var srcS = song.img || resolveSongImage(song.name);
+          if (srcS){
+            t.appendChild(makeResolvedImg(srcS, getCachedSongImage(song.name), function(){
+              t.className = 'pv-thumb no-img';
+              t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
+            }));
           } else {
+            t.className = 'pv-thumb no-img';
             t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
           }
           if (song.name){
@@ -1364,7 +1495,16 @@
       var badgeWrap = el('div', {class:'pv-badges'});
       v.badges.forEach(function(badge){
         var b = el('div', {class:'pv-badge-img'});
-        b.appendChild(el('img', {src: badge.img, alt:''}));
+        var srcB = badge.img || resolvePlateImage(badge.name);
+        if (srcB){
+          b.appendChild(makeResolvedImg(srcB, getCachedPlateBadge(badge.name), function(){
+            b.classList.add('no-img');
+            b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
+          }));
+        } else {
+          b.classList.add('no-img');
+          b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
+        }
         badgeWrap.appendChild(b);
       });
       card.appendChild(badgeWrap);
@@ -1500,7 +1640,7 @@
           if (s.hidden) return;
           if (shown >= 6) return;
           var t = el('div', {class:'vc-thumb'});
-          t.appendChild(el('img', {src: s.img, alt:''}));
+          t.appendChild(makeResolvedImg(s.img || resolveSongImage(s.name), getCachedSongImage(s.name), null));
           if (s.slashed) t.appendChild(el('div', {class:'slash-overlay'}));
           thumbs.appendChild(t);
           shown++;
@@ -1744,8 +1884,8 @@
         var grid2 = el('div', {class:'thumb-grid'});
         level.songs.forEach(function(song){
           var thumbItem = el('div', {class:'thumb-item'});
-          var hasImg = !!song.img;
-          var thumb = el('div', {class:'thumb' + (song.hidden ? ' is-hidden' : '') + (hasImg ? '' : ' no-img')});
+          var srcSong = song.img || resolveSongImage(song.name);
+          var thumb = el('div', {class:'thumb' + (song.hidden ? ' is-hidden' : '')});
 
           var perSongFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
           perSongFileInput.addEventListener('change', function(){
@@ -1760,15 +1900,19 @@
             });
           });
 
-          if (hasImg){
-            thumb.appendChild(el('img', {src: song.img, alt:''}));
-          } else {
+          function songFallbackA(){
+            thumb.classList.add('no-img');
             thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
             thumb.title = 'クリックして画像を追加';
             thumb.addEventListener('click', function(e){
               if (e.target.tagName === 'BUTTON') return;
               perSongFileInput.click();
             });
+          }
+          if (srcSong){
+            thumb.appendChild(makeResolvedImg(srcSong, getCachedSongImage(song.name), songFallbackA));
+          } else {
+            songFallbackA();
           }
           if (song.name){
             thumb.appendChild(el('div', {class:'song-name-tag', text: song.name}));
@@ -1822,7 +1966,7 @@
           openSongPicker(function(picked){
             level.songs.push({
               id: uid(),
-              img: getCachedSongImage(picked.name),
+              img: resolveSongImage(picked.name),
               name: picked.name,
               slashed: false,
               hidden: false
@@ -1850,7 +1994,16 @@
       var grid = el('div', {class:'badge-thumb-grid'});
       draft.badges.forEach(function(badge){
         var thumb = el('div', {class:'badge-thumb'});
-        thumb.appendChild(el('img', {src: badge.img, alt:''}));
+        var srcB = badge.img || resolvePlateImage(badge.name);
+        if (srcB){
+          thumb.appendChild(makeResolvedImg(srcB, getCachedPlateBadge(badge.name), function(){
+            thumb.classList.add('no-img');
+            thumb.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
+          }));
+        } else {
+          thumb.classList.add('no-img');
+          thumb.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
+        }
         thumb.appendChild(el('button', {text:'×', onclick: function(){
           draft.badges = draft.badges.filter(function(b){ return b.id !== badge.id; });
           renderBadgesEditor();
@@ -1863,17 +2016,35 @@
       fileInput.addEventListener('change', function(){
         var files = Array.prototype.slice.call(fileInput.files || []);
         Promise.all(files.map(function(f){ return resizeImageFile(f, 480, 0.85); })).then(function(dataUrls){
-          dataUrls.forEach(function(url){ draft.badges.push({ id: uid(), img: url }); });
+          dataUrls.forEach(function(url){ draft.badges.push({ id: uid(), img: url, name: '' }); });
           renderBadgesEditor();
           refreshPreview();
         }).catch(function(){
           showAlert('画像の読み込みに失敗しました。別の画像でお試しください。');
         });
       });
-      var addThumbBtn = el('div', {class:'badge-thumb-add', text:'＋', title:'プレート画像を追加', onclick: function(){ fileInput.click(); }});
-      grid.appendChild(addThumbBtn);
+      grid.appendChild(el('div', {class:'badge-thumb-add', text:'＋', title:'画像をアップロードして追加', onclick: function(){ fileInput.click(); }}));
       badgesEditorContainer.appendChild(grid);
       badgesEditorContainer.appendChild(fileInput);
+
+      var btnRow = el('div', {style:{display:'flex', flexWrap:'wrap', gap:'8px', marginTop:'10px'}});
+      btnRow.appendChild(el('button', {class:'btn btn-sm', text:'バージョンのプレートを一括配置', onclick: function(){
+        openVersionPlatePicker(function(plates){
+          plates.forEach(function(p){
+            draft.badges.push({ id: uid(), name: p.name, img: resolvePlateImage(p.name) });
+          });
+          renderBadgesEditor();
+          refreshPreview();
+        });
+      }}));
+      btnRow.appendChild(el('button', {class:'btn btn-sm', text:'プレートを1枚選ぶ', onclick: function(){
+        openAnyPlatePicker(function(picked){
+          draft.badges.push({ id: uid(), name: picked.name, img: resolvePlateImage(picked.name) });
+          renderBadgesEditor();
+          refreshPreview();
+        });
+      }}));
+      badgesEditorContainer.appendChild(btnRow);
     }
 
     renderLevelsEditor();
@@ -2013,10 +2184,15 @@
         } else {
           var grid = el('div', {class:'pv-thumb-grid'});
           songs.forEach(function(song){
-            var t2 = el('div', {class:'pv-thumb' + (song.img ? '' : ' no-img')});
-            if (song.img){
-              t2.appendChild(el('img', {src: song.img, alt:''}));
+            var t2 = el('div', {class:'pv-thumb'});
+            var srcS2 = song.img || resolveSongImage(song.name);
+            if (srcS2){
+              t2.appendChild(makeResolvedImg(srcS2, getCachedSongImage(song.name), function(){
+                t2.className = 'pv-thumb no-img';
+                t2.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
+              }));
             } else {
+              t2.className = 'pv-thumb no-img';
               t2.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
             }
             if (song.name){
@@ -2075,14 +2251,22 @@
           var grid = el('div', {class:'ptier-grid'});
           plates.forEach(function(p){
             var cell = el('div', {class:'ptier-cell'});
-            var thumb = el('div', {class:'ptier-badge-thumb' + (p.img ? '' : ' no-img')});
-            if (p.img){
-              thumb.appendChild(el('img', {src: p.img, alt:''}));
+            var thumb = el('div', {class:'ptier-badge-thumb'});
+            var nameLabel = el('div', {class:'ptier-cell-name', text: p.name});
+            var srcImg = p.img || resolvePlateImage(p.name);
+            if (srcImg){
+              thumb.appendChild(makePlateImg(p.name, getCachedPlateBadge(p.name), function(){
+                /* 画像が用意されていない場合は名前表示にフォールバック */
+                thumb.className = 'ptier-badge-thumb no-img';
+                thumb.appendChild(el('span', {class:'placeholder-text', text: p.name}));
+                if (nameLabel.parentNode) nameLabel.parentNode.removeChild(nameLabel);
+              }));
             } else {
+              thumb.className = 'ptier-badge-thumb no-img';
               thumb.appendChild(el('span', {class:'placeholder-text', text: p.name}));
             }
             cell.appendChild(thumb);
-            if (p.img) cell.appendChild(el('div', {class:'ptier-cell-name', text: p.name}));
+            if (srcImg) cell.appendChild(nameLabel);
             grid.appendChild(cell);
           });
           g.appendChild(grid);
@@ -2223,8 +2407,8 @@
           var grid2 = el('div', {class:'thumb-grid'});
           (rank[key] || []).forEach(function(song){
             var item = el('div', {class:'thumb-item'});
-            var hasImg = !!song.img;
-            var thumb = el('div', {class:'thumb' + (hasImg ? '' : ' no-img')});
+            var srcSong = song.img || resolveSongImage(song.name);
+            var thumb = el('div', {class:'thumb'});
 
             var perSongFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
             perSongFileInput.addEventListener('change', function(){
@@ -2239,15 +2423,19 @@
               });
             });
 
-            if (hasImg){
-              thumb.appendChild(el('img', {src: song.img, alt:''}));
-            } else {
+            function songFallbackB(){
+              thumb.classList.add('no-img');
               thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
               thumb.title = 'クリックして画像を追加';
               thumb.addEventListener('click', function(e){
                 if (e.target.tagName === 'BUTTON') return;
                 perSongFileInput.click();
               });
+            }
+            if (srcSong){
+              thumb.appendChild(makeResolvedImg(srcSong, getCachedSongImage(song.name), songFallbackB));
+            } else {
+              songFallbackB();
             }
             if (song.name){
               thumb.appendChild(el('div', {class:'song-name-tag', text: song.name}));
@@ -2295,7 +2483,7 @@
             openSongPicker(function(picked){
               rank[key].push({
                 id: uid(),
-                img: getCachedSongImage(picked.name),
+                img: resolveSongImage(picked.name),
                 name: picked.name,
                 leftRight: false,
                 plate: ''
@@ -2495,7 +2683,7 @@
           var grid2 = el('div', {class:'thumb-grid'});
           (rank[key] || []).forEach(function(p){
             var item = el('div', {class:'thumb-item', style:{width:'92px'}});
-            var thumb = el('div', {class:'thumb' + (p.img ? '' : ' no-img'), style:{width:'92px', height:'34px'}});
+            var thumb = el('div', {class:'thumb', style:{width:'92px', height:'34px'}});
 
             var perFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
             perFileInput.addEventListener('change', function(){
@@ -2510,15 +2698,22 @@
               });
             });
 
-            if (p.img){
-              thumb.appendChild(el('img', {src: p.img, alt:'', style:{objectFit:'contain'}}));
-            } else {
+            function showPlateNameFallback(){
+              thumb.className = 'thumb no-img';
               thumb.appendChild(el('div', {class:'placeholder-text', text: p.name}));
               thumb.title = 'クリックして画像を追加';
               thumb.addEventListener('click', function(e){
                 if (e.target.tagName === 'BUTTON') return;
                 perFileInput.click();
               });
+            }
+            var srcImg = p.img || resolvePlateImage(p.name);
+            if (srcImg){
+              var pimg = makePlateImg(p.name, getCachedPlateBadge(p.name), showPlateNameFallback);
+              pimg.style.objectFit = 'contain';
+              thumb.appendChild(pimg);
+            } else {
+              showPlateNameFallback();
             }
             thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
               rank[key] = rank[key].filter(function(x){ return x.id !== p.id; });
@@ -2535,7 +2730,7 @@
               rank[key].push({
                 id: uid(),
                 name: picked.name,
-                img: getCachedPlateBadge(picked.name),
+                img: resolvePlateImage(picked.name),
                 leftRight: false
               });
               renderRanksEditor(); refreshPreview();
