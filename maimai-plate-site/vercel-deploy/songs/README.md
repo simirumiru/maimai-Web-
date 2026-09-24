@@ -1,0 +1,340 @@
+# songs フォルダ — 楽曲ジャケット画像の置き場所
+
+ここに画像を置くと、曲名を選んだ時点で**自動的にその画像が入り**、サイトを見ている全員に同じ画像が表示されます。
+
+## 使い方
+
+1. 画像ファイル名を「**曲名.png**」にする（下のリスト参照）
+2. このフォルダに入れる
+3. `index.html` と一緒にデプロイする
+
+## 1枚置けば全箇所に反映されます
+
+同じ曲名を使っている場所すべてに自動で反映されます:
+
+- 実績プレート表の収録曲
+- 楽曲難易度表（Lv.14+ / Lv.14 の両方）
+
+## 注意
+
+- ファイル名は曲名と**完全一致**させてください
+- 拡張子は `.png` 固定です
+- 画像が無い曲は名前表示のままになり、各自が個別にアップロードもできます
+  （**全部揃えなくても、用意した分だけ反映されます**）
+
+## 必要なファイル名一覧
+
+
+### Lv.14+（83曲）
+
+- 7 Wonders.png
+- Xaleid◆scopiX.png
+- World’s end BLACKBOX.png
+- 宙天.png
+- raputa.png
+- Latent Kingdom.png
+- World’s end loneliness.png
+- sølips.png
+- 躯樹の墓守.png
+- PANDORA PARADOXXX.png
+- the EmpErroR.png
+- Schwarzschild.png
+- QZKago Requiem.png
+- Aegisfortia.png
+- False Amber(from the Black Bazaar, Or by A Kervan Trader from the Lands Afar, Or Buried Beneath the Shifting Sands That Lead Everywhere but Nowhere).png
+- Customized Justice.png
+- FLΛME/FRΦST.png
+- Divide et impera!.png
+- 氷滅の135小節.png
+- ℝ∈Χ LUNATiCA.png
+- Straight into the lights.png
+- VeRForTe αRtE:VEiN.png
+- WiPE OUT MEMORIES.png
+- チューリングの跡.png
+- Heavenly Blast.png
+- 封焔の135秒.png
+- SILENT BLUE.png
+- larva.png
+- Excalibur ～Revived resolution～.png
+- Our Wrenally.png
+- Glorious Crown.png
+- 怒槌.png
+- In Chaos.png
+- 雷切-RAIKIRI-.png
+- Alea jacta est!.png
+- Garakuta Doll Play.png
+- Re:Unknown X.png
+- ANiMA.png
+- End Time.png
+- Break The Speakers.png
+- Sky Trails.png
+- ATLAS RUSH.png
+- 系ぎて.png
+- KHYMΞXΛ.png
+- 康莊大道.png
+- Metamorphosism.png
+- GIGANTØMAKHIA.png
+- Lia=Fail.png
+- VIIIbit Explorer.png
+- Regulus.png
+- Valsqotch.png
+- TEmPTaTiON.png
+- AMAZING MIGHTYYYY!!!!.png
+- VERTeX.png
+- Apollo.png
+- LAMIA.png
+- ガラテアの螺旋.png
+- 零號車輛.png
+- 神威.png
+- Credits.png
+- Get U ♭ack.png
+- Åntinomiε.png
+- 雨露霜雪.png
+- Cryptarithm.png
+- IF:U.png
+- 超熊猫的周遊記（ワンダーパンダートラベラー）.png
+- VERTeX （rintaro soma deconstructed remix）.png
+- ViRTUS.png
+- ジングルベル.png
+- mystique as iris.png
+- Yorugao.png
+- BLACK SWAN.png
+- BREaK! BREaK! BREaK!.png
+- AMABIE.png
+- 渦状銀河のシンフォニエッタ.png
+- Prophesy One.png
+- ラストピースに祝福と栄光を.png
+- Λzure Vixen.png
+- 脳天直撃.png
+- Titania.png
+- TiamaT:F minor.png
+- 源平大戦絵巻テーマソング.png
+- Fragrance.png
+
+### Lv.14（225曲）
+
+- ヤミナベ!!!!.png
+- 初音ミクの消失.png
+- 初音ミクの激唱.png
+- Myosotis.png
+- Hurtling Boys.png
+- MYTH Re：LEASE.png
+- Abstruse Dilemma.png
+- QUATTUORUX.png
+- ouroboros -twin stroke of the end-.png
+- 最強STRONGER.png
+- Aegleseeker.png
+- BATTLE NO.1.png
+- FUJIN Rumble.png
+- Ignis Danse.png
+- RONDØ.png
+- RondeauX of RagnaroQ.png
+- Bloody Trail.png
+- VIIIbit Explorer.png
+- Sage.png
+- Strive against fate.png
+- Raven Emperor.png
+- BIRTH.png
+- Sqlupp(Camellia's Sqleipd*Hiytex Remix).png
+- アポカリプスに反逆の焔を焚べろ.png
+- ねぇ、壊れタ人形ハ何処へ棄テらレるノ？.png
+- CITRUS MONSTER.png
+- Oshama Scramble!.png
+- Axeria.png
+- MarbleBlue..png
+- Falsum Atlantis..png
+- Dragoon.png
+- Beat of getting entangled.png
+- FFT.png
+- AMAZING MIGHTYYYY!!!!.png
+- AiAe.png
+- Retribution ～ Cycle of Redemption ～.png
+- 天使光輪.png
+- PUPA.png
+- Mjölnir.png
+- Re：End of a Dream.png
+- CO5M1C R4ILR0AD.png
+- felys -final remix-.png
+- 極圏.png
+- 華天月兎.png
+- 有明/Ariake.png
+- Deicide.png
+- QuiQ.png
+- Energizing Flame.png
+- Rising on the horizon.png
+- #狂った民族２ PRAVARGYAZOOQA.png
+- Trick tear.png
+- ほしぞらスペクタクル.png
+- ≠彡"/了→.png
+- ARAIS.png
+- UniTas.png
+- Alea jacta est!.png
+- Moon of Noon.png
+- Panopticon.png
+- Contrapasso -paradiso-.png
+- 7thSense.png
+- MYTHOS.png
+- System “Z”.png
+- ジングルベル.png
+- Zitronectar.png
+- GEOMETRIC DANCE.png
+- FLUFFY FLASH.png
+- スピカの天秤.png
+- YURUSHITE.png
+- ナイト・オブ・ナイツ.png
+- YA・DA・YO ［Reborn］.png
+- Revive The Rave.png
+- バーチャルダム ネーション.png
+- るろうらんる.png
+- ZEUS.png
+- ニルヴの心臓.png
+- ∀.png
+- Destined Marionette.png
+- 田中.png
+- Halcyon.png
+- 終幕の傀儡.png
+- クロノイデア.png
+- DEVOTION.png
+- 渦状銀河のシンフォニエッタ.png
+- Party☆People☆Princess.png
+- 地球.png
+- VSpook!.png
+- “411Ψ892”.png
+- Swift Swing.png
+- N3V3R G3T OV3R.png
+- U&iVERSE -銀河鸞翔-.png
+- チエルカ／エソテリカ.png
+- Xenovcipher.png
+- STEEL TRANSONIC.png
+- Schwarzschild.png
+- 花と、雪と、ドラムンベース。.png
+- HERA.png
+- Aiolos.png
+- Caliburne ～Story of the Legendary sword～.png
+- Galaxy Blaster.png
+- SQUAD-Phvntom-.png
+- Trrricksters!!.png
+- Hainuwele.png
+- 電光石火.png
+- SUPER AMBULANCE.png
+- 宿星審判.png
+- MEGATON BLAST.png
+- Climax.png
+- Xevel.png
+- World Vanquisher.png
+- エンドマークに希望と涙を添えて.png
+- マツヨイナイトバグ.png
+- 記憶、記録.png
+- Blows Up Everything.png
+- デッドマンズバラッド.png
+- Absolute Queen.png
+- Calamity Fortune.png
+- Overjoy ★ OVERDOSE!!.png
+- Chronomia.png
+- ミラクルポップ☆アドベンチャー!!!!!.png
+- BULK UP (GAME EXCLUSIVE EDIT).png
+- Cthugha.png
+- Destr0yer.png
+- 竹.png
+- Grievous Lady.png
+- Maboroshi.png
+- B.M.S..png
+- Scarlet Lance.png
+- conflict.png
+- きたさいたま2000.png
+- SERAPHIC SYNDROME.png
+- 殿ッ！？ご乱心！？.png
+- AFTER PANDORA.png
+- 忙シー日.png
+- 勦滅.png
+- Garakuta Doll Play.png
+- Fragrance.png
+- Daredevil Glaive.png
+- Dazzle hop.png
+- Elemental Ethnic.png
+- インパアフェクシオン・ホワイトガアル.png
+- 蜘蛛の糸.png
+- Desperado Waltz.png
+- ロストワンの号哭.png
+- FLOWER.png
+- Beat Of Mind.png
+- MAXRAGE.png
+- Death Scythe.png
+- おべんきょうたいむ.png
+- 脳漿炸裂ガール.png
+- 幻想のサテライト.png
+- JINGLE DEATH.png
+- Eureka.png
+- Synthesis..png
+- HYP3RTRIBE.png
+- Love’s Theme of BADASS ～バッド・アス 愛のテーマ～.png
+- BLUE ZONE.png
+- FREEDOM DiVE (tpz Overcute Remix).png
+- 麒麟.png
+- METATRON.png
+- Got more raves？.png
+- Jack-the-Ripper◆.png
+- ソテリア.png
+- 鬼女紅妖.png
+- IMBRUED:FLUX.png
+- 火炎地獄.png
+- HECATONCHEIR.png
+- NAGAREBOSHI☆ROCKET.png
+- ワンダーシャッフェンの法則.png
+- Ragnarok.png
+- Lividi.png
+- Nerverakes.png
+- 色彩過剰のダイアリーミュージック.png
+- R'N'R Monsta.png
+- 美夜月鏡.png
+- Don't Fight The Music.png
+- エータ・ベータ・イータ.png
+- Good bye, Merry-Go-Round..png
+- カゲロウデイズ.png
+- Unwelcome School.png
+- Aetheric Energy.png
+- Now or Never.png
+- 幸せになれる隠しコマンドがあるらしい.png
+- 超ナイト・オブ・ナイツ.png
+- taboo tears you up.png
+- もうみんなしねばいいのに.png
+- ウサテイ.png
+- DATAERR0R.png
+- INFiNiTE ENERZY -Overdoze-.png
+- Vallista.png
+- ULTRA SYNERGY MATRIX.png
+- 僕の和風本当上手.png
+- Luminaria.png
+- 魔法少女になるしかねぇ.png
+- 人里に下ったアタイがいつの間にか社畜になっていた件.png
+- Maxi.png
+- 夜明けまであと３秒.png
+- B.B.K.K.B.K.K..png
+- Outlaw's Lullaby.png
+- Ref:rain (for 7th Heaven).png
+- 砂の函.png
+- 184億回のマルチトニック.png
+- The Great Banquet.png
+- Horoscope Express.png
+- Beat Opera op.1.png
+- Tricolor⁂circuS.png
+- パラマウント☆ショータイム！！.png
+- Alcyone.png
+- 星詠みとデスペラード.png
+- Starry Colors.png
+- Mutation.png
+- Justified.png
+- Ultranova.png
+- 天火明命.png
+- 分からない.png
+- Jumble Rumble.png
+- Nitrous Fury.png
+- JIGOKU STATION CENTRAL GATE.png
+- Ai C.png
+- WE’RE BACK!!.png
+- The wheel to the right.png
+- シリウスの輝きのように.png
+- Sun Dance.png
+- 患部で止まってすぐ溶ける～狂気の優曇華院.png
+- 一か罰.png
+- アージェントシンメトリー.png
