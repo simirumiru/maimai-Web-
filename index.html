@@ -115,6 +115,8 @@
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px;}
   .field input[type=text]{width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 10px;font-size:13.5px;}
+  .version-select{width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:9px 10px;font-size:13.5px;}
   input[type=number]{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13.5px;width:100px;}
   .auto-calc-box{background:var(--panel-2);border:1px dashed var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
   .auto-calc-box .title{font-size:12px;color:var(--text-dim);margin-bottom:8px;}
@@ -595,38 +597,6 @@
     document.body.appendChild(backdrop);
   }
 
-  /* バージョンを選ぶと、そのバージョンの制覇系プレート（極/将/神/舞舞）をまとめて返すピッカー */
-  function openVersionPlatePicker(onPick){
-    var backdrop = el('div', {class:'modal-backdrop'});
-    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
-    box.appendChild(el('p', {text:'バージョンを選ぶと、そのプレートをまとめて配置します', style:{marginBottom:'8px'}}));
-
-    var listWrap = el('div', {class:'song-picker-list'});
-    box.appendChild(listWrap);
-
-    var seen = [];
-    PLATE_MASTER_LIST.forEach(function(p){
-      if (seen.indexOf(p.ver) < 0) seen.push(p.ver);
-    });
-    seen.forEach(function(ver){
-      var plates = PLATE_MASTER_LIST.filter(function(p){ return p.ver === ver; });
-      var label = plates[0].vlabel || ver;
-      var pre = plates[0].pre;
-      listWrap.appendChild(el('button', {
-        class:'song-pick-row',
-        text: pre ? (label + '　（' + pre + '）') : label,
-        onclick: function(){ closeModal(backdrop); onPick(plates); }
-      }));
-    });
-
-    var actions = el('div', {class:'modal-actions', style:{marginTop:'10px'}});
-    actions.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
-    box.appendChild(actions);
-
-    backdrop.appendChild(box);
-    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
-    document.body.appendChild(backdrop);
-  }
 
 
 
@@ -955,6 +925,40 @@
 
 
   /* プレート種別ごとの一覧バーの色 */
+  /* バージョン選択の一覧（舞・覇者は別枠なので除外）。表示例: maimai でらっくす UNiVERSE〈宙ver.〉 */
+  function versionTemplateLabel(ver, pre){
+    return ver + '〈' + pre + 'ver.〉';
+  }
+  function versionOptions(){
+    var seen = [], out = [];
+    PLATE_MASTER_LIST.forEach(function(p){
+      if (p.ver === '舞 ＆ 覇者対象Re:MASTER') return;
+      if (seen.indexOf(p.ver) >= 0) return;
+      seen.push(p.ver);
+      out.push({ ver: p.ver, pre: p.pre, label: versionTemplateLabel(p.ver, p.pre) });
+    });
+    return out;
+  }
+  function platesOfVersion(ver){
+    return PLATE_MASTER_LIST.filter(function(p){ return p.ver === ver; });
+  }
+  /* 極→将→神→舞舞 の順に並べ替える */
+  function sortBadgesByCategory(badges){
+    var order = { '極':0, '将':1, '神':2, '舞舞':3 };
+    function catOf(name){
+      for (var i = 0; i < PLATE_MASTER_LIST.length; i++){
+        if (PLATE_MASTER_LIST[i].name === name) return PLATE_MASTER_LIST[i].cat;
+      }
+      return '';
+    }
+    return badges.slice().sort(function(a, b){
+      var ao = order[catOf(a.name)], bo = order[catOf(b.name)];
+      if (ao === undefined) ao = 99;
+      if (bo === undefined) bo = 99;
+      return ao - bo;
+    });
+  }
+
   function plateCategorySwatch(cat){
     if (cat === '極') return '#4fc3f7';                                   /* 水色 */
     if (cat === '将') return '#c2185b';                                   /* 赤紫 */
@@ -1439,8 +1443,7 @@
     if (v.badges.length === 0){
       card.appendChild(el('div', {class:'pv-empty', text:'（実績プレート画像未追加）'}));
     } else {
-      var badgeWrap = el('div', {class:'pv-badges'});
-      v.badges.forEach(function(badge){
+      function makeBadgeNode(badge){
         var b = el('div', {class:'pv-badge-img'});
         var srcB = badge.img || resolveBadgeImage(badge.name);
         if (srcB){
@@ -1452,9 +1455,23 @@
           b.classList.add('no-img');
           b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
         }
-        badgeWrap.appendChild(b);
+        return b;
+      }
+      function badgeCat(name){
+        for (var i = 0; i < PLATE_MASTER_LIST.length; i++){
+          if (PLATE_MASTER_LIST[i].name === name) return PLATE_MASTER_LIST[i].cat;
+        }
+        return '';
+      }
+      var topRow = el('div', {class:'pv-badges'});
+      var bottomRow = el('div', {class:'pv-badges'});
+      v.badges.forEach(function(badge){
+        var node = makeBadgeNode(badge);
+        if (badgeCat(badge.name) === '舞舞') bottomRow.appendChild(node);
+        else topRow.appendChild(node);
       });
-      card.appendChild(badgeWrap);
+      if (topRow.childNodes.length) card.appendChild(topRow);
+      if (bottomRow.childNodes.length) card.appendChild(bottomRow);
     }
 
     return card;
@@ -1544,7 +1561,6 @@
         card.appendChild(el('div', {class:'vc-meta', text:
           '実績フレーム表　' + ((v.jewels || []).length) + '種　更新 ' + fmtDate(v.updatedAt)}));
         card.appendChild(el('div', {class:'vc-thumbs'}));
-        card.appendChild(el('div', {class:'vc-badges', text:'Jewel ' + ((v.jewels || []).length * 3) + '枠'}));
       } else {
         var songCount = v.levels.reduce(function(sum, l){ return sum + l.songs.length; }, 0);
         var meta = el('div', {class:'vc-meta'});
@@ -1566,7 +1582,6 @@
           });
         });
         card.appendChild(thumbs);
-        card.appendChild(el('div', {class:'vc-badges', text: '実績プレート ' + v.badges.length + '枚'}));
       }
 
       if (canEdit()){
@@ -1648,14 +1663,32 @@
 
     var row0 = el('div', {class:'row2'});
     var nameField = el('div', {class:'field'});
-    nameField.appendChild(el('label', {text:'バージョン名'}));
-    var nameInput = el('input', {type:'text'});
-    nameInput.value = draft.versionName;
-    nameInput.addEventListener('input', function(){ draft.versionName = nameInput.value; refreshPreview(); });
-    nameField.appendChild(nameInput);
+    nameField.appendChild(el('label', {text:'バージョン'}));
+    var nameSelect = el('select', {class:'version-select'});
+    nameSelect.appendChild(el('option', {value:''}, ['（選択してください）']));
+    versionOptions().forEach(function(o){
+      var opt = el('option', {value: o.ver}, [o.label]);
+      if (draft.versionName === o.label) opt.selected = true;
+      nameSelect.appendChild(opt);
+    });
+    nameSelect.addEventListener('change', function(){
+      var ver = nameSelect.value;
+      if (!ver){ return; }
+      var opt = versionOptions().filter(function(o){ return o.ver === ver; })[0];
+      draft.versionName = opt.label;
+      /* 選んだバージョンのプレートを自動で配置（極→将→神→舞舞 の順） */
+      draft.badges = sortBadgesByCategory(platesOfVersion(ver).map(function(p){
+        return { id: uid(), name: p.name, img: resolvePlateImage(p.name) };
+      }));
+      if (typeof renderBadgesEditor === 'function') renderBadgesEditor();
+      refreshPreview();
+    });
+    nameField.appendChild(nameSelect);
     row0.appendChild(nameField);
     row0.appendChild(colorPickerField('バージョン名の色', function(){ return draft.versionNameColor || '#f2f4f8'; }, function(v){ draft.versionNameColor = v; }));
     infoCard.appendChild(row0);
+
+    infoCard.appendChild(colorPickerField('一覧バーの色', function(){ return draft.themeColor || '#7ee787'; }, function(v){ draft.themeColor = v; }));
 
     var row2a = el('div', {class:'row2'});
     var rangeField = el('div', {class:'field'});
@@ -1895,23 +1928,10 @@
       });
       badgesEditorContainer.appendChild(grid);
 
-      /* プレートは1バージョン分だけ。すでに配置済みなら追加ボタンを出さない */
-      if (draft.badges.length === 0){
-        var btnRow = el('div', {style:{display:'flex', flexWrap:'wrap', gap:'8px', marginTop:'10px'}});
-        btnRow.appendChild(el('button', {class:'btn btn-sm', text:'バージョンのプレートを配置', onclick: function(){
-          openVersionPlatePicker(function(plates){
-            plates.forEach(function(p){
-              draft.badges.push({ id: uid(), name: p.name, img: resolvePlateImage(p.name) });
-            });
-            renderBadgesEditor();
-            refreshPreview();
-          });
-        }}));
-        badgesEditorContainer.appendChild(btnRow);
-      } else {
-        badgesEditorContainer.appendChild(el('div', {class:'note', style:{marginTop:'10px'},
-          text:'配置済みです（' + draft.badges.length + '枚）。別のバージョンに変えるには、上の×で全て削除してください。'}));
-      }
+      badgesEditorContainer.appendChild(el('div', {class:'note', style:{marginTop:'10px'},
+        text: draft.badges.length === 0
+          ? '上の「バージョン」を選ぶと、そのバージョンのプレートが自動で並びます。'
+          : '「バージョン」を選び直すと入れ替わります。'}));
     }
 
     renderLevelsEditor();
