@@ -57,8 +57,12 @@
   .sync-dot.readonly{background:#ffe14f;}
   .sync-dot.admin{background:#7ee787;}
   .sync-text{color:var(--text-dim);flex:1;min-width:0;}
-  .readonly-banner{background:#12283a;border:1px solid #1f5a8a;color:#a9d8ff;border-radius:10px;padding:10px 14px;
-    font-size:12.5px;margin-bottom:18px;}
+  .readonly-banner{background:#12283a;border:1px solid #1f5a8a;color:#a9d8ff;border-radius:10px;
+    padding:9px 10px 9px 14px;font-size:12.5px;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+  .readonly-banner-text{flex:1;min-width:0;}
+  .readonly-banner-close{background:transparent;border:none;color:#a9d8ff;font-size:17px;line-height:1;
+    padding:2px 6px;border-radius:6px;flex:none;opacity:.75;}
+  .readonly-banner-close:hover{opacity:1;background:rgba(255,255,255,.08);}
 
   .sync-settings-box{max-width:480px;}
   .sync-settings-box textarea{width:100%;min-height:90px;background:var(--panel-2);border:1px solid var(--border);
@@ -200,6 +204,10 @@
   .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
+  .mark-toggle-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .btn.mark-on{background:#ff5c5c;border-color:#ff5c5c;color:#fff;}
+  .pv-thumb.is-markable{cursor:pointer;}
+  .pv-thumb.is-markable:hover{outline:1px solid var(--accent);}
   .pv-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
   /* プレートは折り返しで自動的に段組みされる:
@@ -736,6 +744,45 @@
 
   /* 閲覧者プレビュー：ONの間は管理者でも閲覧者と同じ表示になる（確認用） */
   var previewAsViewer = false;
+  /* 案内バナーを閉じたか（ページを再読み込みするとまた表示される） */
+  var reviewBannerDismissed = false;
+
+  /* 閲覧者が楽曲につけた赤斜線。端末内（ブラウザ）にのみ保存される */
+  var SONG_MARKS_KEY = 'mmplate_song_marks_v1';
+  function loadSongMarks(){
+    if (!storageOK) return {};
+    try{ var raw = localStorage.getItem(SONG_MARKS_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  }
+  var songMarks = loadSongMarks();
+  function persistSongMarks(){
+    if (!storageOK) return;
+    try{ localStorage.setItem(SONG_MARKS_KEY, JSON.stringify(songMarks)); }catch(e){}
+  }
+  function isSongMarked(versionId, songId){
+    return !!(songMarks[versionId] && songMarks[versionId][songId]);
+  }
+  /* 赤線を表示するかどうか（この端末に保存） */
+  var SONG_MARKS_VISIBLE_KEY = 'mmplate_song_marks_visible_v1';
+  var showSongMarks = (function(){
+    if (!storageOK) return true;
+    try{
+      var raw = localStorage.getItem(SONG_MARKS_VISIBLE_KEY);
+      return raw === null ? true : (raw === '1');
+    }catch(e){ return true; }
+  })();
+  function setShowSongMarks(on){
+    showSongMarks = !!on;
+    if (!storageOK) return;
+    try{ localStorage.setItem(SONG_MARKS_VISIBLE_KEY, showSongMarks ? '1' : '0'); }catch(e){}
+  }
+
+  function toggleSongMark(versionId, songId){
+    if (!songMarks[versionId]) songMarks[versionId] = {};
+    if (songMarks[versionId][songId]) delete songMarks[versionId][songId];
+    else songMarks[versionId][songId] = true;
+    persistSongMarks();
+  }
 
   function canEdit(){
     if (previewAsViewer) return false;
@@ -1442,7 +1489,9 @@
     refreshPreview();
   }
 
-  function buildPreviewNode(v){
+  function buildPreviewNode(v, opts){
+    opts = opts || {};
+    var interactive = !!opts.interactive;   /* 詳細画面のみ：タップで赤斜線 */
     if (v && v.docType === 'jewel') return buildJewelPreviewNode(v);
 
     var card = el('div', {id:'previewCard'});
@@ -1522,7 +1571,26 @@
           if (song.name){
             t.appendChild(el('div', {class:'song-name-tag', text: song.name}));
           }
-          if (song.slashed) t.appendChild(el('div', {class:'slash-overlay'}));
+
+          /* 斜線：作成者が設定したもの or 閲覧者が自分でつけたもの（表示ONのときのみ） */
+          function syncSlash(){
+            var existing = t.querySelector('.slash-overlay');
+            var on = song.slashed || (showSongMarks && isSongMarked(v.id, song.id));
+            if (on && !existing) t.appendChild(el('div', {class:'slash-overlay'}));
+            if (!on && existing) existing.parentNode.removeChild(existing);
+          }
+          syncSlash();
+
+          /* 詳細画面かつ赤線ONのときだけ、タップで付け外しできる */
+          if (interactive && showSongMarks && !song.slashed){
+            t.classList.add('is-markable');
+            t.title = 'タップで斜線をつける／外す';
+            t.addEventListener('click', function(){
+              toggleSongMark(v.id, song.id);
+              syncSlash();
+            });
+          }
+
           wrap.appendChild(t);
           grid.appendChild(wrap);
         });
@@ -1661,11 +1729,32 @@
   }
 
   /* ========================= view: list ========================= */
+  /* 赤線の表示ON/OFFボタン（押すと画面を描き直す） */
+  function makeMarkToggleBar(){
+    var bar = el('div', {class:'mark-toggle-bar'});
+    var btn = el('button', {
+      class: 'btn btn-sm' + (showSongMarks ? ' mark-on' : ' btn-hidden-on'),
+      text: showSongMarks ? '赤線ON' : '赤線OFF',
+      title: '楽曲につけた赤い斜線の表示を切り替えます'
+    });
+    btn.addEventListener('click', function(){
+      setShowSongMarks(!showSongMarks);
+      renderApp();
+    });
+    bar.appendChild(btn);
+    bar.appendChild(el('span', {class:'note', text: showSongMarks
+      ? 'ジャケットをタップして斜線をつけられます（この端末にのみ保存）'
+      : '斜線を隠しています。新しくつけることもできません'}));
+    return bar;
+  }
+
   function renderListView(root){
+    root.appendChild(makeMarkToggleBar());
+
     if (canEdit()){
       var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績プレート表を追加', onclick: goEditNew}));
-      bar.appendChild(el('button', {class:'btn', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
+      bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
       root.appendChild(bar);
     }
 
@@ -1725,8 +1814,10 @@
     root.appendChild(bar);
     root.appendChild(statusEl);
 
+    root.appendChild(makeMarkToggleBar());
+
     var pvHolder = el('div', {class:'preview-wide'});
-    pvHolder.appendChild(buildPreviewNode(v));
+    pvHolder.appendChild(buildPreviewNode(v, { interactive: true }));
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
   }
@@ -2561,7 +2652,15 @@
     /* ホームの同期設定バーは非表示（同期未使用のため）。
        再表示したくなった場合は renderApp() 内の呼び出しを戻す。 */
     if (syncState.connected && !syncState.isAdmin){
-      root.appendChild(el('div', {class:'readonly-banner', text:'これは閲覧専用の公開版です。内容の編集はできません。ツールへの感想・要望は「レビュー」から送れます。'}));
+      if (!reviewBannerDismissed){
+        var banner = el('div', {class:'readonly-banner'});
+        banner.appendChild(el('span', {class:'readonly-banner-text', text:'ツールへの感想・要望は「レビュー」から送れます。'}));
+        banner.appendChild(el('button', {class:'readonly-banner-close', text:'×', title:'閉じる', onclick: function(){
+          reviewBannerDismissed = true;
+          if (banner.parentNode) banner.parentNode.removeChild(banner);
+        }}));
+        root.appendChild(banner);
+      }
     }
   }
 
