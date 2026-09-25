@@ -115,7 +115,7 @@
     background:#0d0f16;position:relative;}
   .card-preview-inner{transform:scale(.62);transform-origin:top left;width:161.3%;pointer-events:none;
     position:absolute;top:0;left:0;}
-  .card-preview-inner #previewCard{border:none;border-radius:0;padding:14px;}
+  .card-preview-inner #previewCard{border:none;border-radius:0;padding:14px 14px 0;}
   .card-preview-inner .pv-title{font-size:15px;margin-bottom:8px;}
 
   /* 詳細画面のプレビューを大きく見せる */
@@ -1620,12 +1620,14 @@
       card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : v.themeColor}}));
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
 
-      /* 完成品そのものを縮小プレビューとして表示 */
-      var pvWrap = el('div', {class:'card-preview'});
-      var pvInner = el('div', {class:'card-preview-inner'});
-      pvInner.appendChild(buildPreviewNode(v));
-      pvWrap.appendChild(pvInner);
-      card.appendChild(pvWrap);
+      /* 実績プレート表のみ、完成品を縮小プレビューとして表示（Jewel表は出さない） */
+      if (!isJewel){
+        var pvWrap = el('div', {class:'card-preview'});
+        var pvInner = el('div', {class:'card-preview-inner'});
+        pvInner.appendChild(buildPreviewNode(v));
+        pvWrap.appendChild(pvInner);
+        card.appendChild(pvWrap);
+      }
 
       if (canEdit()){
         var actions = el('div', {class:'vc-actions'});
@@ -2572,30 +2574,38 @@
     var wraps = root.querySelectorAll('.card-preview');
     if (!wraps.length) return;
 
+    function measure(wrap){
+      var inner = wrap.querySelector('.card-preview-inner');
+      if (!inner) return 0;
+      var innerTop = inner.getBoundingClientRect().top;
+      /* プレートの並びの最下端で切る（末尾の余白を含めない） */
+      var marks = inner.querySelectorAll('.pv-badge-img');
+      if (!marks.length) marks = inner.querySelectorAll('.pv-thumb, .pv-empty');
+      if (!marks.length) return inner.getBoundingClientRect().height;
+      var bottom = 0;
+      for (var i = 0; i < marks.length; i++){
+        var b = marks[i].getBoundingClientRect().bottom;
+        if (b > bottom) bottom = b;
+      }
+      return Math.max(0, bottom - innerTop) + 6;   /* ほんの少しだけ余白 */
+    }
+
     function apply(){
-      var max = 0;
-      var list = [];
+      var max = 0, list = [];
       for (var i = 0; i < wraps.length; i++){
-        var inner = wraps[i].querySelector('.card-preview-inner');
-        if (!inner) continue;
-        var h = inner.getBoundingClientRect().height;   /* すでにscale適用後の高さ */
-        list.push({ wrap: wraps[i], h: h });
+        var h = measure(wraps[i]);
+        list.push(wraps[i]);
         if (h > max) max = h;
       }
-      /* その時点の最大サイズに全カードを揃える */
-      list.forEach(function(x){ x.wrap.style.height = Math.ceil(max) + 'px'; });
+      list.forEach(function(w){ w.style.height = Math.ceil(max) + 'px'; });
     }
 
     apply();
-    /* 画像の読み込み後にもう一度測り直す */
     var imgs = root.querySelectorAll('.card-preview img');
-    var pending = 0;
     for (var k = 0; k < imgs.length; k++){
       if (imgs[k].complete) continue;
-      pending++;
-      var done = function(){ if (--pending <= 0) apply(); else apply(); };
-      imgs[k].addEventListener('load', done);
-      imgs[k].addEventListener('error', done);
+      imgs[k].addEventListener('load', apply);
+      imgs[k].addEventListener('error', apply);
     }
     setTimeout(apply, 120);
     setTimeout(apply, 500);
