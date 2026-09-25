@@ -1330,9 +1330,12 @@
       var titleNode = el('div', {class:'jewel-cell-title', style:{color: jw.labelColor || '#f2f4f8'}});
       var parts = String(jw.label || '').split(/[\n\u3000]/);
       var head = parts.shift() || '';
-      var rest = parts.join(' ').trim();
       titleNode.appendChild(el('div', {class:'jewel-title-main', text: head}));
-      if (rest) titleNode.appendChild(el('div', {class:'jewel-title-sub', text: rest}));
+      /* バージョン部分は「&」でさらに改行して1行1バージョンにする */
+      parts.join(' ').split(/\s*[&＆]\s*/).forEach(function(line){
+        var t = line.trim();
+        if (t) titleNode.appendChild(el('div', {class:'jewel-title-sub', text: t}));
+      });
       cell.appendChild(titleNode);
       var row = el('div', {class:'jewel-img-row'});
       JEWEL_COND_DEFS.forEach(function(cd){
@@ -1811,10 +1814,11 @@
     root.appendChild(bar);
     root.appendChild(statusEl);
 
-    root.appendChild(makeMarkToggleBar());
+    var isJewelDoc = (v.docType === 'jewel');
+    if (!isJewelDoc) root.appendChild(makeMarkToggleBar());
 
     var pvHolder = el('div', {class:'preview-wide'});
-    pvHolder.appendChild(buildPreviewNode(v, { interactive: true }));
+    pvHolder.appendChild(buildPreviewNode(v, { interactive: !isJewelDoc }));
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
   }
