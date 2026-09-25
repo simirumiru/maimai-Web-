@@ -44,6 +44,11 @@
   #app{padding:20px clamp(16px,4vw,40px) 60px;max-width:1180px;margin:0 auto;}
 
   .storage-warning{background:#3a2a12;border:1px solid #8a5a1f;color:#ffd399;border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:18px;}
+  .viewmode-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:7px 12px;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:10px;font-size:12px;}
+  .viewmode-bar.is-viewer{background:#12283a;border-color:#1f5a8a;}
+  .viewmode-label{color:var(--text-dim);}
+  .viewmode-bar.is-viewer .viewmode-label{color:#a9d8ff;font-weight:700;}
 
   .sync-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;padding:8px 12px;
     background:var(--panel-2);border:1px solid var(--border);border-radius:10px;font-size:12px;}
@@ -182,10 +187,17 @@
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
   .pv-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
-  .pv-badges{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;}
-  .pv-badge-img{height:46px;border-radius:7px;overflow:hidden;border:1px solid var(--border);background:#0d0f16;box-shadow:0 2px 6px rgba(0,0,0,.35);}
-  .pv-badge-img img{height:100%;width:auto;display:block;object-fit:contain;}
-  .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;min-width:140px;background:var(--panel-2);}
+  /* プレートは折り返しで自動的に段組みされる:
+       狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
+       広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
+  .pv-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .pv-badge-img{flex:0 0 calc(50% - 4px);aspect-ratio:320/51;border-radius:6px;overflow:hidden;
+    border:1px solid var(--border);background:#0d0f16;box-shadow:0 2px 6px rgba(0,0,0,.35);}
+  .pv-badge-img img{width:100%;height:100%;display:block;object-fit:contain;}
+  .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;background:var(--panel-2);}
+  @media (min-width:560px){
+    .pv-badge-img{flex:0 0 calc(33.333% - 6px);}
+  }
   .pv-badge-img.no-img .placeholder-text{font-size:11px;color:var(--text-dim);padding:0 10px;}
   .badge-thumb.no-img{display:flex;align-items:center;justify-content:center;}
   .badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
@@ -198,6 +210,11 @@
     font-size:13.5px;font-weight:600;padding:8px 14px;border-radius:6px 6px 0 0;}
   .nav-tab:hover{color:var(--text);}
   .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .nav-spacer{flex:1;}
+  .nav-quiet{background:transparent;border:none;color:var(--text-dim);font-size:11.5px;
+    padding:8px 10px;opacity:.6;border-bottom:2px solid transparent;}
+  .nav-quiet:hover{opacity:1;color:var(--text);}
+  .nav-quiet.active{opacity:1;color:var(--accent);border-bottom-color:var(--accent);}
   .footer-link{background:none;border:none;color:var(--text-dim);font-size:11px;text-decoration:underline;
     margin-top:6px;padding:4px;opacity:.55;}
   .footer-link:hover{color:var(--accent);opacity:1;}
@@ -684,7 +701,15 @@
   };
   var allReviews = [];
 
+  /* 閲覧者プレビュー：ONの間は管理者でも閲覧者と同じ表示になる（確認用） */
+  var previewAsViewer = false;
+
   function canEdit(){
+    if (previewAsViewer) return false;
+    return !syncState.connected || syncState.isAdmin;
+  }
+  /* 実際に管理者かどうか（プレビュー切替ボタン自体の表示判定に使う） */
+  function isActuallyAdmin(){
     return !syncState.connected || syncState.isAdmin;
   }
 
@@ -824,6 +849,36 @@
     { key:'ap',   suffix:'AP',   label:'ALL PERFECT' },
     { key:'fdx',  suffix:'FDX',  label:'FULLSYNC DX' }
   ];
+
+  /* 保存済みの古いデータでも、登録済みJewel（7種）が必ず並ぶように補完する */
+  function ensureJewelSlots(doc){
+    if (!doc) return doc;
+    if (!Array.isArray(doc.jewels)) doc.jewels = [];
+    JEWEL_STONE_DEFS.forEach(function(d){
+      var found = null;
+      for (var i = 0; i < doc.jewels.length; i++){
+        if (doc.jewels[i].stone === d.stone){ found = doc.jewels[i]; break; }
+      }
+      if (!found){
+        doc.jewels.push({
+          id: uid(), stone: d.stone,
+          label: d.stone + ' Jewel　' + d.ver,
+          labelColor: '#f2f4f8',
+          imgs: { play:'', ap:'', fdx:'' }
+        });
+      } else if (!found.imgs){
+        found.imgs = { play:'', ap:'', fdx:'' };
+      }
+    });
+    /* 定義順（Diamond→Garnet）に並べ替え */
+    var order = {};
+    JEWEL_STONE_DEFS.forEach(function(d, i){ order[d.stone] = i; });
+    doc.jewels.sort(function(a, b){
+      var ao = order[a.stone], bo = order[b.stone];
+      return (ao === undefined ? 99 : ao) - (bo === undefined ? 99 : bo);
+    });
+    return doc;
+  }
 
   function defaultJewelDoc(){
     return {
@@ -1122,32 +1177,15 @@
   function goPlateTierList(){ plateTierView = 'list'; plateTierCurrentId = null; plateTierDraft = null; renderApp(); }
   function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); }
   function goPlateTierEditNew(category, showLeftRight){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     plateTierDraft = defaultPlateTier(category, showLeftRight);
     plateTierCurrentId = null;
     plateTierView = 'edit';
     renderApp();
   }
 
-  function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); }
-  function goPlateTierEditNew(category, showLeftRight){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
-    plateTierDraft = defaultPlateTier(category, showLeftRight);
-    plateTierCurrentId = null;
-    plateTierView = 'edit';
-    renderApp();
-  }
 
-  function goPlateTierEditNew(category, showLeftRight){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
-    plateTierDraft = defaultPlateTier(category, showLeftRight);
-    plateTierCurrentId = null;
-    plateTierView = 'edit';
-    renderApp();
-  }
 
   function goPlateTierEditExisting(id){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     var t = findPlateTier(id);
     if (!t) return;
     plateTierDraft = JSON.parse(JSON.stringify(t));
@@ -1157,7 +1195,6 @@
   }
 
   function goPlateTierDuplicate(id){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     var t = findPlateTier(id);
     if (!t) return;
     var copy = JSON.parse(JSON.stringify(t));
@@ -1183,7 +1220,6 @@
   }
 
   function deletePlateTier(id){
-    if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     showConfirm('このプレート難易度表を削除しますか？この操作は取り消せません。', function(){
       allPlateTiers = allPlateTiers.filter(function(t){ return t.id !== id; });
       persistPlateTiers();
@@ -1194,6 +1230,7 @@
   /* ========================= preview builder (shared) ========================= */
   /* ===== Jewelフレーム表：表示用ノード ===== */
   function buildJewelPreviewNode(v){
+    ensureJewelSlots(v);
     var card = el('div', {id:'previewCard'});
     card.appendChild(el('div', {class:'pv-title', style:{color: v.versionNameColor || '#f2f4f8'}, text: v.versionName}));
     if (v.noteText){
@@ -1228,6 +1265,7 @@
 
   /* ===== Jewelフレーム表：編集画面 ===== */
   function renderJewelEditView(root){
+    ensureJewelSlots(draft);
     var isNew = !currentId;
     var bar = el('div', {class:'view-topbar'});
     bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){ isNew ? goList() : goDetail(currentId); }}));
@@ -1463,15 +1501,13 @@
         }
         return '';
       }
-      var topRow = el('div', {class:'pv-badges'});
-      var bottomRow = el('div', {class:'pv-badges'});
-      v.badges.forEach(function(badge){
-        var node = makeBadgeNode(badge);
-        if (badgeCat(badge.name) === '舞舞') bottomRow.appendChild(node);
-        else topRow.appendChild(node);
+      /* 極→将→神→舞舞 の順に1列に流し、折り返しで
+         縦画面=2列（極将／神舞舞）、横画面=3列（極将神／舞舞）になる */
+      var badgeWrap = el('div', {class:'pv-badges'});
+      sortBadgesByCategory(v.badges).forEach(function(badge){
+        badgeWrap.appendChild(makeBadgeNode(badge));
       });
-      if (topRow.childNodes.length) card.appendChild(topRow);
-      if (bottomRow.childNodes.length) card.appendChild(bottomRow);
+      card.appendChild(badgeWrap);
     }
 
     return card;
@@ -1558,16 +1594,8 @@
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
 
       if (isJewel){
-        card.appendChild(el('div', {class:'vc-meta', text:
-          '実績フレーム表　' + ((v.jewels || []).length) + '種　更新 ' + fmtDate(v.updatedAt)}));
         card.appendChild(el('div', {class:'vc-thumbs'}));
       } else {
-        var songCount = v.levels.reduce(function(sum, l){ return sum + l.songs.length; }, 0);
-        var meta = el('div', {class:'vc-meta'});
-        appendColorized(meta, v.priceRange);
-        meta.appendChild(document.createTextNode('　曲数 ' + songCount + '　更新 ' + fmtDate(v.updatedAt)));
-        card.appendChild(meta);
-
         var thumbs = el('div', {class:'vc-thumbs'});
         var shown = 0;
         v.levels.forEach(function(l){
@@ -2049,9 +2077,7 @@
   function renderPlateTierListView(root){
     var bar = el('div', {class:'view-topbar'});
     bar.appendChild(el('h2', {text:'プレート難易度表（' + allPlateTiers.length + '件）'}));
-    if (canEdit()){
-      bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ プレート難易度表を追加', onclick: askPlateCategoryThenCreate}));
-    }
+    bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ プレート難易度表を追加', onclick: askPlateCategoryThenCreate}));
     bar.appendChild(el('div', {class:'note', text:'極 / 将 / 神 / 舞舞 それぞれ別の表として作成します。1つの表には選んだ種類のプレートだけを入れられます。'}));
     root.appendChild(bar);
 
@@ -2078,13 +2104,11 @@
       card.appendChild(el('div', {class:'vc-title', text: t.title}));
       card.appendChild(el('div', {class:'vc-meta vc-meta-strong', text:
         '種類 ' + t.category + '　左右差欄 ' + (t.showLeftRight ? 'あり' : 'なし') + '　更新 ' + fmtDate(t.updatedAt)}));
-      if (canEdit()){
-        var actions = el('div', {class:'vc-actions'});
-        actions.appendChild(el('button', {class:'btn btn-sm', text:'編集', onclick: function(e){ e.stopPropagation(); goPlateTierEditExisting(t.id); }}));
-        actions.appendChild(el('button', {class:'btn btn-sm', text:'複製', onclick: function(e){ e.stopPropagation(); goPlateTierDuplicate(t.id); }}));
-        actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(e){ e.stopPropagation(); deletePlateTier(t.id); }}));
-        card.appendChild(actions);
-      }
+      var actions = el('div', {class:'vc-actions'});
+      actions.appendChild(el('button', {class:'btn btn-sm', text:'編集', onclick: function(e){ e.stopPropagation(); goPlateTierEditExisting(t.id); }}));
+      actions.appendChild(el('button', {class:'btn btn-sm', text:'複製', onclick: function(e){ e.stopPropagation(); goPlateTierDuplicate(t.id); }}));
+      actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(e){ e.stopPropagation(); deletePlateTier(t.id); }}));
+      card.appendChild(actions);
       grid.appendChild(card);
     });
     root.appendChild(grid);
@@ -2099,11 +2123,9 @@
     var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
     pngBtn.addEventListener('click', function(){ exportPNG({versionName: t.title}, statusEl, pngBtn); });
     bar.appendChild(pngBtn);
-    if (canEdit()){
-      bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
-      bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goPlateTierDuplicate(t.id); }}));
-      bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deletePlateTier(t.id); }}));
-    }
+    bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
+    bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goPlateTierDuplicate(t.id); }}));
+    bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deletePlateTier(t.id); }}));
     root.appendChild(bar);
     root.appendChild(statusEl);
     root.appendChild(buildPlateTierPreviewNode(t));
@@ -2482,8 +2504,7 @@
 
   var SECTION_LABELS = {
     plates:     '実績プレート表',
-    plateTiers: 'プレート難易度メーカー',
-    reviews:    'レビュー'
+    plateTiers: 'プレート難易度メーカー'
   };
 
   function renderSectionNav(root){
@@ -2495,7 +2516,36 @@
         onclick: function(){ goSection(key); }
       }));
     });
+    /* レビューは右端に控えめに置く */
+    nav.appendChild(el('div', {class:'nav-spacer'}));
+    nav.appendChild(el('button', {
+      class: 'nav-quiet' + (section === 'reviews' ? ' active' : ''),
+      text: 'レビュー',
+      title: 'このツールへの感想・要望を送る',
+      onclick: function(){ goSection('reviews'); }
+    }));
     root.appendChild(nav);
+  }
+
+  function renderViewModeBar(root){
+    if (!isActuallyAdmin()) return;   /* 閲覧者には出さない */
+    var bar = el('div', {class:'viewmode-bar' + (previewAsViewer ? ' is-viewer' : '')});
+    bar.appendChild(el('span', {class:'viewmode-label',
+      text: previewAsViewer ? '閲覧者から見た画面を表示中' : '管理者モード'}));
+    bar.appendChild(el('div', {style:{flex:'1'}}));
+    bar.appendChild(el('button', {
+      class: 'btn btn-sm' + (previewAsViewer ? ' btn-primary' : ''),
+      text: previewAsViewer ? '管理者画面に戻る' : '閲覧者画面を見る',
+      onclick: function(){
+        previewAsViewer = !previewAsViewer;
+        /* 編集中だった場合は一覧に戻す */
+        view = 'list'; plateTierView = 'list';
+        draft = null; plateTierDraft = null;
+        currentId = null; plateTierCurrentId = null;
+        renderApp();
+      }
+    }));
+    root.appendChild(bar);
   }
 
   function renderApp(){
@@ -2509,6 +2559,7 @@
     }
 
     renderSyncBar(root);
+    renderViewModeBar(root);
     renderSectionNav(root);
 
     if (section === 'plates'){
