@@ -203,7 +203,7 @@
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
   .mark-toggle-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
   .btn.mark-on{background:#ff5c5c;border-color:#ff5c5c;color:#fff;}
-  .chart-type-mark{position:absolute;right:1px;bottom:1px;width:56%;max-width:38px;height:auto;
+  .chart-type-mark{position:absolute;right:1px;bottom:1px;width:5px;height:auto;
     display:block;pointer-events:none;}
   .pv-thumb.is-markable{cursor:pointer;}
   .pv-thumb.is-markable:hover{outline:1px solid var(--accent);}
@@ -285,6 +285,14 @@
   .ptier-cell-name{font-size:10px;color:var(--text-dim);text-align:center;word-break:break-word;line-height:1.3;}
   .ptier-badge-thumb.no-img{background:var(--panel-2);}
   .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
+  /* ---- 長押しドラッグ ---- */
+  .draggable{cursor:grab;touch-action:manipulation;}
+  .draggable.is-dragging{opacity:.35;}
+  .drag-ghost{position:fixed;z-index:2000;pointer-events:none;opacity:.9;
+    transform:translate(-50%,-50%) scale(1.04);box-shadow:0 8px 20px rgba(0,0,0,.55);
+    border-radius:8px;margin:0;}
+  .drop-hover{outline:2px dashed var(--accent);outline-offset:2px;border-radius:8px;}
+
   .thumb.plate-thumb{height:auto;aspect-ratio:320/51;}
   .thumb.plate-thumb img{width:100%;height:100%;object-fit:fill;display:block;}
   .tier-total-table{display:flex;flex-direction:column;gap:4px;}
@@ -1159,6 +1167,107 @@
   var plateTierDraft = null;
 
 
+
+  /* ---- 長押しでドラッグして並べ替え ----
+     スマホは長押し（約400ms）→ドラッグ、PCは左ボタン長押し→ドラッグ。
+     onDrop(from, to) には「どのランク・どの列の何番目か」を渡す。 */
+  var LONG_PRESS_MS = 400;
+
+  function makeDraggable(node, source, onDrop){
+    var timer = null, dragging = false, ghost = null;
+
+    function pointOf(e){
+      if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function start(e){
+      var pt = pointOf(e);
+      timer = setTimeout(function(){
+        dragging = true;
+        node.classList.add('is-dragging');
+        ghost = node.cloneNode(true);
+        ghost.classList.add('drag-ghost');
+        var r = node.getBoundingClientRect();
+        ghost.style.width = r.width + 'px';
+        ghost.style.height = r.height + 'px';
+        document.body.appendChild(ghost);
+        moveGhost(pt);
+        if (navigator.vibrate) { try { navigator.vibrate(15); } catch(err){} }
+      }, LONG_PRESS_MS);
+    }
+
+    function moveGhost(pt){
+      if (!ghost) return;
+      ghost.style.left = pt.x + 'px';
+      ghost.style.top = pt.y + 'px';
+    }
+
+    function move(e){
+      if (!dragging){
+        /* 長押し成立前に動いたらキャンセル */
+        if (timer){ clearTimeout(timer); timer = null; }
+        return;
+      }
+      e.preventDefault();
+      var pt = pointOf(e);
+      moveGhost(pt);
+      highlight(pt);
+    }
+
+    function targetAt(pt){
+      if (ghost) ghost.style.display = 'none';
+      var elAt = document.elementFromPoint(pt.x, pt.y);
+      if (ghost) ghost.style.display = '';
+      while (elAt && !elAt.__dropInfo) elAt = elAt.parentNode;
+      return elAt;
+    }
+
+    function highlight(pt){
+      var all = document.querySelectorAll('.drop-hover');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('drop-hover');
+      var t = targetAt(pt);
+      if (t && t !== node) t.classList.add('drop-hover');
+    }
+
+    function end(e){
+      if (timer){ clearTimeout(timer); timer = null; }
+      if (!dragging) return;
+      dragging = false;
+      node.classList.remove('is-dragging');
+
+      var pt = (e.changedTouches && e.changedTouches[0])
+        ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
+        : { x: e.clientX, y: e.clientY };
+      var t = targetAt(pt);
+
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      ghost = null;
+      var all = document.querySelectorAll('.drop-hover');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('drop-hover');
+
+      if (t && t.__dropInfo && t !== node) onDrop(source, t.__dropInfo);
+    }
+
+    node.addEventListener('touchstart', start, { passive: true });
+    node.addEventListener('touchmove', move, { passive: false });
+    node.addEventListener('touchend', end);
+    node.addEventListener('touchcancel', end);
+
+    node.addEventListener('mousedown', function(e){
+      if (e.button !== 0) return;
+      if (e.target.tagName === 'BUTTON') return;
+      start(e);
+      function mm(ev){ move(ev); }
+      function mu(ev){
+        document.removeEventListener('mousemove', mm);
+        document.removeEventListener('mouseup', mu);
+        end(ev);
+      }
+      document.addEventListener('mousemove', mm);
+      document.addEventListener('mouseup', mu);
+    });
+  }
 
   /* プレート種別ごとの一覧バーの色 */
   /* バージョン選択の一覧（舞・覇者は別枠なので除外）。表示例: maimai でらっくす UNiVERSE〈宙ver.〉 */
@@ -2503,6 +2612,28 @@
     }}));
     editorCol.appendChild(ranksCard);
 
+    /* ドラッグ元 → ドロップ先へプレートを移す */
+    function movePlate(from, to){
+      function listOf(info){
+        var r = plateTierDraft.ranks.filter(function(x){ return x.id === info.rankId; })[0];
+        return r ? r[info.key] : null;
+      }
+      var src = listOf(from), dst = listOf(to);
+      if (!src || !dst) return;
+      if (from.index < 0 || from.index >= src.length) return;
+
+      var moved = src.splice(from.index, 1)[0];
+      var at = to.index;
+      /* 同じ列の中で後ろへ動かすときは、抜いた分だけ位置がずれる */
+      if (src === dst && from.index < at) at--;
+      if (at < 0) at = 0;
+      if (at > dst.length) at = dst.length;
+      dst.splice(at, 0, moved);
+
+      renderRanksEditor();
+      refreshPreview();
+    }
+
     function renderRanksEditor(){
       ranksContainer.textContent = '';
       plateTierDraft.ranks.forEach(function(rank, rIdx){
@@ -2549,7 +2680,7 @@
           block.__groupLabels.push({ node: groupLabelNode, name: groupName });
 
           var grid2 = el('div', {class:'thumb-grid'});
-          (rank[key] || []).forEach(function(p){
+          (rank[key] || []).forEach(function(p, idx){
             var item = el('div', {class:'thumb-item', style:{width:'112px'}});
             var thumb = el('div', {class:'thumb plate-thumb', style:{width:'112px'}});
 
@@ -2589,10 +2720,16 @@
             item.appendChild(thumb);
             item.appendChild(perFileInput);
 
+            /* 長押しでドラッグして並べ替え・別ランクへの移動ができる */
+            var here = { rankId: rank.id, key: key, index: idx };
+            item.__dropInfo = here;
+            item.classList.add('draggable');
+            makeDraggable(item, here, movePlate);
+
             grid2.appendChild(item);
           });
 
-          grid2.appendChild(el('div', {class:'thumb-pick-add', style:{width:'112px', height:'36px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
+          var addTile = el('div', {class:'thumb-pick-add', style:{width:'112px', height:'36px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
             /* 表全体で配置済みのプレートを集め、選択肢から除外する */
             var used = {};
             plateTierDraft.ranks.forEach(function(r){
@@ -2609,7 +2746,10 @@
               });
               renderRanksEditor(); refreshPreview();
             }, used);
-          }}));
+          }});
+          /* 空の列や末尾にも落とせるようにする */
+          addTile.__dropInfo = { rankId: rank.id, key: key, index: (rank[key] || []).length };
+          grid2.appendChild(addTile);
           groupWrap.appendChild(grid2);
           block.appendChild(groupWrap);
         });
