@@ -100,7 +100,8 @@
   .empty-state ol{display:inline-block;text-align:left;font-size:12.5px;margin:14px 0;padding-left:18px;}
 
   /* ---- list / cards ---- */
-  .versions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;}
+  .versions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:18px;}
+  @media (max-width:520px){ .versions-grid{grid-template-columns:1fr;} }
   .version-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;}
   .version-card:hover{border-color:var(--accent);}
   .vc-swatch{width:100%;height:6px;border-radius:4px;margin-bottom:10px;}
@@ -108,6 +109,17 @@
   .vc-meta{font-size:11.5px;color:var(--text-dim);margin-bottom:10px;}
   .vc-meta-strong{color:#c9cfdd;}
   .vc-thumbs{display:flex;gap:4px;margin-bottom:10px;min-height:28px;flex-wrap:wrap;}
+
+  /* 一覧カード内の縮小プレビュー */
+  .card-preview{overflow:hidden;border-radius:8px;border:1px solid var(--border);margin-bottom:10px;
+    background:#0d0f16;position:relative;}
+  .card-preview-inner{transform:scale(.62);transform-origin:top left;width:161.3%;pointer-events:none;
+    position:absolute;top:0;left:0;}
+  .card-preview-inner #previewCard{border:none;border-radius:0;padding:14px;}
+  .card-preview-inner .pv-title{font-size:15px;margin-bottom:8px;}
+
+  /* 詳細画面のプレビューを大きく見せる */
+  .preview-wide{max-width:900px;}
   .vc-thumb{position:relative;width:26px;height:26px;border-radius:5px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .vc-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .vc-badges{font-size:11px;color:var(--text-dim);margin-bottom:10px;}
@@ -154,7 +166,7 @@
   .badge-thumb img{width:100%;height:100%;object-fit:contain;display:block;}
   .badge-thumb button{position:absolute;top:0;right:0;width:18px;height:18px;line-height:18px;background:rgba(10,11,18,.85);color:#ff8a8a;border:none;font-size:11px;padding:0;border-radius:0 0 0 6px;}
 
-  .edit-grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:20px;align-items:start;}
+  .edit-grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start;}
   @media (max-width:920px){.edit-grid{grid-template-columns:1fr;}}
   .edit-preview-col{position:sticky;top:16px;}
 
@@ -172,7 +184,9 @@
   .jewel-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px;margin-top:8px;}
   @media (max-width:760px){ .jewel-grid{grid-template-columns:1fr;} }
   .jewel-cell{min-width:0;}
-  .jewel-cell-title{font-size:12.5px;font-weight:700;margin-bottom:6px;line-height:1.45;word-break:break-word;}
+  .jewel-cell-title{margin-bottom:6px;word-break:break-word;}
+  .jewel-title-main{font-size:14px;font-weight:800;line-height:1.35;}
+  .jewel-title-sub{font-size:11.5px;font-weight:600;line-height:1.4;opacity:.85;}
   .jewel-img-row{display:flex;flex-direction:column;gap:5px;}
   .jewel-slot{width:100%;max-width:308px;aspect-ratio:308/129;border-radius:6px;overflow:hidden;
     border:1px solid var(--border);background:#0d0f16;}
@@ -987,10 +1001,13 @@
   function versionOptions(){
     var seen = [], out = [];
     PLATE_MASTER_LIST.forEach(function(p){
-      if (p.ver === '舞 ＆ 覇者対象Re:MASTER') return;
       if (seen.indexOf(p.ver) >= 0) return;
       seen.push(p.ver);
-      out.push({ ver: p.ver, pre: p.pre, label: versionTemplateLabel(p.ver, p.pre) });
+      /* 舞・覇者はバージョン名の形式が違うのでそのまま出す */
+      var label = (p.ver === '舞 ＆ 覇者対象Re:MASTER')
+        ? p.ver
+        : versionTemplateLabel(p.ver, p.pre);
+      out.push({ ver: p.ver, pre: p.pre, label: label });
     });
     return out;
   }
@@ -1013,6 +1030,9 @@
       return ao - bo;
     });
   }
+
+  /* Jewel表の一覧バー：宝石らしい鮮やかな虹 */
+  var JEWEL_BAR_GRADIENT = 'linear-gradient(90deg,#e8455f,#f0862a,#f5d02e,#3fc46a,#2aa8e0,#5b57d6,#b446c8)';
 
   function plateCategorySwatch(cat){
     if (cat === '極') return '#4fc3f7';                                   /* 水色 */
@@ -1240,7 +1260,14 @@
     var grid = el('div', {class:'jewel-grid'});
     (v.jewels || []).forEach(function(jw){
       var cell = el('div', {class:'jewel-cell'});
-      cell.appendChild(el('div', {class:'jewel-cell-title', style:{color: jw.labelColor || '#f2f4f8'}, text: jw.label}));
+      /* 「Diamond Jewel」と「バージョン名」を改行して2行で出す */
+      var titleNode = el('div', {class:'jewel-cell-title', style:{color: jw.labelColor || '#f2f4f8'}});
+      var parts = String(jw.label || '').split(/[\n\u3000]/);
+      var head = parts.shift() || '';
+      var rest = parts.join(' ').trim();
+      titleNode.appendChild(el('div', {class:'jewel-title-main', text: head}));
+      if (rest) titleNode.appendChild(el('div', {class:'jewel-title-sub', text: rest}));
+      cell.appendChild(titleNode);
       var row = el('div', {class:'jewel-img-row'});
       JEWEL_COND_DEFS.forEach(function(cd){
         var slot = el('div', {class:'jewel-slot'});
@@ -1590,27 +1617,15 @@
     sortedVersions().forEach(function(v, idx){
       var isJewel = (v.docType === 'jewel');
       var card = el('div', {class:'version-card', onclick: function(){ goDetail(v.id); }});
-      card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? (v.versionNameColor || '#7ee787') : v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : v.themeColor}}));
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
 
-      if (isJewel){
-        card.appendChild(el('div', {class:'vc-thumbs'}));
-      } else {
-        var thumbs = el('div', {class:'vc-thumbs'});
-        var shown = 0;
-        v.levels.forEach(function(l){
-          l.songs.forEach(function(s){
-            if (s.hidden) return;
-            if (shown >= 6) return;
-            var t = el('div', {class:'vc-thumb'});
-            t.appendChild(makeResolvedImg(s.img || resolveSongImage(s.name), getCachedSongImage(s.name), null));
-            if (s.slashed) t.appendChild(el('div', {class:'slash-overlay'}));
-            thumbs.appendChild(t);
-            shown++;
-          });
-        });
-        card.appendChild(thumbs);
-      }
+      /* 完成品そのものを縮小プレビューとして表示 */
+      var pvWrap = el('div', {class:'card-preview'});
+      var pvInner = el('div', {class:'card-preview-inner'});
+      pvInner.appendChild(buildPreviewNode(v));
+      pvWrap.appendChild(pvInner);
+      card.appendChild(pvWrap);
 
       if (canEdit()){
         var actions = el('div', {class:'vc-actions'});
@@ -1623,6 +1638,7 @@
       grid.appendChild(card);
     });
     root.appendChild(grid);
+    fitCardPreviews(root);
   }
 
   /* ========================= view: detail ========================= */
@@ -1644,7 +1660,9 @@
     root.appendChild(bar);
     root.appendChild(statusEl);
 
-    root.appendChild(buildPreviewNode(v));
+    var pvHolder = el('div', {class:'preview-wide'});
+    pvHolder.appendChild(buildPreviewNode(v));
+    root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
   }
 
@@ -2546,6 +2564,41 @@
       }
     }));
     root.appendChild(bar);
+  }
+
+  /* 縮小プレビューの高さを実寸に合わせ、カード間で最大値に揃える */
+  var CARD_PREVIEW_SCALE = 0.62;
+  function fitCardPreviews(root){
+    var wraps = root.querySelectorAll('.card-preview');
+    if (!wraps.length) return;
+
+    function apply(){
+      var max = 0;
+      var list = [];
+      for (var i = 0; i < wraps.length; i++){
+        var inner = wraps[i].querySelector('.card-preview-inner');
+        if (!inner) continue;
+        var h = inner.getBoundingClientRect().height;   /* すでにscale適用後の高さ */
+        list.push({ wrap: wraps[i], h: h });
+        if (h > max) max = h;
+      }
+      /* その時点の最大サイズに全カードを揃える */
+      list.forEach(function(x){ x.wrap.style.height = Math.ceil(max) + 'px'; });
+    }
+
+    apply();
+    /* 画像の読み込み後にもう一度測り直す */
+    var imgs = root.querySelectorAll('.card-preview img');
+    var pending = 0;
+    for (var k = 0; k < imgs.length; k++){
+      if (imgs[k].complete) continue;
+      pending++;
+      var done = function(){ if (--pending <= 0) apply(); else apply(); };
+      imgs[k].addEventListener('load', done);
+      imgs[k].addEventListener('error', done);
+    }
+    setTimeout(apply, 120);
+    setTimeout(apply, 500);
   }
 
   function renderApp(){
