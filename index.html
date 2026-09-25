@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
     --bg:#0a0b12; --panel:#12141f; --panel-2:#171a26; --border:#262a3a;
@@ -596,11 +595,48 @@
   }
 
   /* 登録曲（Lv.14 / Lv.14+）から選択するピッカー。選択すると onPick(songMasterEntry) が呼ばれる */
-  function openSongPicker(onPick, levelFilter, usedNames){
+  function openSongPicker(onPick, levelFilter, usedNames, opts){
     usedNames = usedNames || {};
+    opts = opts || {};
+
+    /* 舞・覇者の表は対象曲が全バージョンにまたがるので、バージョン絞り込みをしない */
+    var EXEMPT_VERSION = '舞 ＆ 覇者対象Re:MASTER';
+    var docVersion = opts.versionName || '';
+    var isExempt = (docVersion.indexOf(EXEMPT_VERSION) >= 0) || (docVersion.indexOf('覇者') >= 0);
+
+    /* バージョン名から、songs.json 側の表記を割り出す */
+    function guessVersion(){
+      if (isExempt || !SONG_DATA_FULL) return '';
+      var vers = {};
+      SONG_MASTER_LIST.forEach(function(s){ if (s.ver) vers[s.ver] = true; });
+      var names = Object.keys(vers);
+      /* 「maimai でらっくす UNiVERSE〈宙ver.〉」→「maimai でらっくす UNiVERSE」 */
+      var base = docVersion.split('〈')[0].trim();
+      for (var i = 0; i < names.length; i++){
+        if (names[i] === base) return names[i];
+      }
+      return '';
+    }
+
     var backdrop = el('div', {class:'modal-backdrop'});
-    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
-    box.appendChild(el('p', {text: levelFilter ? ('登録曲から選択（Lv.' + levelFilter + '）') : '登録曲から選択（Lv.14 / Lv.14+）', style:{marginBottom:'8px'}}));
+    var box = el('div', {class:'modal-box', style:{maxWidth:'440px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('p', {text:'登録曲から選択', style:{marginBottom:'8px'}}));
+
+    /* バージョン選択（全曲データがあり、例外でないときだけ出す） */
+    var verSelect = null;
+    if (SONG_DATA_FULL && !isExempt){
+      verSelect = el('select', {class:'version-select', style:{marginBottom:'8px'}});
+      verSelect.appendChild(el('option', {value:''}, ['すべてのバージョン']));
+      var seen = [];
+      SONG_MASTER_LIST.forEach(function(s){ if (s.ver && seen.indexOf(s.ver) < 0) seen.push(s.ver); });
+      seen.forEach(function(v){
+        var left = SONG_MASTER_LIST.filter(function(s){ return s.ver === v && !usedNames[s.name]; }).length;
+        verSelect.appendChild(el('option', {value: v}, [v + '（残り ' + left + '曲）']));
+      });
+      var guessed = guessVersion();
+      if (guessed) verSelect.value = guessed;
+      box.appendChild(verSelect);
+    }
 
     var searchInput = el('input', {type:'text', placeholder:'曲名で検索', class:'song-picker-search'});
     box.appendChild(searchInput);
@@ -615,37 +651,42 @@
     function renderResults(){
       listWrap.textContent = '';
       var q = searchInput.value.trim().toLowerCase();
+      var wantVer = verSelect ? verSelect.value : '';
+
       var matches = SONG_MASTER_LIST.filter(function(s){
+        if (usedNames[s.name]) return false;                 /* 登録済みは出さない */
         if (levelFilter && s.level !== levelFilter) return false;
+        if (wantVer && s.ver !== wantVer) return false;
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
       });
-      /* 全曲データのときは難易度の高い順に並べる */
+
+      /* 難易度の高い順 */
       if (SONG_DATA_FULL){
         matches = matches.slice().sort(function(a, b){ return (b.lvv || 0) - (a.lvv || 0); });
       }
-      matches = matches.slice(0, 200);
+      matches = matches.slice(0, 300);
+
       if (matches.length === 0){
         listWrap.appendChild(el('div', {class:'note', text:'該当する曲がありません'}));
         return;
       }
       matches.forEach(function(s){
-        var isUsed = !!usedNames[s.name];
         var label = s.name + (s.level ? '　[Lv.' + s.level + ']' : '');
-        if (s.ver) label += '　' + s.ver;
+        if (s.ver && !wantVer) label += '　' + s.ver;
         listWrap.appendChild(el('button', {
-          class:'song-pick-row' + (isUsed ? ' is-used' : ''),
-          text: (isUsed ? '✓ ' : '') + label,
+          class:'song-pick-row',
+          text: label,
           onclick: function(){ closeModal(backdrop); onPick(s); }
         }));
       });
     }
+    if (verSelect) verSelect.addEventListener('change', renderResults);
     searchInput.addEventListener('input', renderResults);
     renderResults();
 
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
     document.body.appendChild(backdrop);
-    searchInput.focus();
   }
 
   /* 制覇系プレートのピッカー。categoryで絞り込む（極/将/神/舞舞） */
@@ -1803,7 +1844,6 @@
       var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績プレート表を追加', onclick: goEditNew}));
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
-      bar.appendChild(el('button', {class:'btn', text:'画像一括登録', onclick: goBulkImport}));
       root.appendChild(bar);
     }
 
@@ -2134,7 +2174,12 @@
           grid2.appendChild(thumbItem);
         });
 
-        grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'Lv.14 / Lv.14+ の登録曲から選ぶ', onclick: function(){
+        grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'この表に入れる曲を選ぶ', onclick: function(){
+          /* この表に登録済みの曲は選択肢から外す */
+          var usedSongs = {};
+          draft.levels.forEach(function(l){
+            (l.songs || []).forEach(function(s){ if (s.name) usedSongs[s.name] = true; });
+          });
           openSongPicker(function(picked){
             level.songs.push({
               id: uid(),
@@ -2142,7 +2187,7 @@
               name: picked.name
             });
             renderLevelsEditor(); refreshPreview();
-          });
+          }, null, usedSongs, { versionName: draft.versionName });
         }}));
         block.appendChild(grid2);
         levelsEditorContainer.appendChild(block);
@@ -2791,121 +2836,6 @@
     setTimeout(apply, 500);
   }
 
-  /* ========================= 画像一括登録（管理者専用） =========================
-     連番などのファイル名でも使えるよう、画像を見ながら曲名を割り当てる。
-     最後に「曲名.png」へリネーム済みのZIPを書き出し、songs/ に入れて公開する。 */
-  var bulkItems = [];   /* { id, dataUrl, name, assigned } */
-
-  function goBulkImport(){
-    if (!canEdit()){ showAlert('管理者のみ利用できます。'); return; }
-    section = 'bulk';
-    renderApp();
-  }
-
-  function bulkAssignedNames(){
-    var out = {};
-    bulkItems.forEach(function(it){ if (it.assigned) out[it.assigned] = true; });
-    return out;
-  }
-
-  function renderBulkImportView(root){
-    var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){ section = 'plates'; goList(); }}));
-    bar.appendChild(el('h2', {text:'楽曲ジャケットの一括登録'}));
-    root.appendChild(bar);
-
-    var help = el('div', {class:'card'});
-    help.appendChild(el('div', {class:'note', text:
-      '1. 画像をまとめて選ぶ　2. 各画像に曲名を割り当てる　3. ZIPを書き出して songs/ フォルダに入れる'}));
-    var fileInput = el('input', {type:'file', accept:'image/*', multiple:'multiple', style:{display:'none'}});
-    fileInput.addEventListener('change', function(){
-      var files = Array.prototype.slice.call(fileInput.files || []);
-      if (!files.length) return;
-      var remaining = files.length;
-      files.forEach(function(f){
-        resizeImageFile(f, 300, 0.9).then(function(url){
-          bulkItems.push({ id: uid(), dataUrl: url, name: f.name, assigned: '' });
-          if (--remaining === 0) renderApp();
-        }).catch(function(){
-          if (--remaining === 0) renderApp();
-        });
-      });
-    });
-    help.appendChild(fileInput);
-    var btnRow = el('div', {style:{display:'flex', flexWrap:'wrap', gap:'8px', marginTop:'10px'}});
-    btnRow.appendChild(el('button', {class:'btn btn-primary', text:'＋ 画像をまとめて選ぶ', onclick: function(){ fileInput.click(); }}));
-    if (bulkItems.length){
-      btnRow.appendChild(el('button', {class:'btn', text:'ZIPを書き出す', onclick: exportBulkZip}));
-      btnRow.appendChild(el('button', {class:'btn btn-ghost btn-danger', text:'全部消す', onclick: function(){
-        showConfirm('読み込んだ画像をすべて破棄しますか？', function(){ bulkItems = []; renderApp(); });
-      }}));
-    }
-    help.appendChild(btnRow);
-    root.appendChild(help);
-
-    if (!bulkItems.length) return;
-
-    var done = bulkItems.filter(function(it){ return it.assigned; }).length;
-    root.appendChild(el('div', {class:'note', style:{marginBottom:'10px'},
-      text: '割り当て済み ' + done + ' / ' + bulkItems.length}));
-
-    var used = bulkAssignedNames();
-    var grid = el('div', {class:'bulk-grid'});
-    bulkItems.forEach(function(it){
-      var cell = el('div', {class:'bulk-cell' + (it.assigned ? ' is-done' : '')});
-      var th = el('div', {class:'bulk-thumb'});
-      th.appendChild(el('img', {src: it.dataUrl, alt:''}));
-      cell.appendChild(th);
-
-      var nameBtn = el('button', {
-        class: 'bulk-name' + (it.assigned ? '' : ' unassigned'),
-        text: it.assigned || '曲名を選ぶ',
-        title: it.name
-      });
-      nameBtn.addEventListener('click', function(){
-        openSongPicker(function(picked){
-          it.assigned = picked.name;
-          renderApp();
-        }, null, used);
-      });
-      cell.appendChild(nameBtn);
-
-      if (it.assigned){
-        cell.appendChild(el('button', {class:'bulk-clear', text:'解除', onclick: function(){
-          it.assigned = '';
-          renderApp();
-        }}));
-      }
-      grid.appendChild(cell);
-    });
-    root.appendChild(grid);
-  }
-
-  function exportBulkZip(){
-    var ready = bulkItems.filter(function(it){ return it.assigned; });
-    if (!ready.length){ showAlert('曲名を割り当てた画像がありません。'); return; }
-    if (!window.JSZip){ showAlert('ZIPの生成に必要な部品を読み込めませんでした。通信環境を確認してください。'); return; }
-
-    var zip = new window.JSZip();
-    ready.forEach(function(it){
-      var base64 = String(it.dataUrl).split(',')[1];
-      zip.file(it.assigned + '.png', base64, { base64: true });
-    });
-    zip.generateAsync({ type: 'blob' }).then(function(blob){
-      var url = URL.createObjectURL(blob);
-      var link = document.createElement('a');
-      link.download = 'songs.zip';
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
-      showAlert(ready.length + '枚をZIPに書き出しました。展開して songs/ フォルダに入れてください。');
-    }).catch(function(e){
-      showAlert('ZIPの書き出しに失敗しました: ' + e.message);
-    });
-  }
-
   function renderApp(){
     var root = document.getElementById('app');
     root.textContent = '';
@@ -2924,9 +2854,7 @@
       if (view === 'list') renderListView(root);
       else if (view === 'detail') renderDetailView(root, findVersion(currentId));
       else if (view === 'edit') renderEditView(root);
-    } else if (section === 'bulk'){
-      renderBulkImportView(root);
-    } else if (section === 'plateTiers'){
+        } else if (section === 'plateTiers'){
       if (plateTierView === 'list') renderPlateTierListView(root);
       else if (plateTierView === 'edit') renderPlateTierEditView(root);
       else renderPlateTierDetailView(root, findPlateTier(plateTierCurrentId));
