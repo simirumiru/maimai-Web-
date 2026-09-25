@@ -146,6 +146,7 @@
   .level-block{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;}
   .level-block.is-level-hidden{opacity:.5;border-style:dashed;}
   .btn-hidden-on{background:#5a5f70;border-color:#5a5f70;color:#fff;}
+  .toggle-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
   .level-block-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
   .level-block-head input[type=text]{width:70px;flex:none;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;}
   .level-block-head .spacer{flex:1;}
@@ -225,6 +226,10 @@
   .nav-tab:hover{color:var(--text);}
   .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
   .nav-spacer{flex:1;}
+  .header-spacer{flex:1;}
+  .header-quiet{background:transparent;border:1px solid var(--border);color:var(--text-dim);
+    font-size:11.5px;padding:6px 12px;border-radius:7px;opacity:.7;flex:none;}
+  .header-quiet:hover{opacity:1;color:var(--text);border-color:var(--accent);}
   .nav-quiet{background:transparent;border:none;color:var(--text-dim);font-size:11.5px;
     padding:8px 10px;opacity:.6;border-bottom:2px solid transparent;}
   .nav-quiet:hover{opacity:1;color:var(--text);}
@@ -313,11 +318,13 @@
   <div>
     <h1 id="homeLink" title="ホームに戻る">実績プレート表アーカイブ</h1>
   </div>
+  <div class="header-spacer"></div>
+  <button id="headerReviewLink" class="header-quiet" title="このツールへの感想・要望を送る">レビュー</button>
 </header>
 
 <div id="app"></div>
 
-<footer class="app-footer"><button id="footerSyncLink" class="footer-link">同期設定</button></footer>
+<footer class="app-footer"><button id="footerSyncLink" class="footer-link">管理者ログイン</button></footer>
 
 <script>
 (function(){
@@ -689,6 +696,18 @@
      この機能を使うには、無料のFirebaseプロジェクトを自分で作成し、設定情報を
      「☁ 同期設定」から貼り付ける必要があります（Anthropicはサーバーを提供しません）。
      設定していない間は、これまで通りこの端末内だけで動作します。 */
+  /* このサイト専用のFirebase設定（公開情報）。
+     全ての訪問者がこの設定で自動接続し、既定では「閲覧のみ」になる。
+     管理者はフッターの「同期設定」からログインすると編集できるようになる。 */
+  var DEFAULT_SYNC_CONFIG = {
+    apiKey: "AIzaSyBMHnEhoWeUlp006QDrG7SHDLnWQwFnNWg",
+    authDomain: "maimai-plate-27ca2.firebaseapp.com",
+    projectId: "maimai-plate-27ca2",
+    storageBucket: "maimai-plate-27ca2.firebasestorage.app",
+    messagingSenderId: "34214984666",
+    appId: "1:34214984666:web:a770535da80abf8d11dee3"
+  };
+
   var SYNC_SETTINGS_KEY = 'mmplate_sync_settings_v1';
   function loadSyncSettings(){
     if (!storageOK) return null;
@@ -720,11 +739,11 @@
 
   function canEdit(){
     if (previewAsViewer) return false;
-    return !syncState.connected || syncState.isAdmin;
+    return !!syncState.isAdmin;
   }
   /* 実際に管理者かどうか（プレビュー切替ボタン自体の表示判定に使う） */
   function isActuallyAdmin(){
-    return !syncState.connected || syncState.isAdmin;
+    return !!syncState.isAdmin;
   }
 
   function loadScriptOnce(src){
@@ -1428,8 +1447,13 @@
 
     var card = el('div', {id:'previewCard'});
 
-    var title = el('div', {class:'pv-title', style:{color: v.versionNameColor || '#f2f4f8'}, text: v.versionName});
-    card.appendChild(title);
+    var showVersion = (v.showVersionName !== false);
+    var showPrice   = (v.showPrice !== false);
+    var showNote    = (v.showNote !== false);
+
+    if (showVersion){
+      card.appendChild(el('div', {class:'pv-title', style:{color: v.versionNameColor || '#f2f4f8'}, text: v.versionName}));
+    }
 
     function appendColoredRange(container, rangeText, startColor, endColor){
       var seps = ['〜','～','~'];
@@ -1446,6 +1470,7 @@
       container.appendChild(el('span', {style:{color:endColor}, text: rangeText.slice(sepIdx + 1)}));
     }
 
+    if (showPrice){
     var line1 = el('div', {class:'pv-info-line'});
     line1.appendChild(el('span', {class:'label', text:'下埋め料金'}));
     appendColoredRange(line1, v.priceRange, v.rangeStartColor || '#6fdc6f', v.rangeEndColor || '#ff5c5c');
@@ -1462,12 +1487,15 @@
       line2.appendChild(el('span', {class:'pv-exclusion', text: '（' + v.timeExclusionNote + '）'}));
     }
     card.appendChild(line2);
+    }
 
-    if (v.subtitleText){
+    if (showNote && v.subtitleText){
       card.appendChild(el('div', {class:'pv-subtitle', style:{color: v.subtitleColor || '#3fd0ff'}, text: v.subtitleText}));
     }
 
-    card.appendChild(el('div', {class:'pv-divider'}));
+    if (showVersion || showPrice || showNote){
+      card.appendChild(el('div', {class:'pv-divider'}));
+    }
 
     v.levels.forEach(function(level){
       if (level.hidden) return;
@@ -1545,15 +1573,50 @@
     btn.disabled = true;
     statusEl.textContent = '画像を生成中…';
     var node = document.getElementById('previewCard');
+    var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + '.png';
+
     window.html2canvas(node, { scale: 2, backgroundColor: '#0d0f16' }).then(function(canvas){
-      var link = document.createElement('a');
-      var name = (v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '');
-      link.download = name + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      statusEl.textContent = '保存しました';
-      btn.disabled = false;
-      setTimeout(function(){ statusEl.textContent = ''; }, 2500);
+      function finish(msg){
+        statusEl.textContent = msg;
+        btn.disabled = false;
+        setTimeout(function(){ statusEl.textContent = ''; }, 3000);
+      }
+
+      canvas.toBlob(function(blob){
+        if (!blob){ finish('画像の生成に失敗しました'); return; }
+        var file = null;
+        try { file = new File([blob], name, { type: 'image/png' }); } catch(e){ file = null; }
+
+        /* スマホ：共有シートから「画像を保存」できる */
+        if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share){
+          navigator.share({ files: [file] }).then(function(){
+            finish('保存しました');
+          }).catch(function(){
+            /* 共有をキャンセルした場合などはダウンロードにフォールバック */
+            downloadBlob(blob);
+          });
+          return;
+        }
+        downloadBlob(blob);
+
+        function downloadBlob(b){
+          var url = URL.createObjectURL(b);
+          var link = document.createElement('a');
+          if ('download' in link){
+            link.download = name;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+            finish('保存しました');
+          } else {
+            /* download 非対応のブラウザ：別タブで開いて長押し保存してもらう */
+            window.open(url, '_blank');
+            finish('開いた画像を長押しして保存してください');
+          }
+        }
+      }, 'image/png');
     }).catch(function(){
       statusEl.textContent = '画像の生成に失敗しました';
       btn.disabled = false;
@@ -1737,6 +1800,33 @@
     infoCard.appendChild(row0);
 
     infoCard.appendChild(colorPickerField('一覧バーの色', function(){ return draft.themeColor || '#7ee787'; }, function(v){ draft.themeColor = v; }));
+
+    /* 出力に載せる欄の ON/OFF */
+    var togRow = el('div', {class:'field'});
+    togRow.appendChild(el('label', {text:'表に載せる欄'}));
+    var togWrap = el('div', {class:'toggle-row'});
+    [
+      ['バージョン名', 'showVersionName'],
+      ['料金・時間',   'showPrice'],
+      ['追加情報',     'showNote']
+    ].forEach(function(pair){
+      var label = pair[0], key = pair[1];
+      var btn = el('button', {class:'btn btn-sm'});
+      function sync(){
+        var on = (draft[key] !== false);
+        btn.textContent = label + '：' + (on ? '表示' : '非表示');
+        btn.className = 'btn btn-sm' + (on ? '' : ' btn-hidden-on');
+      }
+      btn.addEventListener('click', function(){
+        draft[key] = (draft[key] === false);
+        sync();
+        refreshPreview();
+      });
+      sync();
+      togWrap.appendChild(btn);
+    });
+    togRow.appendChild(togWrap);
+    infoCard.appendChild(togRow);
 
     var row2a = el('div', {class:'row2'});
     var rangeField = el('div', {class:'field'});
@@ -2096,7 +2186,7 @@
 
   function renderPlateTierListView(root){
     var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('h2', {text:'プレート難易度表（' + allPlateTiers.length + '件）'}));
+    bar.appendChild(el('h2', {text:'プレート難易度表'}));
     bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ プレート難易度表を追加', onclick: askPlateCategoryThenCreate}));
     bar.appendChild(el('div', {class:'note', text:'極 / 将 / 神 / 舞舞 それぞれ別の表として作成します。1つの表には選んだ種類のプレートだけを入れられます。'}));
     root.appendChild(bar);
@@ -2123,7 +2213,7 @@
       card.appendChild(el('div', {class:'vc-swatch', style:{background: plateCategorySwatch(t.category)}}));
       card.appendChild(el('div', {class:'vc-title', text: t.title}));
       card.appendChild(el('div', {class:'vc-meta vc-meta-strong', text:
-        '種類 ' + t.category + '　左右差欄 ' + (t.showLeftRight ? 'あり' : 'なし') + '　更新 ' + fmtDate(t.updatedAt)}));
+        '左右差 ' + (t.showLeftRight ? 'あり' : 'なし') + '　更新 ' + fmtDate(t.updatedAt)}));
       var actions = el('div', {class:'vc-actions'});
       actions.appendChild(el('button', {class:'btn btn-sm', text:'編集', onclick: function(e){ e.stopPropagation(); goPlateTierEditExisting(t.id); }}));
       actions.appendChild(el('button', {class:'btn btn-sm', text:'複製', onclick: function(e){ e.stopPropagation(); goPlateTierDuplicate(t.id); }}));
@@ -2399,109 +2489,67 @@
 
   /* ========================= app root render ========================= */
   /* ========================= 同期設定モーダル ========================= */
-  var FIRESTORE_RULES_TEXT = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /plates/{id} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /reviews/{id} {\n      allow create: if true;\n      allow read, update, delete: if request.auth != null;\n    }\n  }\n}";
 
   function openSyncSettingsModal(){
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box sync-settings-box'});
-    box.appendChild(el('p', {text:'☁ 同期設定', style:{fontWeight:'700', marginBottom:'6px'}}));
+    box.appendChild(el('p', {text:'管理者ログイン', style:{fontWeight:'700', marginBottom:'6px'}}));
 
     var statusText = !syncState.connected
-      ? 'この端末のみに保存中（未接続）'
-      : (syncState.isAdmin ? '接続中・管理者としてログイン中（編集可）' : '接続中・閲覧専用（公開版）');
+      ? 'サーバーに接続できていません'
+      : (syncState.isAdmin ? 'ログイン中（編集できます）' : '閲覧モード');
     box.appendChild(el('p', {class:'note', text: statusText, style:{marginBottom:'12px'}}));
     if (syncState.error){
       box.appendChild(el('p', {class:'note', style:{color:'#ff8a8a'}, text: syncState.error}));
     }
 
-    if (syncState.connected){
-      if (!syncState.isAdmin){
-        box.appendChild(el('p', {class:'note', text:'管理者としてログインすると、この端末から編集・投稿の取り込みができるようになります。'}));
-      }
-      var loginField1 = el('div', {class:'field'});
-      loginField1.appendChild(el('label', {text:'管理者メールアドレス'}));
-      var emailInput2 = el('input', {type:'email'});
-      loginField1.appendChild(emailInput2);
-      var loginField2 = el('div', {class:'field'});
-      loginField2.appendChild(el('label', {text:'パスワード'}));
-      var passInput2 = el('input', {type:'password'});
-      loginField2.appendChild(passInput2);
-      if (!syncState.isAdmin){
-        box.appendChild(loginField1);
-        box.appendChild(loginField2);
-        var loginBtn = el('button', {class:'btn btn-primary', text:'管理者としてログイン'});
-        loginBtn.addEventListener('click', function(){
-          var stored = loadSyncSettings();
-          var cfg;
-          try{ cfg = JSON.parse(stored.configJson); }catch(e){ showAlert('保存済みの設定が壊れています。一度切断して設定し直してください。'); return; }
-          connectSync(cfg, emailInput2.value.trim(), passInput2.value, function(err){
-            if (err){ showAlert('ログインに失敗しました: ' + err.message); return; }
-            closeModal(backdrop);
-            renderApp();
-          });
-        });
-        box.appendChild(loginBtn);
-      }
-      var actions0 = el('div', {class:'modal-actions', style:{marginTop:'14px'}});
-      actions0.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
-      actions0.appendChild(el('button', {class:'btn btn-danger', text:'切断する（この端末のみに戻す）', onclick: function(){
+    if (syncState.isAdmin){
+      box.appendChild(el('p', {class:'note', text:'ログアウトすると閲覧モードに戻ります。'}));
+      var actionsA = el('div', {class:'modal-actions', style:{marginTop:'14px'}});
+      actionsA.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+      actionsA.appendChild(el('button', {class:'btn btn-danger', text:'ログアウト', onclick: function(){
         closeModal(backdrop);
-        disconnectSync();
+        try{ if (window.firebase && window.firebase.auth) window.firebase.auth().signOut(); }catch(e){}
+        syncState.isAdmin = false;
+        if (syncState.unsubReviews){ syncState.unsubReviews(); syncState.unsubReviews = null; }
+        allReviews = [];
+        goList();
       }}));
-      box.appendChild(actions0);
+      box.appendChild(actionsA);
     } else {
-      var cfgField = el('div', {class:'field'});
-      cfgField.appendChild(el('label', {text:'Firebaseの設定（config）をJSON形式で貼り付け'}));
-      var cfgArea = el('textarea', {placeholder:'{"apiKey":"...", "authDomain":"...", "projectId":"...", ...}'});
-      cfgField.appendChild(cfgArea);
-      box.appendChild(cfgField);
-
-      var emailField = el('div', {class:'field'});
-      emailField.appendChild(el('label', {text:'管理者メールアドレス（空欄なら閲覧専用として接続）'}));
+      var f1 = el('div', {class:'field'});
+      f1.appendChild(el('label', {text:'メールアドレス'}));
       var emailInput = el('input', {type:'email'});
-      emailField.appendChild(emailInput);
-      box.appendChild(emailField);
+      f1.appendChild(emailInput);
+      box.appendChild(f1);
 
-      var passField = el('div', {class:'field'});
-      passField.appendChild(el('label', {text:'パスワード'}));
+      var f2 = el('div', {class:'field'});
+      f2.appendChild(el('label', {text:'パスワード'}));
       var passInput = el('input', {type:'password'});
-      passField.appendChild(passInput);
-      box.appendChild(passField);
+      f2.appendChild(passInput);
+      box.appendChild(f2);
 
-      var connectBtn = el('button', {class:'btn btn-primary', text:'接続する'});
-      connectBtn.addEventListener('click', function(){
-        var cfg;
-        try{ cfg = JSON.parse(cfgArea.value); }catch(e){ showAlert('Firebaseの設定（config）が正しいJSON形式ではありません。'); return; }
-        connectBtn.disabled = true;
-        connectBtn.textContent = '接続中…';
-        connectSync(cfg, emailInput.value.trim(), passInput.value, function(err){
-          connectBtn.disabled = false;
-          connectBtn.textContent = '接続する';
-          if (err){ showAlert('接続に失敗しました: ' + err.message); return; }
+      var loginBtn = el('button', {class:'btn btn-primary', text:'ログイン'});
+      loginBtn.addEventListener('click', function(){
+        if (!emailInput.value.trim() || !passInput.value){
+          showAlert('メールアドレスとパスワードを入力してください。');
+          return;
+        }
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'ログイン中…';
+        connectSync(DEFAULT_SYNC_CONFIG, emailInput.value.trim(), passInput.value, function(err){
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'ログイン';
+          if (err){ showAlert('ログインに失敗しました: ' + err.message); return; }
           closeModal(backdrop);
           renderApp();
         });
       });
-      box.appendChild(connectBtn);
+      box.appendChild(loginBtn);
 
-      var details = el('details');
-      details.appendChild(el('summary', {text:'初めての方はこちら（無料でのセットアップ手順）'}));
-      var ol = el('ol');
-      ol.appendChild(el('li', {text:'https://console.firebase.google.com/ でプロジェクトを新規作成（無料）'}));
-      ol.appendChild(el('li', {text:'左メニュー「Firestore Database」→「データベースの作成」（本番環境モードでOK）'}));
-      ol.appendChild(el('li', {text:'左メニュー「Authentication」→「Sign-in method」で「メール/パスワード」を有効化'}));
-      ol.appendChild(el('li', {text:'「Users」タブから、自分用の管理者アカウント（メール・パスワード）を1つ作成'}));
-      ol.appendChild(el('li', {text:'「プロジェクトの設定」→「全般」→「マイアプリ」でウェブアプリを追加し、表示されたconfigを上に貼り付け'}));
-      ol.appendChild(el('li', {text:'「Firestore Database」→「ルール」タブに、下のルールを貼り付けて公開'}));
-      details.appendChild(ol);
-      var rulesArea = el('textarea', {readonly:true, style:{minHeight:'160px'}});
-      rulesArea.value = FIRESTORE_RULES_TEXT;
-      details.appendChild(rulesArea);
-      box.appendChild(details);
-
-      var actions1 = el('div', {class:'modal-actions', style:{marginTop:'12px'}});
-      actions1.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
-      box.appendChild(actions1);
+      var actionsB = el('div', {class:'modal-actions', style:{marginTop:'12px'}});
+      actionsB.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+      box.appendChild(actionsB);
     }
 
     backdrop.appendChild(box);
@@ -2536,14 +2584,6 @@
         onclick: function(){ goSection(key); }
       }));
     });
-    /* レビューは右端に控えめに置く */
-    nav.appendChild(el('div', {class:'nav-spacer'}));
-    nav.appendChild(el('button', {
-      class: 'nav-quiet' + (section === 'reviews' ? ' active' : ''),
-      text: 'レビュー',
-      title: 'このツールへの感想・要望を送る',
-      onclick: function(){ goSection('reviews'); }
-    }));
     root.appendChild(nav);
   }
 
@@ -2642,21 +2682,28 @@
   var homeLink = document.getElementById('homeLink');
   if (homeLink) homeLink.addEventListener('click', goHome);
   var homeLogo = document.getElementById('homeLogo');
+  var headerReviewLink = document.getElementById('headerReviewLink');
+  if (headerReviewLink) headerReviewLink.addEventListener('click', function(){ goSection('reviews'); });
   if (homeLogo) homeLogo.addEventListener('click', goHome);
 
   var footerSyncLink = document.getElementById('footerSyncLink');
   if (footerSyncLink) footerSyncLink.addEventListener('click', openSyncSettingsModal);
 
-  var storedSyncSettings = loadSyncSettings();
-  if (storedSyncSettings && storedSyncSettings.configJson){
-    try{
-      var storedCfg = JSON.parse(storedSyncSettings.configJson);
-      connectSync(storedCfg, null, null, function(err){
-        if (err){ syncState.error = '前回の同期設定への接続に失敗しました: ' + err.message; }
-        renderApp();
-      });
-    }catch(e){ /* 壊れた設定は無視 */ }
-  }
+  /* 起動時に自動接続する。
+     設定が保存されていればそれを、無ければ埋め込みの既定設定を使う。
+     この時点ではログインしないので、誰が開いても「閲覧のみ」になる。 */
+  (function autoConnect(){
+    var cfg = DEFAULT_SYNC_CONFIG;
+    var stored = loadSyncSettings();
+    if (stored && stored.configJson){
+      try{ cfg = JSON.parse(stored.configJson); }catch(e){ cfg = DEFAULT_SYNC_CONFIG; }
+    }
+    if (!cfg || !cfg.apiKey) return;
+    connectSync(cfg, null, null, function(err){
+      if (err){ syncState.error = '同期サーバーへの接続に失敗しました: ' + err.message; }
+      renderApp();
+    });
+  })();
 
   renderApp();
 
