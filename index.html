@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
     --bg:#0a0b12; --panel:#12141f; --panel-2:#171a26; --border:#262a3a;
@@ -270,9 +271,9 @@
   .ptier-band-meta{font-size:11px;color:var(--text-dim);}
   .ptier-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);
     border-radius:8px;padding:6px 10px;margin-bottom:6px;}
-  .ptier-badge-thumb{width:40px;height:40px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
+  .ptier-badge-thumb{width:100px;height:auto;aspect-ratio:320/51;border-radius:6px;overflow:hidden;border:1px solid var(--border);
     background:var(--panel);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:16px;}
-  .ptier-badge-thumb img{width:100%;height:100%;object-fit:contain;display:block;}
+  .ptier-badge-thumb img{width:100%;height:100%;object-fit:fill;display:block;}
   .ptier-name{flex:1;min-width:0;font-size:13px;word-break:break-word;}
   .ptier-count{font-size:11px;color:var(--text-dim);flex:none;}
   .ptier-points{font-family:var(--font-display);font-weight:700;color:var(--accent);flex:none;font-size:13px;}
@@ -281,10 +282,12 @@
     border:1px solid #ffe14f;border-radius:6px;padding:3px 8px;background:rgba(10,11,18,.6);}
   .ptier-grid{display:flex;flex-wrap:wrap;gap:10px;}
   .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:112px;}
-  .ptier-cell .ptier-badge-thumb{width:112px;height:40px;}
+  .ptier-cell .ptier-badge-thumb{width:112px;height:auto;aspect-ratio:320/51;}
   .ptier-cell-name{font-size:10px;color:var(--text-dim);text-align:center;word-break:break-word;line-height:1.3;}
   .ptier-badge-thumb.no-img{background:var(--panel-2);}
   .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
+  .thumb.plate-thumb{height:auto;aspect-ratio:320/51;}
+  .thumb.plate-thumb img{width:100%;height:100%;object-fit:fill;display:block;}
   .tier-total-table{display:flex;flex-direction:column;gap:4px;}
   .tier-total-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);
     border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-size:12.5px;}
@@ -304,6 +307,19 @@
   .song-pick-row{text-align:left;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
     border-radius:7px;padding:8px 10px;font-size:12.5px;}
   .song-pick-row:hover{border-color:var(--accent);}
+  .song-pick-row.is-used{opacity:.45;}
+
+  .bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .bulk-cell{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px;
+    display:flex;flex-direction:column;gap:6px;}
+  .bulk-cell.is-done{border-color:#2f6b3f;}
+  .bulk-thumb{width:100%;aspect-ratio:1;border-radius:7px;overflow:hidden;border:1px solid var(--border);}
+  .bulk-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .bulk-name{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:7px;
+    padding:6px 8px;font-size:11px;line-height:1.35;word-break:break-word;text-align:left;}
+  .bulk-name.unassigned{color:var(--text-dim);border-style:dashed;}
+  .bulk-name:hover{border-color:var(--accent);}
+  .bulk-clear{background:transparent;border:none;color:#ff8a8a;font-size:10.5px;padding:0;text-align:left;}
   .picker-group-label{font-size:11px;font-weight:700;color:var(--accent);margin:8px 0 2px;padding-left:2px;}
   .thumb-pick-add{width:56px;height:56px;border-radius:8px;border:1px dashed var(--border);background:var(--panel);
     color:var(--text-dim);font-size:9px;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px;line-height:1.2;}
@@ -439,6 +455,23 @@
     return isJewelName(name) ? resolveJewelImage(name) : resolvePlateImage(name);
   }
 
+  /* 同じフォルダに songs.json があれば全曲データとして読み込む。
+     無ければ上の埋め込みリスト（Lv.14 / 14+）をそのまま使う。
+     songs.json は「名前つけツール」の『サイト用データを書き出す』で作れます。 */
+  function loadSongsJson(){
+    fetch('songs.json').then(function(r){
+      if (!r.ok) throw new Error('not found');
+      return r.json();
+    }).then(function(list){
+      if (!Array.isArray(list) || !list.length) return;
+      SONG_MASTER_LIST = list.map(function(s){
+        return { name: s.name, level: s.lv || '', ver: s.ver || '', lvv: (typeof s.lvv === 'number' ? s.lvv : -1) };
+      });
+      SONG_DATA_FULL = true;
+    }).catch(function(){ /* 無ければ埋め込みのまま */ });
+  }
+  var SONG_DATA_FULL = false;
+
   var SONG_IMAGE_CACHE_KEY = 'mmplate_song_image_cache_v1';
   function loadSongImageCache(){
     if (!storageOK) return {};
@@ -556,7 +589,8 @@
   }
 
   /* 登録曲（Lv.14 / Lv.14+）から選択するピッカー。選択すると onPick(songMasterEntry) が呼ばれる */
-  function openSongPicker(onPick, levelFilter){
+  function openSongPicker(onPick, levelFilter, usedNames){
+    usedNames = usedNames || {};
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
     box.appendChild(el('p', {text: levelFilter ? ('登録曲から選択（Lv.' + levelFilter + '）') : '登録曲から選択（Lv.14 / Lv.14+）', style:{marginBottom:'8px'}}));
@@ -577,15 +611,23 @@
       var matches = SONG_MASTER_LIST.filter(function(s){
         if (levelFilter && s.level !== levelFilter) return false;
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
-      }).slice(0, 120);
+      });
+      /* 全曲データのときは難易度の高い順に並べる */
+      if (SONG_DATA_FULL){
+        matches = matches.slice().sort(function(a, b){ return (b.lvv || 0) - (a.lvv || 0); });
+      }
+      matches = matches.slice(0, 200);
       if (matches.length === 0){
         listWrap.appendChild(el('div', {class:'note', text:'該当する曲がありません'}));
         return;
       }
       matches.forEach(function(s){
+        var isUsed = !!usedNames[s.name];
+        var label = s.name + (s.level ? '　[Lv.' + s.level + ']' : '');
+        if (s.ver) label += '　' + s.ver;
         listWrap.appendChild(el('button', {
-          class:'song-pick-row',
-          text: s.name + '　[Lv.' + s.level + ']',
+          class:'song-pick-row' + (isUsed ? ' is-used' : ''),
+          text: (isUsed ? '✓ ' : '') + label,
           onclick: function(){ closeModal(backdrop); onPick(s); }
         }));
       });
@@ -600,7 +642,8 @@
   }
 
   /* 制覇系プレートのピッカー。categoryで絞り込む（極/将/神/舞舞） */
-  function openPlatePicker(category, onPick){
+  function openPlatePicker(category, onPick, usedNames){
+    usedNames = usedNames || {};
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
     box.appendChild(el('p', {text:'「' + category + '」プレートから選択', style:{marginBottom:'8px'}}));
@@ -620,11 +663,12 @@
       var q = searchInput.value.trim().toLowerCase();
       var matches = PLATE_MASTER_LIST.filter(function(p){
         if (p.cat !== category) return false;
+        if (usedNames[p.name]) return false;   /* すでに配置済みのものは出さない */
         if (!q) return true;
         return p.name.toLowerCase().indexOf(q) >= 0 || p.ver.toLowerCase().indexOf(q) >= 0;
       });
       if (matches.length === 0){
-        listWrap.appendChild(el('div', {class:'note', text:'該当するプレートがありません'}));
+        listWrap.appendChild(el('div', {class:'note', text:'追加できるプレートがありません（すべて配置済みです）'}));
         return;
       }
       matches.forEach(function(p){
@@ -1039,6 +1083,7 @@
       id: uid(),
       title: category + 'プレート難易度表',
       category: category,
+      author: '',
       showLeftRight: !!showLeftRight,
       ranks: ranks,
       updatedAt: Date.now()
@@ -1755,6 +1800,7 @@
       var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績プレート表を追加', onclick: goEditNew}));
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
+      bar.appendChild(el('button', {class:'btn', text:'画像一括登録', onclick: goBulkImport}));
       root.appendChild(bar);
     }
 
@@ -2219,7 +2265,9 @@
     var card = el('div', {id:'previewCard', style:{position:'relative'}});
     card.appendChild(el('div', {class:'lr-corner-badge', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
     card.appendChild(el('div', {class:'pv-title', text: t.title}));
-    card.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'制覇系プレート「' + t.category + '」の難易度表'}));
+    if (t.author && t.author.trim()){
+      card.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'製作者：' + t.author.trim()}));
+    }
 
     var any = t.ranks.some(function(r){
       return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
@@ -2375,6 +2423,15 @@
     });
     lrRow.appendChild(lrBtn);
     infoCard.appendChild(lrRow);
+
+    var authorField = el('div', {class:'field', style:{marginTop:'10px'}});
+    authorField.appendChild(el('label', {text:'製作者'}));
+    var authorInput = el('input', {type:'text', placeholder:'製作者名を入力'});
+    authorInput.value = plateTierDraft.author || '';
+    authorInput.addEventListener('input', function(){ plateTierDraft.author = authorInput.value; refreshPreview(); });
+    authorField.appendChild(authorInput);
+    infoCard.appendChild(authorField);
+
     editorCol.appendChild(infoCard);
 
     /* ランク編集 */
@@ -2438,8 +2495,8 @@
 
           var grid2 = el('div', {class:'thumb-grid'});
           (rank[key] || []).forEach(function(p){
-            var item = el('div', {class:'thumb-item', style:{width:'92px'}});
-            var thumb = el('div', {class:'thumb', style:{width:'92px', height:'34px'}});
+            var item = el('div', {class:'thumb-item', style:{width:'112px'}});
+            var thumb = el('div', {class:'thumb plate-thumb', style:{width:'112px'}});
 
             var perFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
             perFileInput.addEventListener('change', function(){
@@ -2466,7 +2523,6 @@
             var srcImg = p.img || resolvePlateImage(p.name);
             if (srcImg){
               var pimg = makePlateImg(p.name, getCachedPlateBadge(p.name), showPlateNameFallback);
-              pimg.style.objectFit = 'contain';
               thumb.appendChild(pimg);
             } else {
               showPlateNameFallback();
@@ -2481,7 +2537,14 @@
             grid2.appendChild(item);
           });
 
-          grid2.appendChild(el('div', {class:'thumb-pick-add', style:{width:'92px', height:'34px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
+          grid2.appendChild(el('div', {class:'thumb-pick-add', style:{width:'112px', height:'36px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
+            /* 表全体で配置済みのプレートを集め、選択肢から除外する */
+            var used = {};
+            plateTierDraft.ranks.forEach(function(r){
+              ['jiriki','kojinsa'].forEach(function(k){
+                (r[k] || []).forEach(function(x){ if (x.name) used[x.name] = true; });
+              });
+            });
             openPlatePicker(plateTierDraft.category, function(picked){
               rank[key].push({
                 id: uid(),
@@ -2490,7 +2553,7 @@
                 leftRight: false
               });
               renderRanksEditor(); refreshPreview();
-            });
+            }, used);
           }}));
           groupWrap.appendChild(grid2);
           block.appendChild(groupWrap);
@@ -2751,6 +2814,121 @@
     setTimeout(apply, 500);
   }
 
+  /* ========================= 画像一括登録（管理者専用） =========================
+     連番などのファイル名でも使えるよう、画像を見ながら曲名を割り当てる。
+     最後に「曲名.png」へリネーム済みのZIPを書き出し、songs/ に入れて公開する。 */
+  var bulkItems = [];   /* { id, dataUrl, name, assigned } */
+
+  function goBulkImport(){
+    if (!canEdit()){ showAlert('管理者のみ利用できます。'); return; }
+    section = 'bulk';
+    renderApp();
+  }
+
+  function bulkAssignedNames(){
+    var out = {};
+    bulkItems.forEach(function(it){ if (it.assigned) out[it.assigned] = true; });
+    return out;
+  }
+
+  function renderBulkImportView(root){
+    var bar = el('div', {class:'view-topbar'});
+    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 戻る', onclick: function(){ section = 'plates'; goList(); }}));
+    bar.appendChild(el('h2', {text:'楽曲ジャケットの一括登録'}));
+    root.appendChild(bar);
+
+    var help = el('div', {class:'card'});
+    help.appendChild(el('div', {class:'note', text:
+      '1. 画像をまとめて選ぶ　2. 各画像に曲名を割り当てる　3. ZIPを書き出して songs/ フォルダに入れる'}));
+    var fileInput = el('input', {type:'file', accept:'image/*', multiple:'multiple', style:{display:'none'}});
+    fileInput.addEventListener('change', function(){
+      var files = Array.prototype.slice.call(fileInput.files || []);
+      if (!files.length) return;
+      var remaining = files.length;
+      files.forEach(function(f){
+        resizeImageFile(f, 300, 0.9).then(function(url){
+          bulkItems.push({ id: uid(), dataUrl: url, name: f.name, assigned: '' });
+          if (--remaining === 0) renderApp();
+        }).catch(function(){
+          if (--remaining === 0) renderApp();
+        });
+      });
+    });
+    help.appendChild(fileInput);
+    var btnRow = el('div', {style:{display:'flex', flexWrap:'wrap', gap:'8px', marginTop:'10px'}});
+    btnRow.appendChild(el('button', {class:'btn btn-primary', text:'＋ 画像をまとめて選ぶ', onclick: function(){ fileInput.click(); }}));
+    if (bulkItems.length){
+      btnRow.appendChild(el('button', {class:'btn', text:'ZIPを書き出す', onclick: exportBulkZip}));
+      btnRow.appendChild(el('button', {class:'btn btn-ghost btn-danger', text:'全部消す', onclick: function(){
+        showConfirm('読み込んだ画像をすべて破棄しますか？', function(){ bulkItems = []; renderApp(); });
+      }}));
+    }
+    help.appendChild(btnRow);
+    root.appendChild(help);
+
+    if (!bulkItems.length) return;
+
+    var done = bulkItems.filter(function(it){ return it.assigned; }).length;
+    root.appendChild(el('div', {class:'note', style:{marginBottom:'10px'},
+      text: '割り当て済み ' + done + ' / ' + bulkItems.length}));
+
+    var used = bulkAssignedNames();
+    var grid = el('div', {class:'bulk-grid'});
+    bulkItems.forEach(function(it){
+      var cell = el('div', {class:'bulk-cell' + (it.assigned ? ' is-done' : '')});
+      var th = el('div', {class:'bulk-thumb'});
+      th.appendChild(el('img', {src: it.dataUrl, alt:''}));
+      cell.appendChild(th);
+
+      var nameBtn = el('button', {
+        class: 'bulk-name' + (it.assigned ? '' : ' unassigned'),
+        text: it.assigned || '曲名を選ぶ',
+        title: it.name
+      });
+      nameBtn.addEventListener('click', function(){
+        openSongPicker(function(picked){
+          it.assigned = picked.name;
+          renderApp();
+        }, null, used);
+      });
+      cell.appendChild(nameBtn);
+
+      if (it.assigned){
+        cell.appendChild(el('button', {class:'bulk-clear', text:'解除', onclick: function(){
+          it.assigned = '';
+          renderApp();
+        }}));
+      }
+      grid.appendChild(cell);
+    });
+    root.appendChild(grid);
+  }
+
+  function exportBulkZip(){
+    var ready = bulkItems.filter(function(it){ return it.assigned; });
+    if (!ready.length){ showAlert('曲名を割り当てた画像がありません。'); return; }
+    if (!window.JSZip){ showAlert('ZIPの生成に必要な部品を読み込めませんでした。通信環境を確認してください。'); return; }
+
+    var zip = new window.JSZip();
+    ready.forEach(function(it){
+      var base64 = String(it.dataUrl).split(',')[1];
+      zip.file(it.assigned + '.png', base64, { base64: true });
+    });
+    zip.generateAsync({ type: 'blob' }).then(function(blob){
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.download = 'songs.zip';
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+      showAlert(ready.length + '枚をZIPに書き出しました。展開して songs/ フォルダに入れてください。');
+    }).catch(function(e){
+      showAlert('ZIPの書き出しに失敗しました: ' + e.message);
+    });
+  }
+
   function renderApp(){
     var root = document.getElementById('app');
     root.textContent = '';
@@ -2769,6 +2947,8 @@
       if (view === 'list') renderListView(root);
       else if (view === 'detail') renderDetailView(root, findVersion(currentId));
       else if (view === 'edit') renderEditView(root);
+    } else if (section === 'bulk'){
+      renderBulkImportView(root);
     } else if (section === 'plateTiers'){
       if (plateTierView === 'list') renderPlateTierListView(root);
       else if (plateTierView === 'edit') renderPlateTierEditView(root);
@@ -2805,6 +2985,7 @@
     });
   })();
 
+  loadSongsJson();
   renderApp();
 
 })();
