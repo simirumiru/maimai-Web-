@@ -159,12 +159,9 @@
   .thumb-item{display:flex;flex-direction:column;gap:4px;width:56px;}
   .thumb{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-  .thumb.is-hidden img{opacity:.3;}
   .thumb button{position:absolute;top:0;right:0;width:18px;height:18px;line-height:18px;background:rgba(10,11,18,.85);color:#ff8a8a;border:none;font-size:11px;padding:0;border-radius:0 0 0 6px;}
   .thumb-controls{display:flex;gap:4px;}
   .tbtn{flex:1;height:22px;min-width:0;border-radius:5px;border:1px solid var(--border);background:var(--panel);color:var(--text-dim);font-size:11px;padding:0;}
-  .tbtn.active-slash{background:#ff5c5c;border-color:#ff5c5c;color:#fff;}
-  .tbtn.active-hide{background:#5a5f70;border-color:#5a5f70;color:#fff;}
   .slash-overlay{position:absolute;left:-15%;top:46%;width:130%;height:16%;background:#ff2d2d;transform:rotate(-38deg);pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
 
   .badge-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;}
@@ -439,7 +436,7 @@
   var JEWEL_IMAGE_DIR = 'jewels/';
   function getBundledJewelImage(name){
     if (!name) return '';
-    return JEWEL_IMAGE_DIR + encodeURIComponent(name) + IMAGE_EXT;
+    return JEWEL_IMAGE_DIR + encodeURIComponent(toFileName(name)) + IMAGE_EXT;
   }
   function resolveJewelImage(name){
     return getBundledJewelImage(name) || getCachedPlateBadge(name);
@@ -490,9 +487,19 @@
      曲名を選んだ時点で全ての閲覧者にその画像が自動で表示されます（1枚置けば全箇所に反映）。 */
   var SONG_IMAGE_DIR = 'songs/';
   var IMAGE_EXT = '.png';
+
+  /* Windowsのファイル名に使えない文字は保存時に「_」へ置き換えられている。
+     検索・表示は正しい曲名のまま行い、画像を探すときだけ同じ置換をかける。
+     使えない文字: \ / : * ? " < > |  （末尾の . と空白も除去される） */
+  function toFileName(name){
+    if (!name) return '';
+    return String(name)
+      .replace(/[\\/:*?"<>|]/g, '_')
+      .replace(/[. ]+$/, '');
+  }
   function getBundledSongImage(name){
     if (!name) return '';
-    return SONG_IMAGE_DIR + encodeURIComponent(name) + IMAGE_EXT;
+    return SONG_IMAGE_DIR + encodeURIComponent(toFileName(name)) + IMAGE_EXT;
   }
   /* 優先順位: 開発者が用意した画像 → 各自がアップロードした画像 */
   function resolveSongImage(name){
@@ -1050,8 +1057,7 @@
       levels: [
         { id: uid(), label: "14+", color: "#ffb84f", songs: [], hidden: false },
         { id: uid(), label: "14", color: "#ff4fd8", songs: [], hidden: false },
-        { id: uid(), label: "13+", color: "#3fd0ff", songs: [], hidden: false },
-        { id: uid(), label: "13", color: "#7ee787", songs: [], hidden: true }
+        { id: uid(), label: "13+", color: "#3fd0ff", songs: [], hidden: false }
       ],
       badges: [],
       updatedAt: Date.now()
@@ -1285,7 +1291,7 @@
   var PLATE_IMAGE_EXT = '.png';
   function getBundledPlateImage(name){
     if (!name) return '';
-    return PLATE_IMAGE_DIR + encodeURIComponent(name) + PLATE_IMAGE_EXT;
+    return PLATE_IMAGE_DIR + encodeURIComponent(toFileName(name)) + PLATE_IMAGE_EXT;
   }
   /* 優先順位: 開発者が用意した画像 → 各自がアップロードした画像 */
   function resolvePlateImage(name){
@@ -1615,9 +1621,6 @@
           } else {
             t.className = 'pv-thumb no-img';
             t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
-          }
-          if (song.name){
-            t.appendChild(el('div', {class:'song-name-tag', text: song.name}));
           }
 
           /* 斜線：作成者が設定したもの or 閲覧者が自分でつけたもの（表示ONのときのみ） */
@@ -2054,17 +2057,15 @@
     /* --- extra info card (累計プレート表など向け・任意) --- */
     var extraCard = el('div', {class:'card'});
     var extraHead = el('h2', {text:'追加情報 '});
-    extraHead.appendChild(el('span', {class:'hint', text:'（任意・累計プレート表などで使用）'}));
     extraCard.appendChild(extraHead);
-    extraCard.appendChild(textField('下埋め時間の除外メモ（例: 前前前世 除外）', function(){ return draft.timeExclusionNote; }, function(v){ draft.timeExclusionNote = v; }));
-    extraCard.appendChild(textField('補足説明文（例: 舞系,覇者の対象となるRe:MASTER譜面がある楽曲(Lv13+以上↑)）', function(){ return draft.subtitleText; }, function(v){ draft.subtitleText = v; }));
+    extraCard.appendChild(textField('下埋め時間の除外メモ', function(){ return draft.timeExclusionNote; }, function(v){ draft.timeExclusionNote = v; }));
+    extraCard.appendChild(textField('補足説明文', function(){ return draft.subtitleText; }, function(v){ draft.subtitleText = v; }));
     extraCard.appendChild(colorPickerField('補足説明文の色', function(){ return draft.subtitleColor || '#3fd0ff'; }, function(v){ draft.subtitleColor = v; }));
     editorCol.appendChild(extraCard);
 
     /* --- levels/songs card --- */
     var levelsCard = el('div', {class:'card'});
     var levelsHead = el('h2', {text:'収録曲 '});
-    levelsHead.appendChild(el('span', {class:'hint', text:'（レベルごとにジャケット画像を追加）'}));
     levelsCard.appendChild(levelsHead);
     var levelsEditorContainer = el('div', {});
     levelsCard.appendChild(levelsEditorContainer);
@@ -2113,7 +2114,7 @@
         level.songs.forEach(function(song){
           var thumbItem = el('div', {class:'thumb-item'});
           var srcSong = song.img || resolveSongImage(song.name);
-          var thumb = el('div', {class:'thumb' + (song.hidden ? ' is-hidden' : '')});
+          var thumb = el('div', {class:'thumb'});
 
           function songFallbackA(){
             thumb.classList.add('no-img');
@@ -2124,33 +2125,12 @@
           } else {
             songFallbackA();
           }
-          if (song.name){
-            thumb.appendChild(el('div', {class:'song-name-tag', text: song.name}));
-          }
-          if (song.slashed) thumb.appendChild(el('div', {class:'slash-overlay'}));
           thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
             level.songs = level.songs.filter(function(s){ return s.id !== song.id; });
             renderLevelsEditor();
             refreshPreview();
           }}));
           thumbItem.appendChild(thumb);
-
-
-          var controls = el('div', {class:'thumb-controls'});
-          controls.appendChild(el('button', {
-            class: 'tbtn' + (song.slashed ? ' active-slash' : ''),
-            text: '／',
-            title: '赤スラッシュを入れる/外す',
-            onclick: function(){ song.slashed = !song.slashed; renderLevelsEditor(); refreshPreview(); }
-          }));
-          controls.appendChild(el('button', {
-            class: 'tbtn' + (song.hidden ? ' active-hide' : ''),
-            text: '非',
-            title: '画像を非表示/表示にする',
-            onclick: function(){ song.hidden = !song.hidden; renderLevelsEditor(); refreshPreview(); }
-          }));
-          thumbItem.appendChild(controls);
-
           grid2.appendChild(thumbItem);
         });
 
@@ -2159,9 +2139,7 @@
             level.songs.push({
               id: uid(),
               img: resolveSongImage(picked.name),
-              name: picked.name,
-              slashed: false,
-              hidden: false
+              name: picked.name
             });
             renderLevelsEditor(); refreshPreview();
           });
@@ -2174,7 +2152,6 @@
     /* --- badges card --- */
     var badgesCard = el('div', {class:'card'});
     var badgesHead = el('h2', {text:'実績プレート '});
-    badgesHead.appendChild(el('span', {class:'hint', text:'（プレート画像をアップロード）'}));
     badgesCard.appendChild(badgesHead);
     var badgesEditorContainer = el('div', {});
     badgesCard.appendChild(badgesEditorContainer);
@@ -2204,10 +2181,10 @@
       });
       badgesEditorContainer.appendChild(grid);
 
-      badgesEditorContainer.appendChild(el('div', {class:'note', style:{marginTop:'10px'},
-        text: draft.badges.length === 0
-          ? '上の「バージョン」を選ぶと、そのバージョンのプレートが自動で並びます。'
-          : '「バージョン」を選び直すと入れ替わります。'}));
+      if (draft.badges.length === 0){
+        badgesEditorContainer.appendChild(el('div', {class:'note', style:{marginTop:'10px'},
+          text:'上の「バージョン」を選ぶと、そのバージョンのプレートが自動で並びます。'}));
+      }
     }
 
     renderLevelsEditor();
