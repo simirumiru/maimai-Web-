@@ -204,9 +204,9 @@
   .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
   /* PNG保存のあいだだけ、楽曲を大きくして12曲ごとに折り返す（画面上の見た目は変えない）。
      プレートは幅の割合で決まるので、全体が同じ比率のまま大きくなる。 */
-  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 96px);
-    gap:10px;justify-content:start;}
-  .pv-export .pv-thumb{width:96px;height:96px;}
+  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 100px);
+    gap:6px;justify-content:start;}
+  .pv-export .pv-thumb{width:100px;height:100px;}
   /* 3枚で1行、楽曲1枚に対して約3.7倍の幅になる */
   .pv-export .pv-badge-img{flex:0 0 28%;}
   .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
