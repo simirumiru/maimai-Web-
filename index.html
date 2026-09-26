@@ -198,6 +198,9 @@
   .pv-level{margin-bottom:18px;}
   .pv-level-label{font-family:var(--font-display);font-weight:700;font-size:17px;margin-bottom:8px;}
   .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
+  /* PNG保存のあいだだけ、楽曲を12曲ごとに折り返す（画面上の見た目は変えない） */
+  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 64px);
+    justify-content:start;}
   .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
@@ -212,7 +215,7 @@
   .pv-thumb img.chart-type-mark,
   img.chart-type-mark{
     position:absolute;right:3%;bottom:4%;
-    width:43%;height:auto;max-height:34%;
+    width:52%;height:auto;max-height:40%;
     object-fit:contain;display:block;pointer-events:none;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
   /* プレートは折り返しで自動的に段組みされる:
@@ -513,11 +516,25 @@
   /* ---- 開発者があらかじめ用意した楽曲ジャケット画像 ----
      index.html と同じ場所に songs/ フォルダを置き、「曲名.png」で画像を入れておくと、
      曲名を選んだ時点で全ての閲覧者にその画像が自動で表示されます（1枚置けば全箇所に反映）。 */
-  /* 譜面種別（DX / スタンダード）のバッジ画像 */
-  var CHART_TYPE_IMG = {
+  /* 譜面種別（DX / スタンダード）のバッジ画像。
+     PNG保存（html2canvas）は別サイトの画像を描き込めないため、
+     marks/ フォルダに置いた自分のサイトの画像を先に読む。
+     まだ置いていない間だけ、表示用に公式の画像へ切り替わる。 */
+  var CHART_TYPE_IMG = { dx: 'marks/DX.png', st: 'marks/ST.png' };
+  var CHART_TYPE_IMG_REMOTE = {
     dx: 'https://maimaidx.jp/maimai-mobile/img/music_dx.png',
     st: 'https://maimaidx.jp/maimai-mobile/img/music_standard.png'
   };
+  function makeChartTypeMark(kind){
+    var img = el('img', {class:'chart-type-mark', src: CHART_TYPE_IMG[kind], alt:''});
+    var tried = false;
+    img.addEventListener('error', function(){
+      if (tried){ if (img.parentNode) img.parentNode.removeChild(img); return; }
+      tried = true;
+      img.src = CHART_TYPE_IMG_REMOTE[kind];
+    });
+    return img;
+  }
 
   /* 舞・覇者の対象曲（スタンダードのRe:MASTERが対象）。
      名前が songs.json と一致しないものは選択肢に出ないので、
@@ -1954,7 +1971,7 @@
           }
 
           if (song.chartType && CHART_TYPE_IMG[song.chartType]){
-            t.appendChild(el('img', {class:'chart-type-mark', src: CHART_TYPE_IMG[song.chartType], alt:''}));
+            t.appendChild(makeChartTypeMark(song.chartType));
           }
 
           /* 斜線：作成者が設定したもの or 閲覧者が自分でつけたもの（表示ONのときのみ） */
@@ -2028,7 +2045,18 @@
     var node = document.getElementById('previewCard');
     var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + '.png';
 
+    /* 12曲で折り返す幅を確保してから描き込む */
+    var prevWidth = node.style.width;
+    node.classList.add('pv-export');
+    node.style.width = 'max-content';
+
+    function restoreLayout(){
+      node.classList.remove('pv-export');
+      node.style.width = prevWidth;
+    }
+
     window.html2canvas(node, { scale: 2, backgroundColor: '#0d0f16' }).then(function(canvas){
+      restoreLayout();
       function finish(msg){
         statusEl.textContent = msg;
         btn.disabled = false;
@@ -2071,6 +2099,7 @@
         }
       }, 'image/png');
     }).catch(function(){
+      restoreLayout();
       statusEl.textContent = '画像の生成に失敗しました';
       btn.disabled = false;
     });
@@ -2459,7 +2488,7 @@
             songFallbackA();
           }
           if (song.chartType && CHART_TYPE_IMG[song.chartType]){
-            thumb.appendChild(el('img', {class:'chart-type-mark', src: CHART_TYPE_IMG[song.chartType], alt:''}));
+            thumb.appendChild(makeChartTypeMark(song.chartType));
           }
           thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
             level.songs = level.songs.filter(function(s){ return s.id !== song.id; });
