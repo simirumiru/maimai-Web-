@@ -203,12 +203,17 @@
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
   .mark-toggle-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
   .btn.mark-on{background:#ff5c5c;border-color:#ff5c5c;color:#fff;}
-  /* 公式のジャケット表示に合わせ、右下に約43%幅で重ねる */
-  .chart-type-mark{position:absolute;right:3%;bottom:4%;width:43%;height:auto;
-    display:block;pointer-events:none;}
   .pv-thumb.is-markable{cursor:pointer;}
   .pv-thumb.is-markable:hover{outline:1px solid var(--accent);}
   .pv-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  /* DX / STの印。「.thumb img」などより指定を強くしないと
+     100%に引き伸ばされてジャケットを覆ってしまう。 */
+  .thumb img.chart-type-mark,
+  .pv-thumb img.chart-type-mark,
+  img.chart-type-mark{
+    position:absolute;right:3%;bottom:4%;
+    width:43%;height:auto;max-height:34%;
+    object-fit:contain;display:block;pointer-events:none;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
@@ -1207,6 +1212,7 @@
       subtitleText: "",
       subtitleColor: "#3fd0ff",
       levels: [
+        { id: uid(), label: "15", color: "#ff7ad9", songs: [], hidden: false },
         { id: uid(), label: "14+", color: "#ffb84f", songs: [], hidden: false },
         { id: uid(), label: "14", color: "#ff4fd8", songs: [], hidden: false },
         { id: uid(), label: "13+", color: "#3fd0ff", songs: [], hidden: false }
@@ -1231,6 +1237,7 @@
   }
 
   var SEED_LEVELS = [
+    { label: '15',  color: '#ff7ad9' },
     { label: '14+', color: '#ffb84f' },
     { label: '14',  color: '#ff4fd8' },
     { label: '13+', color: '#3fd0ff' }
@@ -1261,12 +1268,7 @@
       }).sort(function(a, b){
         return a.name.localeCompare(b.name, 'ja');
       }).map(function(s){
-        return {
-          id: uid(),
-          name: s.name,
-          img: resolveSongImage(s.name),
-          chartType: s.type === 'DX' ? 'dx' : s.type === 'ST' ? 'st' : ''
-        };
+        return { id: uid(), name: s.name, img: resolveSongImage(s.name) };
       });
       return { id: uid(), label: L.label, color: L.color, songs: songs, hidden: false };
     });
@@ -2498,9 +2500,8 @@
             level.songs.push({
               id: uid(),
               img: resolveSongImage(picked.name),
-              name: picked.name,
-              /* 選んだ譜面種別をそのままDX/STの印にする */
-              chartType: picked.type === 'DX' ? 'dx' : picked.type === 'ST' ? 'st' : ''
+              name: picked.name
+              /* DX / ST の印は自動ではつけず、下のボタンで手動で切り替える */
             });
             renderLevelsEditor(); refreshPreview();
           }, null, usedSongs, { versionName: draft.versionName });
