@@ -473,7 +473,15 @@
     }).then(function(list){
       if (!Array.isArray(list) || !list.length) return;
       SONG_MASTER_LIST = list.map(function(s){
-        return { name: s.name, level: s.lv || '', ver: s.ver || '', lvv: (typeof s.lvv === 'number' ? s.lvv : -1) };
+        return {
+          name: s.name,
+          level: s.lv || '',
+          ver: s.ver || '',
+          lvv: (typeof s.lvv === 'number' ? s.lvv : -1),
+          /* 譜面種別（スタンダード/でらっくす × MASTER/Re:MASTER） */
+          sm: s.sm ? 1 : 0, sr: s.sr ? 1 : 0,
+          dm: s.dm ? 1 : 0, dr: s.dr ? 1 : 0
+        };
       });
       SONG_DATA_FULL = true;
     }).catch(function(){ /* 無ければ埋め込みのまま */ });
