@@ -190,17 +190,21 @@
   .jewel-title-main{font-size:14px;font-weight:800;line-height:1.35;}
   .jewel-title-sub{font-size:11.5px;font-weight:600;line-height:1.4;opacity:.85;}
   .jewel-img-row{display:flex;flex-direction:column;gap:5px;}
-  .jewel-slot{width:100%;max-width:308px;aspect-ratio:308/129;border-radius:6px;overflow:hidden;
+  .jewel-slot{width:100%;max-width:308px;border-radius:6px;overflow:hidden;
     border:1px solid var(--border);background:#0d0f16;}
-  .jewel-slot img{width:100%;height:100%;object-fit:contain;display:block;}
+  .jewel-slot img{width:100%;height:auto;display:block;}
   .jewel-slot.no-img{display:flex;align-items:center;justify-content:center;background:var(--panel-2);}
   .jewel-slot.no-img .placeholder-text{font-size:11px;color:var(--text-dim);}
   .pv-level{margin-bottom:18px;}
   .pv-level-label{font-family:var(--font-display);font-weight:700;font-size:17px;margin-bottom:8px;}
   .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
-  /* PNG保存のあいだだけ、楽曲を12曲ごとに折り返す（画面上の見た目は変えない） */
-  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 64px);
-    justify-content:start;}
+  /* PNG保存のあいだだけ、楽曲を大きくして12曲ごとに折り返す（画面上の見た目は変えない）。
+     プレートは幅の割合で決まるので、全体が同じ比率のまま大きくなる。 */
+  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 96px);
+    gap:10px;justify-content:start;}
+  .pv-export .pv-thumb{width:96px;height:96px;}
+  /* 3枚で1行、楽曲1枚に対して約3.7倍の幅になる */
+  .pv-export .pv-badge-img{flex:0 0 28%;}
   .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
@@ -222,9 +226,10 @@
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
   .pv-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
-  .pv-badge-img{flex:0 0 calc(50% - 4px);aspect-ratio:320/51;border-radius:6px;overflow:hidden;
+  .pv-badge-img{flex:0 0 calc(50% - 4px);border-radius:6px;overflow:hidden;
     border:1px solid var(--border);background:#0d0f16;box-shadow:0 2px 6px rgba(0,0,0,.35);}
-  .pv-badge-img img{width:100%;height:100%;display:block;object-fit:contain;}
+  /* 高さは画像まかせ。こうすると元の比率のまま拡大・縮小されるだけになる */
+  .pv-badge-img img{width:100%;height:auto;display:block;}
   .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;background:var(--panel-2);}
   @media (min-width:560px){
     .pv-badge-img{flex:0 0 calc(33.333% - 6px);}
@@ -279,9 +284,9 @@
   .ptier-band-meta{font-size:11px;color:var(--text-dim);}
   .ptier-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);
     border-radius:8px;padding:6px 10px;margin-bottom:6px;}
-  .ptier-badge-thumb{width:100px;height:auto;aspect-ratio:320/51;border-radius:6px;overflow:hidden;border:1px solid var(--border);
+  .ptier-badge-thumb{width:100px;height:auto;border-radius:6px;overflow:hidden;border:1px solid var(--border);
     background:var(--panel);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:16px;}
-  .ptier-badge-thumb img{width:100%;height:100%;object-fit:fill;display:block;}
+  .ptier-badge-thumb img{width:100%;height:auto;display:block;}
   .ptier-name{flex:1;min-width:0;font-size:13px;word-break:break-word;}
   .ptier-count{font-size:11px;color:var(--text-dim);flex:none;}
   .ptier-points{font-family:var(--font-display);font-weight:700;color:var(--accent);flex:none;font-size:13px;}
@@ -290,7 +295,7 @@
     border:1px solid #ffe14f;border-radius:6px;padding:3px 8px;background:rgba(10,11,18,.6);}
   .ptier-grid{display:flex;flex-wrap:wrap;gap:10px;}
   .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:112px;}
-  .ptier-cell .ptier-badge-thumb{width:112px;height:auto;aspect-ratio:320/51;}
+  .ptier-cell .ptier-badge-thumb{width:112px;height:auto;}
   .ptier-cell-name{font-size:10px;color:var(--text-dim);text-align:center;word-break:break-word;line-height:1.3;}
   .ptier-badge-thumb.no-img{background:var(--panel-2);}
   .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
@@ -302,7 +307,7 @@
     border-radius:8px;margin:0;}
   .drop-hover{outline:2px dashed var(--accent);outline-offset:2px;border-radius:8px;}
 
-  .thumb.plate-thumb{height:auto;aspect-ratio:320/51;}
+  .thumb.plate-thumb{height:auto;}
   .thumb.plate-thumb img{width:100%;height:100%;object-fit:fill;display:block;}
   .tier-total-table{display:flex;flex-direction:column;gap:4px;}
   .tier-total-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);
@@ -1285,7 +1290,7 @@
       }).sort(function(a, b){
         return a.name.localeCompare(b.name, 'ja');
       }).map(function(s){
-        return { id: uid(), name: s.name, img: resolveSongImage(s.name) };
+        return { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '' };
       });
       return { id: uid(), label: L.label, color: L.color, songs: songs, hidden: false };
     });
@@ -2522,15 +2527,23 @@
           var usedSongs = {};
           draft.levels.forEach(function(l){
             (l.songs || []).forEach(function(s){
-              if (s.name) usedSongs[s.name + '|' + (s.chartType === 'dx' ? 'DX' : s.chartType === 'st' ? 'ST' : '')] = true;
+              if (!s.name) return;
+              usedSongs[s.name + '|' + (s.srcType || '')] = true;
+              /* 譜面の区別なく登録された古いデータは、両方とも登録済みとして扱う */
+              if (!s.srcType){
+                usedSongs[s.name + '|ST'] = true;
+                usedSongs[s.name + '|DX'] = true;
+              }
             });
           });
           openSongPicker(function(picked){
             level.songs.push({
               id: uid(),
               img: resolveSongImage(picked.name),
-              name: picked.name
-              /* DX / ST の印は自動ではつけず、下のボタンで手動で切り替える */
+              name: picked.name,
+              /* どちらの譜面として登録したかを覚えておく（選択肢の重複を防ぐためだけに使う）。
+                 DX / ST の印は自動ではつけず、下のボタンで手動で切り替える。 */
+              srcType: picked.type || ''
             });
             renderLevelsEditor(); refreshPreview();
           }, null, usedSongs, { versionName: draft.versionName });
