@@ -203,7 +203,8 @@
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
   .mark-toggle-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
   .btn.mark-on{background:#ff5c5c;border-color:#ff5c5c;color:#fff;}
-  .chart-type-mark{position:absolute;right:1px;bottom:1px;width:5px;height:auto;
+  /* 公式のジャケット表示に合わせ、右下に約43%幅で重ねる */
+  .chart-type-mark{position:absolute;right:3%;bottom:4%;width:43%;height:auto;
     display:block;pointer-events:none;}
   .pv-thumb.is-markable{cursor:pointer;}
   .pv-thumb.is-markable:hover{outline:1px solid var(--accent);}
@@ -501,6 +502,11 @@
     st: 'https://maimaidx.jp/maimai-mobile/img/music_standard.png'
   };
 
+  /* 舞・覇者の対象曲（スタンダードのRe:MASTERが対象）。
+     名前が songs.json と一致しないものは選択肢に出ないので、
+     編集画面に「照合できなかった名前」として表示して気づけるようにしている。 */
+  var MAI_HASHA_SONGS = ["ようこそジャパリパークへ","若い力 -SEGA HARD GIRLS MIX-","Future","ヒバナ","妄想感傷代償連盟","結ンデ開イテ羅刹ト骸","マトリョシカ","39","ロキ","いーあるふぁんくらぶ","ZIGG-ZAGG","カゲロウデイズ","だんだん早くなる","からくりピエロ","ワールズエンド・ダンスホール","立ち入り禁止","はやくそれになりたい！","インビジブル","Tell Your World","ナイトメア☆パーティーナイト","ロストワンの号哭","ロミオとシンデレラ","ナイト・オブ・ナイツ","サドマミホリック","最終鬼畜妹フランドール・S","クレイジークレイジーダンサーズ","明星ロケット","緋色のDance","エピクロスの虹はもう見えない","隠然","Bad Apple!! feat.nomico","ってゐ！ ～えいえんてゐVer～","CYBER Sparks","Lost Princess","キミとボクのミライ","Burning Hearts ～炎のANGEL～","Save This World νMIX","Living Universe","檄！帝国華撃団(改)","Crush On You","Sun Dance","In Chaos","Beat Of Mind","City Escape: Act1","Rooftop Run: Act1","花と、雪と、ドラムンベース。","Starlight Disco","Endless World","ジングルベル","QZKago Requiem","Garakuta Doll Play","Blew Moon","the EmpErroR","ガラテアの螺旋","PANDORA PARADOXXX","Alea jacta est!","FFT","Panopticon","雷切-RAIKIRI-","Schwarzschild","Fragrance","AMAZING MIGHTYYYY!!!!","Danza zandA"];
+
   var SONG_IMAGE_DIR = 'songs/';
   var IMAGE_EXT = '.png';
 
@@ -621,6 +627,23 @@
     var docVersion = opts.versionName || '';
     var isExempt = (docVersion.indexOf(EXEMPT_VERSION) >= 0) || (docVersion.indexOf('覇者') >= 0);
 
+    /* でらっくす以降のバージョンかどうか */
+    var isDxEra = docVersion.indexOf('でらっくす') >= 0;
+
+    /* 対象となる譜面を持っているか
+         真〜輝   : スタンダードのMASTER
+         熊〜現   : でらっくすのMASTER または スタンダードのMASTER
+         舞・覇者 : スタンダードのRe:MASTER（かつ対象曲リストに載っている） */
+    function hasTargetChart(s){
+      if (!SONG_DATA_FULL) return true;          /* 譜面情報がないときは絞らない */
+      if (isExempt) return s.sr === 1;
+      if (isDxEra)  return s.dm === 1 || s.sm === 1;
+      return s.sm === 1;
+    }
+
+    var maiHashaSet = {};
+    MAI_HASHA_SONGS.forEach(function(n){ maiHashaSet[n] = true; });
+
     /* バージョン名から、songs.json 側の表記を割り出す */
     function guessVersion(){
       if (isExempt || !SONG_DATA_FULL) return '';
@@ -673,6 +696,8 @@
       var matches = SONG_MASTER_LIST.filter(function(s){
         if (usedNames[s.name]) return false;                 /* 登録済みは出さない */
         if (levelFilter && s.level !== levelFilter) return false;
+        if (!hasTargetChart(s)) return false;                /* 譜面種別で絞る */
+        if (isExempt && SONG_DATA_FULL && !maiHashaSet[s.name]) return false;  /* 舞・覇者の対象曲のみ */
         if (wantVer && s.ver !== wantVer) return false;
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
       });
@@ -685,7 +710,6 @@
 
       if (matches.length === 0){
         listWrap.appendChild(el('div', {class:'note', text:'該当する曲がありません'}));
-        return;
       }
       matches.forEach(function(s){
         var label = s.name + (s.level ? '　[Lv.' + s.level + ']' : '');
@@ -696,6 +720,17 @@
           onclick: function(){ closeModal(backdrop); onPick(s); }
         }));
       });
+
+      /* 舞・覇者：曲名が楽曲データと一致しなかったものを知らせる */
+      if (isExempt && SONG_DATA_FULL){
+        var known = {};
+        SONG_MASTER_LIST.forEach(function(s){ known[s.name] = true; });
+        var missing = MAI_HASHA_SONGS.filter(function(n){ return !known[n]; });
+        if (missing.length){
+          listWrap.appendChild(el('div', {class:'note', style:{marginTop:'10px', color:'#ffd399'},
+            text:'照合できなかった曲名（' + missing.length + '件）: ' + missing.join('、')}));
+        }
+      }
     }
     if (verSelect) verSelect.addEventListener('change', renderResults);
     searchInput.addEventListener('input', renderResults);
