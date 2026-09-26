@@ -224,8 +224,11 @@
     padding:clamp(18px,3vw,32px);}
   .sync-title{font-family:var(--font-display);font-size:clamp(24px,3.2vw,34px);font-weight:800;
     color:#f2f4f8;margin:0 0 16px;}
-  .sync-level{font-family:var(--font-display);font-size:clamp(18px,2.2vw,24px);font-weight:800;
-    margin:16px 0 8px;}
+  .sync-level-head{display:flex;align-items:center;gap:10px;margin:16px 0 8px;}
+  .sync-level{font-family:var(--font-display);font-size:clamp(18px,2.2vw,24px);font-weight:800;}
+  .sync-level-toggle{flex:none;}
+  /* 保存する画像にはボタンを写さない */
+  .sync-export .sync-level-toggle{display:none;}
   .sync-list{display:grid;grid-template-columns:1fr;gap:6px;}
   .sync-row{display:flex;align-items:center;gap:10px;min-width:0;}
   .sync-thumb{position:relative;width:40px;height:40px;border-radius:6px;overflow:hidden;
@@ -1042,6 +1045,28 @@
     if (!storageOK) return;
     try{ localStorage.setItem(SYNC_PARTNERS_KEY, JSON.stringify(syncPartners)); }catch(e){}
   }
+  /* レベル欄ごとの表示・非表示。これも端末ごとに覚えておく */
+  var SYNC_HIDDEN_KEY = 'mmplate_sync_hidden_v1';
+  var syncHidden = (function(){
+    if (!storageOK) return {};
+    try{ var raw = localStorage.getItem(SYNC_HIDDEN_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  })();
+  function persistSyncHidden(){
+    if (!storageOK) return;
+    try{ localStorage.setItem(SYNC_HIDDEN_KEY, JSON.stringify(syncHidden)); }catch(e){}
+  }
+  function isSyncLevelHidden(versionId, levelId){
+    var m = syncHidden[versionId];
+    return !!(m && m[levelId]);
+  }
+  function toggleSyncLevel(versionId, levelId){
+    if (!syncHidden[versionId]) syncHidden[versionId] = {};
+    if (syncHidden[versionId][levelId]) delete syncHidden[versionId][levelId];
+    else syncHidden[versionId][levelId] = true;
+    persistSyncHidden();
+  }
+
   function getSyncPartner(versionId, songId){
     var m = syncPartners[versionId];
     return (m && m[songId]) || '';
@@ -2122,8 +2147,13 @@
 
   /* シンクのお相手記録の本体を組み立てる。
      レベルごとに、楽曲画像とお相手の記入欄を1行ずつ並べる。 */
+  /* 表示・非表示を切り替えると中身を作り直すので、
+     保存ボタンが今どの要素を見ればよいかをここで共有する */
+  var syncNodeRef = { node: null };
+
   function buildSyncRecordNode(v){
     var card = el('div', {id:'syncCard', class:'sync-card'});
+    syncNodeRef.node = card;
     card.appendChild(el('div', {class:'sync-title', text:'シンクのお相手記録'}));
 
     var wrote = false;
@@ -2133,8 +2163,24 @@
       wrote = true;
 
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
-      card.appendChild(el('div', {class:'sync-level', text: level.label || '',
+      var head = el('div', {class:'sync-level-head'});
+      head.appendChild(el('div', {class:'sync-level', text: level.label || '',
         style:{color: level.color || '#ffffff'}}));
+
+      var off = isSyncLevelHidden(v.id, level.id);
+      head.appendChild(el('button', {
+        class: 'btn btn-sm sync-level-toggle' + (off ? ' btn-hidden-on' : ''),
+        text: off ? '非表示' : '表示',
+        onclick: function(){
+          toggleSyncLevel(v.id, level.id);
+          var holder = card.parentNode;
+          var fresh = buildSyncRecordNode(v);
+          if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
+        }
+      }));
+      card.appendChild(head);
+
+      if (off) return;   /* 非表示のレベルは楽曲を並べない */
 
       var list = el('div', {class:'sync-list'});
       songs.forEach(function(song){
@@ -2398,7 +2444,7 @@
 
       syncBtn.addEventListener('click', function(){
         var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
-        captureNodePNG(syncNode, fname, syncStatus, syncBtn, 'sync-export');
+        captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, syncBtn, 'sync-export');
       });
 
       root.appendChild(el('div', {class:'pv-caption',
@@ -2647,11 +2693,6 @@
             refreshPreview();
           }
         }));
-        head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
-          draft.levels = draft.levels.filter(function(l){ return l.id !== level.id; });
-          renderLevelsEditor();
-          refreshPreview();
-        }}));
 
         var block = el('div', {class:'level-block' + (level.hidden ? ' is-level-hidden' : '')}, [head]);
         var grid2 = el('div', {class:'thumb-grid'});
