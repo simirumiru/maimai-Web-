@@ -472,18 +472,22 @@
       return r.json();
     }).then(function(list){
       if (!Array.isArray(list) || !list.length) return;
+      /* 1曲につき「スタンダード」「でらっくす」が別エントリで入っている */
       SONG_MASTER_LIST = list.map(function(s){
         return {
           name: s.name,
-          level: s.lv || '',
-          ver: s.ver || '',
+          type: s.type || '',              /* 'ST' or 'DX' */
+          level: s.lv || '',               /* MASTER の難易度 */
           lvv: (typeof s.lvv === 'number' ? s.lvv : -1),
-          /* 譜面種別（スタンダード/でらっくす × MASTER/Re:MASTER） */
-          sm: s.sm ? 1 : 0, sr: s.sr ? 1 : 0,
-          dm: s.dm ? 1 : 0, dr: s.dr ? 1 : 0
+          remas: s.rm || '',               /* Re:MASTER の難易度（あれば） */
+          remasv: (typeof s.rmv === 'number' ? s.rmv : -1),
+          ver: s.ver || ''
         };
       });
       SONG_DATA_FULL = true;
+      /* 楽曲データが揃った時点で、空なら初期プレート表を組み立てる */
+      if (seedVersionsIfEmpty()) renderApp();
+      else renderApp();
     }).catch(function(){ /* 無ければ埋め込みのまま */ });
   }
   var SONG_DATA_FULL = false;
@@ -527,19 +531,55 @@
       .replace(/[\\/:*?"<>|]/g, '_')
       .replace(/[. ]+$/, '');
   }
+
+  /* ---- 曲名とファイル名がどうしても噛み合わないものの対応表 ----
+     左が正しい曲名、右が songs/ に置いてあるファイル名（.png は不要）。
+     表示できない曲が出たら、ここに1行足せば直る。 */
+  var SONG_FILE_OVERRIDES = {
+    'False Amber (from the Black Bazaar, Or by A Kervan Trader from the Lands Afar, Or Buried Beneath the Shifting Sands That Lead Everywhere but Nowhere)': 'False Amber',
+    'B.B.K.K.B.K.K.': 'B_B_K_K_B_K_K_',
+    'D\u272aN\u2019T  ST\u272aP  R\u272aCKIN\u2019': 'D\u272aN_T ST\u272aP R\u272aCKIN_',
+    'REVIVER \u30aa\u30eb\u30bf\u30f3\u30b7\u30a2\u30fb\u30b5\u30fc\u30ac -\u84bc\u306e\u9a0e\u58eb\u56e3- \u30aa\u30ea\u30b8\u30ca\u30ebVer.': 'REVIVER \u30aa\u30eb\u30bf\u30f3\u30b7\u30a2\u30fb\u30b5\u30fc\u30ac -\u84bc\u306e\u9a0e\u58eb\u56e3- \u30aa\u30ea\u30b8\u30ca\u30ebVer_',
+    'B.M.S.': 'B_M_S_'
+  };
+
+  /* 1つの曲名に対して、ありうるファイル名を優先度順に並べて返す。
+     上から順に試し、読み込めたものを使う。 */
+  function songFileCandidates(name){
+    if (!name) return [];
+    var list = [];
+    function add(s){ if (s && list.indexOf(s) < 0) list.push(s); }
+    if (SONG_FILE_OVERRIDES[name]) add(SONG_FILE_OVERRIDES[name]);
+    add(toFileName(name));                                   /* 通常の置換 */
+    add(toFileName(name).replace(/\u3000/g, ' '));            /* 全角スペース → 半角 */
+    add(toFileName(name).replace(/\./g, '_'));                /* ピリオドも「_」に */
+    add(toFileName(name).replace(/\./g, '_').replace(/\u3000/g, ' '));
+    add(String(name));                                       /* 置換なしの生の曲名 */
+    return list;
+  }
+  function songImageUrls(name){
+    return songFileCandidates(name).map(function(f){
+      return SONG_IMAGE_DIR + encodeURIComponent(f) + IMAGE_EXT;
+    });
+  }
   function getBundledSongImage(name){
-    if (!name) return '';
-    return SONG_IMAGE_DIR + encodeURIComponent(toFileName(name)) + IMAGE_EXT;
+    var u = songImageUrls(name);
+    return u.length ? u[0] : '';
   }
   /* 優先順位: 開発者が用意した画像 → 各自がアップロードした画像 */
   function resolveSongImage(name){
     return getBundledSongImage(name) || getCachedSongImage(name);
   }
-  /* 読み込み失敗時にフォールバックする <img> を作る共通関数 */
-  function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed){
+
+  /* 読み込み失敗時にフォールバックする <img> を作る共通関数。
+     candidates を渡すと、綴り違いを順に試してから諦める。 */
+  function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, candidates){
+    var queue = (candidates || []).slice();
+    if (queue.length && queue[0] === primarySrc) queue.shift();
     var img = el('img', {src: primarySrc, alt:''});
     var triedFallback = false;
     img.addEventListener('error', function(){
+      if (queue.length){ img.src = queue.shift(); return; }
       if (!triedFallback && fallbackDataUrl && fallbackDataUrl !== primarySrc){
         triedFallback = true;
         img.src = fallbackDataUrl;
@@ -549,6 +589,10 @@
       if (onAllFailed) onAllFailed();
     });
     return img;
+  }
+  /* 楽曲ジャケット専用（綴り違いを自動で試す） */
+  function makeSongImg(name, primarySrc, fallbackDataUrl, onAllFailed){
+    return makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, songImageUrls(name));
   }
 
   /* ---- 曲数からの自動計算（下埋め時間・料金） ---- */
@@ -635,18 +679,14 @@
     var docVersion = opts.versionName || '';
     var isExempt = (docVersion.indexOf(EXEMPT_VERSION) >= 0) || (docVersion.indexOf('覇者') >= 0);
 
-    /* でらっくす以降のバージョンかどうか */
-    var isDxEra = docVersion.indexOf('でらっくす') >= 0;
-
-    /* 対象となる譜面を持っているか
-         真〜輝   : スタンダードのMASTER
-         熊〜現   : でらっくすのMASTER または スタンダードのMASTER
-         舞・覇者 : スタンダードのRe:MASTER（かつ対象曲リストに載っている） */
+    /* 対象となる譜面か
+         通常のバージョン : MASTER譜面（スタンダード・でらっくす両方とも対象。
+                            両方ある曲は2件として並ぶ）
+         舞・覇者        : スタンダードのRe:MASTERを持つもの */
     function hasTargetChart(s){
       if (!SONG_DATA_FULL) return true;          /* 譜面情報がないときは絞らない */
-      if (isExempt) return s.sr === 1;
-      if (isDxEra)  return s.dm === 1 || s.sm === 1;
-      return s.sm === 1;
+      if (isExempt) return s.type === 'ST' && !!s.remas;
+      return true;                                /* 各エントリは元からMASTER譜面 */
     }
 
     var maiHashaSet = {};
@@ -678,7 +718,9 @@
       var seen = [];
       SONG_MASTER_LIST.forEach(function(s){ if (s.ver && seen.indexOf(s.ver) < 0) seen.push(s.ver); });
       seen.forEach(function(v){
-        var left = SONG_MASTER_LIST.filter(function(s){ return s.ver === v && !usedNames[s.name]; }).length;
+        var left = SONG_MASTER_LIST.filter(function(s){
+          return s.ver === v && !usedNames[s.name + '|' + (s.type || '')];
+        }).length;
         verSelect.appendChild(el('option', {value: v}, [v + '（残り ' + left + '曲）']));
       });
       var guessed = guessVersion();
@@ -702,7 +744,7 @@
       var wantVer = verSelect ? verSelect.value : '';
 
       var matches = SONG_MASTER_LIST.filter(function(s){
-        if (usedNames[s.name]) return false;                 /* 登録済みは出さない */
+        if (usedNames[s.name + '|' + (s.type || '')]) return false;  /* 登録済みは出さない */
         if (levelFilter && s.level !== levelFilter) return false;
         if (!hasTargetChart(s)) return false;                /* 譜面種別で絞る */
         if (isExempt && SONG_DATA_FULL && !maiHashaSet[s.name]) return false;  /* 舞・覇者の対象曲のみ */
@@ -712,7 +754,11 @@
 
       /* 難易度の高い順 */
       if (SONG_DATA_FULL){
-        matches = matches.slice().sort(function(a, b){ return (b.lvv || 0) - (a.lvv || 0); });
+        matches = matches.slice().sort(function(a, b){
+          var av = isExempt ? (a.remasv || 0) : (a.lvv || 0);
+          var bv = isExempt ? (b.remasv || 0) : (b.lvv || 0);
+          return bv - av;
+        });
       }
       matches = matches.slice(0, 300);
 
@@ -720,7 +766,10 @@
         listWrap.appendChild(el('div', {class:'note', text:'該当する曲がありません'}));
       }
       matches.forEach(function(s){
-        var label = s.name + (s.level ? '　[Lv.' + s.level + ']' : '');
+        var lvText = isExempt ? (s.remas || s.level) : s.level;
+        var label = s.name;
+        if (s.type) label += '　' + s.type;
+        if (lvText) label += '　[Lv.' + lvText + ']';
         if (s.ver && !wantVer) label += '　' + s.ver;
         listWrap.appendChild(el('button', {
           class:'song-pick-row',
@@ -970,6 +1019,8 @@
     if (syncState.unsubVersions) syncState.unsubVersions();
     syncState.unsubVersions = syncState.db.collection('plates').onSnapshot(function(snap){
       allVersions = snap.docs.map(function(d){ return d.data(); });
+      /* 公開データが空なら、手元で初期プレート表を組み立てて見せる */
+      seedVersionsIfEmpty();
       renderApp();
     }, function(err){
       syncState.error = '同期エラー（プレート表）: ' + err.message;
@@ -1163,6 +1214,81 @@
       badges: [],
       updatedAt: Date.now()
     };
+  }
+
+  /* ---- 真〜現の初期プレート表 ----
+     まだ1件も登録がないときに、全バージョン分の表を 14+ / 14 / 13+ 入りで組み立てる。
+     楽曲は songs.json から、そのバージョン・その難易度のものを拾う。
+     プレート画像は対象バージョンのものを自動で並べる。 */
+  /* プレート表のバージョン名 → songs.json 側のバージョン名（複数のことがある） */
+  function plateVersionToSongVersions(ver){
+    if (!ver) return [];
+    /* 「A ＆ B」形式はそれぞれに分ける */
+    if (ver.indexOf('＆') >= 0){
+      return ver.split('＆').map(function(x){ return x.trim(); }).filter(Boolean);
+    }
+    return [ver];
+  }
+
+  var SEED_LEVELS = [
+    { label: '14+', color: '#ffb84f' },
+    { label: '14',  color: '#ff4fd8' },
+    { label: '13+', color: '#3fd0ff' }
+  ];
+  var seededOnce = false;
+
+  function buildSeedVersion(opt){
+    var v = defaultVersion();
+    var isExempt = (opt.ver === '舞 ＆ 覇者対象Re:MASTER');
+    v.versionName = opt.label;
+    v.subtitleText = '';
+
+    /* そのバージョンの対象楽曲を集める
+         通常     : MASTER譜面（ST・DX どちらも対象）
+         舞・覇者 : スタンダードのRe:MASTER */
+    var maiSet = {};
+    MAI_HASHA_SONGS.forEach(function(n){ maiSet[n] = true; });
+    /* 「maimai ＆ maimai PLUS」のように2バージョンをまとめた表記に対応する */
+    var wantVers = plateVersionToSongVersions(opt.ver);
+    var pool = SONG_MASTER_LIST.filter(function(s){
+      if (isExempt) return s.type === 'ST' && !!s.remas && maiSet[s.name];
+      return wantVers.indexOf(s.ver) >= 0;
+    });
+
+    v.levels = SEED_LEVELS.map(function(L){
+      var songs = pool.filter(function(s){
+        return (isExempt ? s.remas : s.level) === L.label;
+      }).sort(function(a, b){
+        return a.name.localeCompare(b.name, 'ja');
+      }).map(function(s){
+        return {
+          id: uid(),
+          name: s.name,
+          img: resolveSongImage(s.name),
+          chartType: s.type === 'DX' ? 'dx' : s.type === 'ST' ? 'st' : ''
+        };
+      });
+      return { id: uid(), label: L.label, color: L.color, songs: songs, hidden: false };
+    });
+
+    /* そのバージョンの実績プレートを 極→将→神→舞舞 の順で並べる */
+    v.badges = sortBadgesByCategory(platesOfVersion(opt.ver).map(function(p){
+      return { id: uid(), name: p.name, img: resolvePlateImage(p.name) };
+    }));
+
+    v.updatedAt = Date.now();
+    return v;
+  }
+
+  /* 登録が空のときだけ、真〜現の表を作って並べる */
+  function seedVersionsIfEmpty(){
+    if (seededOnce) return false;
+    if (!SONG_DATA_FULL) return false;          /* 楽曲データが来てから */
+    if (allVersions && allVersions.length) return false;  /* 既にあるなら触らない */
+    seededOnce = true;
+    allVersions = versionOptions().map(buildSeedVersion);
+    persistVersions();
+    return true;
   }
 
   var DEFAULT_RANK_DEFS = [
@@ -1816,7 +1942,7 @@
           var t = el('div', {class:'pv-thumb'});
           var srcS = song.img || resolveSongImage(song.name);
           if (srcS){
-            t.appendChild(makeResolvedImg(srcS, getCachedSongImage(song.name), function(){
+            t.appendChild(makeSongImg(song.name, srcS, getCachedSongImage(song.name), function(){
               t.className = 'pv-thumb no-img';
               t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
             }));
@@ -2326,7 +2452,7 @@
             thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
           }
           if (srcSong){
-            thumb.appendChild(makeResolvedImg(srcSong, getCachedSongImage(song.name), songFallbackA));
+            thumb.appendChild(makeSongImg(song.name, srcSong, getCachedSongImage(song.name), songFallbackA));
           } else {
             songFallbackA();
           }
@@ -2361,15 +2487,20 @@
 
         grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'この表に入れる曲を選ぶ', onclick: function(){
           /* この表に登録済みの曲は選択肢から外す */
+          /* 同じ曲でもST譜面とDX譜面は別枠として数える */
           var usedSongs = {};
           draft.levels.forEach(function(l){
-            (l.songs || []).forEach(function(s){ if (s.name) usedSongs[s.name] = true; });
+            (l.songs || []).forEach(function(s){
+              if (s.name) usedSongs[s.name + '|' + (s.chartType === 'dx' ? 'DX' : s.chartType === 'st' ? 'ST' : '')] = true;
+            });
           });
           openSongPicker(function(picked){
             level.songs.push({
               id: uid(),
               img: resolveSongImage(picked.name),
-              name: picked.name
+              name: picked.name,
+              /* 選んだ譜面種別をそのままDX/STの印にする */
+              chartType: picked.type === 'DX' ? 'dx' : picked.type === 'ST' ? 'st' : ''
             });
             renderLevelsEditor(); refreshPreview();
           }, null, usedSongs, { versionName: draft.versionName });
