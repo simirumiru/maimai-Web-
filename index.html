@@ -223,8 +223,8 @@
   .pv-thumb img.chart-type-mark,
   img.chart-type-mark{
     position:absolute;right:3%;bottom:4%;
-    width:52%;height:auto;max-height:40%;
-    object-fit:contain;display:block;pointer-events:none;}
+    width:52%;height:auto;
+    display:block;pointer-events:none;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
@@ -529,18 +529,22 @@
      PNG保存（html2canvas）は別サイトの画像を描き込めないため、
      marks/ フォルダに置いた自分のサイトの画像を先に読む。
      まだ置いていない間だけ、表示用に公式の画像へ切り替わる。 */
-  var CHART_TYPE_IMG = { dx: 'marks/DX.png', st: 'marks/ST.png' };
-  var CHART_TYPE_IMG_REMOTE = {
-    dx: 'https://maimaidx.jp/maimai-mobile/img/music_dx.png',
-    st: 'https://maimaidx.jp/maimai-mobile/img/music_standard.png'
+  /* marks/ に置くファイル名は、公式からそのまま保存した名前でも、
+     短く付け直した名前でも読めるように、上から順に試す。
+     最後の1つは別サイトの画像なので、表示はできてもPNG保存には写らない。 */
+  var CHART_TYPE_SOURCES = {
+    dx: ['marks/music_dx.png', 'marks/DX.png', 'marks/dx.png',
+         'https://maimaidx.jp/maimai-mobile/img/music_dx.png'],
+    st: ['marks/music_standard.png', 'marks/ST.png', 'marks/st.png',
+         'https://maimaidx.jp/maimai-mobile/img/music_standard.png']
   };
   function makeChartTypeMark(kind){
-    var img = el('img', {class:'chart-type-mark', src: CHART_TYPE_IMG[kind], alt:''});
-    var tried = false;
+    var queue = (CHART_TYPE_SOURCES[kind] || []).slice();
+    if (!queue.length) return el('span', {});
+    var img = el('img', {class:'chart-type-mark', src: queue.shift(), alt:''});
     img.addEventListener('error', function(){
-      if (tried){ if (img.parentNode) img.parentNode.removeChild(img); return; }
-      tried = true;
-      img.src = CHART_TYPE_IMG_REMOTE[kind];
+      if (queue.length){ img.src = queue.shift(); return; }
+      if (img.parentNode) img.parentNode.removeChild(img);
     });
     return img;
   }
@@ -1979,7 +1983,7 @@
             t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
           }
 
-          if (song.chartType && CHART_TYPE_IMG[song.chartType]){
+          if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
             t.appendChild(makeChartTypeMark(song.chartType));
           }
 
@@ -2496,7 +2500,7 @@
           } else {
             songFallbackA();
           }
-          if (song.chartType && CHART_TYPE_IMG[song.chartType]){
+          if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
             thumb.appendChild(makeChartTypeMark(song.chartType));
           }
           thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
