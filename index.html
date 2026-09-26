@@ -325,9 +325,25 @@
   .lr-corner-badge{font-size:11.5px;font-weight:700;color:#ffe14f;flex:none;
     border:1px solid #ffe14f;border-radius:6px;padding:3px 8px;background:rgba(10,11,18,.6);}
   .ptier-meta-row .note{margin:0;}
-  .ptier-grid{display:flex;flex-wrap:wrap;gap:10px;}
-  .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:112px;}
-  .ptier-cell .ptier-badge-thumb{width:112px;height:auto;}
+  /* 完成品：1行3枚、幅いっぱいに使う。枚数が変わっても大きさは同じ */
+  .ptier-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;align-items:start;}
+
+  /* 編集画面：1行2枚のまま、少し大きく・間を詰める（密着はさせない） */
+  .ptier-edit-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:5px;align-items:start;}
+  .ptier-edit-grid .thumb-item{width:auto;}
+  .ptier-edit-grid .thumb.plate-thumb{width:100%;}
+
+  /* OFFにしたランクは ON/OFF ボタンだけ残す */
+  .level-block.rank-off > *:not(.level-block-head){display:none;}
+  .level-block.rank-off .level-block-head > *:not(.onoff-btn){display:none;}
+
+  /* 「このランク」を上、ON/OFF を下の2段に。枠の大きさは変えない */
+  .onoff-stacked{flex-direction:column;align-items:center;gap:0;line-height:1.15;}
+  .onoff-stacked .onoff-label{margin-right:0;}
+  .onoff-switch{display:inline-flex;align-items:center;gap:2px;}
+
+  .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:100%;}
+  .ptier-cell .ptier-badge-thumb{width:100%;height:auto;}
   .ptier-cell-name{font-size:10px;color:var(--text-dim);text-align:center;word-break:break-word;line-height:1.3;}
   .ptier-badge-thumb.no-img{background:var(--panel-2);}
   .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
@@ -750,14 +766,16 @@
   }
   /* 「<見出し>ON/OFF」の形のボタン。
      いま効いている側を先に出し、緑の太字にする。反対側は白のまま。 */
-  function makeOnOffButton(prefix, isOn, onToggle){
-    var btn = el('button', {class:'btn btn-sm onoff-btn'});
+  function makeOnOffButton(prefix, isOn, onToggle, stacked){
+    var btn = el('button', {class:'btn btn-sm onoff-btn' + (stacked ? ' onoff-stacked' : '')});
     function paint(on){
       btn.textContent = '';
       if (prefix) btn.appendChild(el('span', {class:'onoff-label', text: prefix}));
-      btn.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
-      btn.appendChild(el('span', {class:'onoff-slash', text:'/'}));
-      btn.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+      var sw = el('span', {class:'onoff-switch'});
+      sw.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
+      sw.appendChild(el('span', {class:'onoff-slash', text:'/'}));
+      sw.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+      btn.appendChild(sw);
     }
     paint(isOn);
     btn.addEventListener('click', function(){
@@ -935,9 +953,6 @@
     var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
     box.appendChild(el('p', {text:'「' + category + '」プレートから選択', style:{marginBottom:'8px'}}));
 
-    var searchInput = el('input', {type:'text', placeholder:'プレート名・バージョン名で検索', class:'song-picker-search'});
-    box.appendChild(searchInput);
-
     var listWrap = el('div', {class:'song-picker-list'});
     box.appendChild(listWrap);
 
@@ -947,12 +962,10 @@
 
     function renderResults(){
       listWrap.textContent = '';
-      var q = searchInput.value.trim().toLowerCase();
       var matches = PLATE_MASTER_LIST.filter(function(p){
         if (p.cat !== category) return false;
         if (usedNames[p.name]) return false;   /* すでに配置済みのものは出さない */
-        if (!q) return true;
-        return p.name.toLowerCase().indexOf(q) >= 0 || p.ver.toLowerCase().indexOf(q) >= 0;
+        return true;
       });
       if (matches.length === 0){
         listWrap.appendChild(el('div', {class:'note', text:'追加できるプレートがありません（すべて配置済みです）'}));
@@ -966,7 +979,6 @@
         }));
       });
     }
-    searchInput.addEventListener('input', renderResults);
     renderResults();
 
     backdrop.appendChild(box);
@@ -2217,14 +2229,16 @@
         head.appendChild(el('div', {class:'sync-level', text: level.label || '',
           style:{color: level.color || '#ffffff'}}));
       }
-      head.appendChild(makeOnOffButton('このレベル', !off, function(){
+      /* 印は必ずボタン自身に付ける（レベルの数字に付いてしまうと保存時に消えない） */
+      var lvToggle = makeOnOffButton('このレベル', !off, function(){
         toggleSyncLevel(v.id, level.id);
         var holder = card.parentNode;
         var fresh = buildSyncRecordNode(v);
         if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
         return !isSyncLevelHidden(v.id, level.id);
-      }));
-      head.firstChild.classList.add('sync-level-toggle');
+      });
+      lvToggle.classList.add('sync-level-toggle');
+      head.appendChild(lvToggle);
       card.appendChild(head);
 
       if (off) return;   /* 非表示のレベルは楽曲を並べない */
@@ -3111,7 +3125,7 @@
     function renderRanksEditor(){
       ranksContainer.textContent = '';
       plateTierDraft.ranks.forEach(function(rank, rIdx){
-        var block = el('div', {class:'level-block'});
+        var block = el('div', {class:'level-block' + (rank.hidden ? ' rank-off' : '')});
 
         var head = el('div', {class:'level-block-head'});
         var labelInput = el('input', {type:'text'});
@@ -3144,7 +3158,7 @@
           renderRanksEditor();
           refreshPreview();
           return !rank.hidden;
-        }));
+        }, true));
         head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
           showDeleteConfirm((rank.label || 'このランク') + 'を削除しますか？', function(){
             plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
@@ -3161,10 +3175,10 @@
           if (!block.__groupLabels) block.__groupLabels = [];
           block.__groupLabels.push({ node: groupLabelNode, name: groupName });
 
-          var grid2 = el('div', {class:'thumb-grid'});
+          var grid2 = el('div', {class:'thumb-grid ptier-edit-grid'});
           (rank[key] || []).forEach(function(p, idx){
-            var item = el('div', {class:'thumb-item', style:{width:'112px'}});
-            var thumb = el('div', {class:'thumb plate-thumb', style:{width:'112px'}});
+            var item = el('div', {class:'thumb-item'});
+            var thumb = el('div', {class:'thumb plate-thumb'});
 
             var perFileInput = el('input', {type:'file', accept:'image/*', style:{display:'none'}});
             perFileInput.addEventListener('change', function(){
@@ -3211,7 +3225,7 @@
             grid2.appendChild(item);
           });
 
-          var addTile = el('div', {class:'thumb-pick-add', style:{width:'112px', height:'36px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
+          var addTile = el('div', {class:'thumb-pick-add', style:{height:'36px'}, text:'＋ プレート追加', title: plateTierDraft.category + 'プレートから選ぶ（' + groupName + '）', onclick: function(){
             /* 表全体で配置済みのプレートを集め、選択肢から除外する */
             var used = {};
             plateTierDraft.ranks.forEach(function(r){
