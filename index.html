@@ -175,7 +175,8 @@
   .edit-preview-col{position:sticky;top:16px;}
 
   /* ---- preview (rendered table itself) ---- */
-  #previewCard{background:#0d0f16;border:1px solid var(--border);border-radius:14px;padding:clamp(18px,3vw,32px);}
+  #previewCard{--pv-pad:clamp(18px,3vw,32px);
+    background:#0d0f16;border:1px solid var(--border);border-radius:14px;padding:var(--pv-pad);}
   .pv-title{font-family:var(--font-display);font-size:clamp(30px,4vw,42px);font-weight:800;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:2px;}
   /* タイトルより一段小さく保ちつつ、太字で読みやすくする */
   .pv-info-line{font-size:clamp(21px,2.8vw,29px);font-weight:800;margin-bottom:9px;
@@ -208,6 +209,7 @@
     gap:6px;justify-content:start;}
   .pv-export .pv-thumb{width:100px;height:100px;}
   /* 3枚で1行、楽曲1枚に対して約3.7倍の幅になる */
+  .pv-export .pv-badges{margin-left:0;margin-right:0;gap:8px;}
   .pv-export .pv-badge-img{flex:0 0 28%;}
   .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
@@ -254,14 +256,17 @@
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
-  .pv-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
-  .pv-badge-img{flex:0 0 calc(50% - 4px);border-radius:6px;overflow:hidden;
+  /* プレートの並びだけカードの余白ぶん外へ広げ、隙間も詰めて大きく見せる。
+     並べ方（縦2列・横3列）と周りの作りはそのまま。 */
+  .pv-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;
+    margin-left:calc(4px - var(--pv-pad));margin-right:calc(4px - var(--pv-pad));}
+  .pv-badge-img{flex:0 0 calc(50% - 2.5px);border-radius:6px;overflow:hidden;
     border:1px solid var(--border);background:#0d0f16;box-shadow:0 2px 6px rgba(0,0,0,.35);}
   /* 高さは画像まかせ。こうすると元の比率のまま拡大・縮小されるだけになる */
   .pv-badge-img img{width:100%;height:auto;display:block;}
   .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;background:var(--panel-2);}
   @media (min-width:560px){
-    .pv-badge-img{flex:0 0 calc(33.333% - 6px);}
+    .pv-badge-img{flex:0 0 calc(33.333% - 3.34px);}
   }
   .pv-badge-img.no-img .placeholder-text{font-size:11px;color:var(--text-dim);padding:0 10px;}
   .badge-thumb.no-img{display:flex;align-items:center;justify-content:center;}
