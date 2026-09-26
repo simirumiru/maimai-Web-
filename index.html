@@ -383,6 +383,17 @@
   .song-name-tag{position:absolute;left:0;right:0;bottom:0;background:rgba(10,11,18,.78);color:#fff;font-size:8px;
     padding:1px 2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+  .onoff-btn{display:inline-flex;align-items:center;gap:2px;}
+  .onoff-label{color:var(--text);margin-right:3px;}
+  .onoff-active{color:#7ee787;font-weight:800;}
+  .onoff-slash{color:#ffffff;}
+  .onoff-idle{color:#ffffff;}
+
+  .del-ask{font-weight:700;font-size:15px;margin:0 0 4px;}
+  .del-actions{display:flex;gap:10px;justify-content:flex-end;}
+  .del-no{background:transparent;border:1px solid #ffffff;color:#ffffff;}
+  .del-yes{background:#e5484d;border-color:#e5484d;color:#fff;}
+
   /* ---- DX / ST の印 ----
      「.thumb img」などの枠側の指定に負けると100%に引き伸ばされて
      ジャケットを覆ってしまうので、枠ごとに名指しし、かつ
@@ -737,6 +748,41 @@
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
     document.body.appendChild(backdrop);
   }
+  /* 「<見出し>ON/OFF」の形のボタン。
+     いま効いている側を先に出し、緑の太字にする。反対側は白のまま。 */
+  function makeOnOffButton(prefix, isOn, onToggle){
+    var btn = el('button', {class:'btn btn-sm onoff-btn'});
+    function paint(on){
+      btn.textContent = '';
+      if (prefix) btn.appendChild(el('span', {class:'onoff-label', text: prefix}));
+      btn.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
+      btn.appendChild(el('span', {class:'onoff-slash', text:'/'}));
+      btn.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+    }
+    paint(isOn);
+    btn.addEventListener('click', function(){
+      var next = onToggle();
+      paint(next);
+    });
+    return btn;
+  }
+
+  /* 削除の確認。「〜を削除しますか？」と、いいえ（左）／はい（右） */
+  function showDeleteConfirm(message, onYes){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    box.appendChild(el('p', {class:'del-ask', text: message}));
+    var actions = el('div', {class:'modal-actions del-actions'});
+    actions.appendChild(el('button', {class:'btn del-no', text:'いいえ',
+      onclick: function(){ closeModal(backdrop); }}));
+    actions.appendChild(el('button', {class:'btn del-yes', text:'はい',
+      onclick: function(){ closeModal(backdrop); onYes(); }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
   function showConfirm(message, onConfirm){
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box'});
@@ -2163,21 +2209,22 @@
       wrote = true;
 
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
-      var head = el('div', {class:'sync-level-head'});
-      head.appendChild(el('div', {class:'sync-level', text: level.label || '',
-        style:{color: level.color || '#ffffff'}}));
-
       var off = isSyncLevelHidden(v.id, level.id);
-      head.appendChild(el('button', {
-        class: 'btn btn-sm sync-level-toggle' + (off ? ' btn-hidden-on' : ''),
-        text: off ? '非表示' : '表示',
-        onclick: function(){
-          toggleSyncLevel(v.id, level.id);
-          var holder = card.parentNode;
-          var fresh = buildSyncRecordNode(v);
-          if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
-        }
+
+      var head = el('div', {class:'sync-level-head'});
+      /* 非表示のときはレベルの数字も出さない */
+      if (!off){
+        head.appendChild(el('div', {class:'sync-level', text: level.label || '',
+          style:{color: level.color || '#ffffff'}}));
+      }
+      head.appendChild(makeOnOffButton('このレベル', !off, function(){
+        toggleSyncLevel(v.id, level.id);
+        var holder = card.parentNode;
+        var fresh = buildSyncRecordNode(v);
+        if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
+        return !isSyncLevelHidden(v.id, level.id);
       }));
+      head.firstChild.classList.add('sync-level-toggle');
       card.appendChild(head);
 
       if (off) return;   /* 非表示のレベルは楽曲を並べない */
@@ -2532,17 +2579,12 @@
       ['追加情報',     'showNote']
     ].forEach(function(pair){
       var label = pair[0], key = pair[1];
-      var btn = el('button', {class:'btn btn-sm'});
-      function sync(){
-        var on = (draft[key] !== false);
-        btn.textContent = label + '：' + (on ? '表示' : '非表示');
-        btn.className = 'btn btn-sm' + (on ? '' : ' btn-hidden-on');
-      }
-      btn.addEventListener('click', function(){
+      var btn = makeOnOffButton(label + '　', (draft[key] !== false), function(){
         draft[key] = (draft[key] === false);
-        sync();
         refreshPreview();
+        return (draft[key] !== false);
       });
+      function sync(){}
       sync();
       togWrap.appendChild(btn);
     });
@@ -2683,15 +2725,11 @@
         head.appendChild(lvColorInput);
 
         head.appendChild(el('div', {class:'spacer'}));
-        head.appendChild(el('button', {
-          class: 'btn btn-sm' + (level.hidden ? ' btn-hidden-on' : ''),
-          text: level.hidden ? 'この欄: 非表示' : 'この欄: 表示',
-          title: '保存・書き出し時にこのレベル欄ごと表示するか切り替えます',
-          onclick: function(){
-            level.hidden = !level.hidden;
-            renderLevelsEditor();
-            refreshPreview();
-          }
+        head.appendChild(makeOnOffButton('この表示', !level.hidden, function(){
+          level.hidden = !level.hidden;
+          renderLevelsEditor();
+          refreshPreview();
+          return !level.hidden;
         }));
 
         var block = el('div', {class:'level-block' + (level.hidden ? ' is-level-hidden' : '')}, [head]);
@@ -2873,6 +2911,7 @@
     card.appendChild(metaRow);
 
     var any = t.ranks.some(function(r){
+      if (r.hidden) return false;
       return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
     });
     if (!any){
@@ -2881,6 +2920,7 @@
     }
 
     t.ranks.forEach(function(rank){
+      if (rank.hidden) return;          /* 非表示にしたランクは出さない */
       var jiriki = rank.jiriki || [];
       var kojinsa = rank.kojinsa || [];
       if (jiriki.length === 0 && kojinsa.length === 0) return;
@@ -3013,16 +3053,11 @@
 
     var lrRow = el('div', {class:'field', style:{marginTop:'10px'}});
     lrRow.appendChild(el('label', {text:'左右差'}));
-    var lrBtn = el('button', {
-      class: 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on'),
-      text: plateTierDraft.showLeftRight ? 'あり' : 'なし'
-    });
-    lrBtn.addEventListener('click', function(){
+    var lrBtn = makeOnOffButton('', !!plateTierDraft.showLeftRight, function(){
       plateTierDraft.showLeftRight = !plateTierDraft.showLeftRight;
-      lrBtn.textContent = plateTierDraft.showLeftRight ? 'あり' : 'なし';
-      lrBtn.className = 'btn btn-sm' + (plateTierDraft.showLeftRight ? '' : ' btn-hidden-on');
       renderRanksEditor();
       refreshPreview();
+      return plateTierDraft.showLeftRight;
     });
     lrRow.appendChild(lrBtn);
     infoCard.appendChild(lrRow);
@@ -3104,9 +3139,17 @@
           plateTierDraft.ranks[rIdx] = tmp;
           renderRanksEditor(); refreshPreview();
         }}));
+        head.appendChild(makeOnOffButton('このランク', !rank.hidden, function(){
+          rank.hidden = !rank.hidden;
+          renderRanksEditor();
+          refreshPreview();
+          return !rank.hidden;
+        }));
         head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
-          plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
-          renderRanksEditor(); refreshPreview();
+          showDeleteConfirm((rank.label || 'このランク') + 'を削除しますか？', function(){
+            plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
+            renderRanksEditor(); refreshPreview();
+          });
         }}));
         block.appendChild(head);
 
