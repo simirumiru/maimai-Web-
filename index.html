@@ -226,6 +226,36 @@
     width:52%;height:auto;
     display:block;pointer-events:none;}
   .pv-empty{font-size:12px;color:var(--text-dim);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;}
+
+  /* ---- シンクのお相手記録（プレート表とは別枠） ---- */
+  .sync-card{background:#0d0f16;border:1px solid var(--border);border-radius:14px;
+    padding:clamp(18px,3vw,32px);}
+  .sync-title{font-family:var(--font-display);font-size:clamp(24px,3.2vw,34px);font-weight:800;
+    color:#f2f4f8;margin:0 0 16px;}
+  .sync-level{font-family:var(--font-display);font-size:clamp(18px,2.2vw,24px);font-weight:800;
+    color:#ffffff;margin:16px 0 8px;}
+  .sync-list{display:grid;grid-template-columns:1fr;gap:6px;}
+  .sync-row{display:flex;align-items:center;gap:10px;min-width:0;}
+  .sync-thumb{position:relative;width:40px;height:40px;border-radius:6px;overflow:hidden;
+    border:1px solid var(--border);flex:none;}
+  .sync-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .sync-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
+  .sync-thumb.no-img .placeholder-text{font-size:7px;color:var(--text-dim);text-align:center;
+    padding:2px;line-height:1.15;word-break:break-word;}
+  .sync-name{flex:1;min-width:0;}
+  .sync-name-input{width:100%;background:var(--panel-2);border:1px solid var(--border);
+    color:var(--text);border-radius:7px;padding:7px 9px;font-size:14px;font-family:inherit;}
+  /* 保存する画像には入力欄ではなく文字の方を写す（html2canvasは入力欄を苦手とするため） */
+  .sync-name-print{display:none;font-size:15px;font-weight:700;color:var(--text);
+    padding:7px 2px;border-bottom:1px solid var(--border);min-height:16px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sync-export .sync-name-input{display:none;}
+  .sync-export .sync-name-print{display:block;}
+  /* 保存時だけ2列に並べて、縦に伸びすぎないようにする */
+  .sync-export .sync-list{grid-template-columns:repeat(2, 420px);gap:8px 28px;
+    justify-content:start;}
+  .sync-export .sync-thumb{width:56px;height:56px;}
+  .sync-export .sync-name-print{font-size:18px;}
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
@@ -295,8 +325,11 @@
   .ptier-count{font-size:11px;color:var(--text-dim);flex:none;}
   .ptier-points{font-family:var(--font-display);font-weight:700;color:var(--accent);flex:none;font-size:13px;}
 
-  .lr-corner-badge{position:absolute;top:12px;right:14px;font-size:11.5px;font-weight:700;color:#ffe14f;
+  /* 左右差の表示。タイトルに重ならないよう、製作者と同じ行の左端に置く */
+  .ptier-meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px;}
+  .lr-corner-badge{font-size:11.5px;font-weight:700;color:#ffe14f;flex:none;
     border:1px solid #ffe14f;border-radius:6px;padding:3px 8px;background:rgba(10,11,18,.6);}
+  .ptier-meta-row .note{margin:0;}
   .ptier-grid{display:flex;flex-wrap:wrap;gap:10px;}
   .ptier-cell{display:flex;flex-direction:column;gap:3px;align-items:center;width:112px;}
   .ptier-cell .ptier-badge-thumb{width:112px;height:auto;}
@@ -498,6 +531,9 @@
           lvv: (typeof s.lvv === 'number' ? s.lvv : -1),
           remas: s.rm || '',               /* Re:MASTER の難易度（あれば） */
           remasv: (typeof s.rmv === 'number' ? s.rmv : -1),
+          /* 譜面定数。並べ替えに使う。不明な曲は -1 */
+          konst: (typeof s.c === 'number' ? s.c : -1),
+          remasKonst: (typeof s.rc === 'number' ? s.rc : -1),
           ver: s.ver || ''
         };
       });
@@ -787,13 +823,14 @@
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
       });
 
-      /* 難易度の高い順 */
+      /* 譜面定数の高い順。定数が分からない曲は表示レベルで代用する */
       if (SONG_DATA_FULL){
-        matches = matches.slice().sort(function(a, b){
-          var av = isExempt ? (a.remasv || 0) : (a.lvv || 0);
-          var bv = isExempt ? (b.remasv || 0) : (b.lvv || 0);
-          return bv - av;
-        });
+        function sortKey(s){
+          var k = isExempt ? s.remasKonst : s.konst;
+          if (typeof k === 'number' && k >= 0) return k;
+          return isExempt ? (s.remasv || 0) : (s.lvv || 0);
+        }
+        matches = matches.slice().sort(function(a, b){ return sortKey(b) - sortKey(a); });
       }
       matches = matches.slice(0, 300);
 
@@ -802,9 +839,11 @@
       }
       matches.forEach(function(s){
         var lvText = isExempt ? (s.remas || s.level) : s.level;
+        var kon = isExempt ? s.remasKonst : s.konst;
         var label = s.name;
         if (s.type) label += '　' + s.type;
         if (lvText) label += '　[Lv.' + lvText + ']';
+        if (typeof kon === 'number' && kon >= 0) label += '　定数 ' + kon.toFixed(1);
         if (s.ver && !wantVer) label += '　' + s.ver;
         listWrap.appendChild(el('button', {
           class:'song-pick-row',
@@ -984,6 +1023,29 @@
   var reviewBannerDismissed = false;
 
   /* 閲覧者が楽曲につけた赤斜線。端末内（ブラウザ）にのみ保存される */
+  /* ---- シンクのお相手記録 ----
+     プレート表とは別のもの。書いた名前はその端末の中にだけ残る。 */
+  var SYNC_PARTNERS_KEY = 'mmplate_sync_partners_v1';
+  var syncPartners = (function(){
+    if (!storageOK) return {};
+    try{ var raw = localStorage.getItem(SYNC_PARTNERS_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  })();
+  function persistSyncPartners(){
+    if (!storageOK) return;
+    try{ localStorage.setItem(SYNC_PARTNERS_KEY, JSON.stringify(syncPartners)); }catch(e){}
+  }
+  function getSyncPartner(versionId, songId){
+    var m = syncPartners[versionId];
+    return (m && m[songId]) || '';
+  }
+  function setSyncPartner(versionId, songId, name){
+    if (!syncPartners[versionId]) syncPartners[versionId] = {};
+    if (name) syncPartners[versionId][songId] = name;
+    else delete syncPartners[versionId][songId];
+    persistSyncPartners();
+  }
+
   var SONG_MARKS_KEY = 'mmplate_song_marks_v1';
   function loadSongMarks(){
     if (!storageOK) return {};
@@ -2051,20 +2113,84 @@
     return card;
   }
 
+  /* シンクのお相手記録の本体を組み立てる。
+     レベルごとに、楽曲画像とお相手の記入欄を1行ずつ並べる。 */
+  function buildSyncRecordNode(v){
+    var card = el('div', {id:'syncCard', class:'sync-card'});
+    card.appendChild(el('div', {class:'sync-title', text:'シンクのお相手記録'}));
+
+    var wrote = false;
+    (v.levels || []).forEach(function(level){
+      var songs = (level.songs || []).filter(function(s){ return !s.hidden; });
+      if (!songs.length) return;
+      wrote = true;
+
+      card.appendChild(el('div', {class:'sync-level', text: level.label || ''}));
+
+      var list = el('div', {class:'sync-list'});
+      songs.forEach(function(song){
+        var row = el('div', {class:'sync-row'});
+
+        var thumb = el('div', {class:'sync-thumb'});
+        var src = song.img || resolveSongImage(song.name);
+        if (src){
+          thumb.appendChild(makeSongImg(song.name, src, getCachedSongImage(song.name), function(){
+            thumb.classList.add('no-img');
+            thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+          }));
+        } else {
+          thumb.classList.add('no-img');
+          thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+        }
+        if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
+          thumb.appendChild(makeChartTypeMark(song.chartType));
+        }
+        row.appendChild(thumb);
+
+        /* 記入欄と、画像保存のときに使う文字。中身は常に同じにしておく */
+        var saved = getSyncPartner(v.id, song.id);
+        var printed = el('div', {class:'sync-name-print', text: saved});
+        var input = el('input', {type:'text', class:'sync-name-input'});
+        input.value = saved;
+        input.addEventListener('input', function(){
+          setSyncPartner(v.id, song.id, input.value.trim());
+          printed.textContent = input.value;
+        });
+        var nameWrap = el('div', {class:'sync-name'});
+        nameWrap.appendChild(input);
+        nameWrap.appendChild(printed);
+        row.appendChild(nameWrap);
+
+        list.appendChild(row);
+      });
+      card.appendChild(list);
+    });
+
+    if (!wrote) card.appendChild(el('div', {class:'pv-empty', text:'（楽曲が登録されていません）'}));
+    return card;
+  }
+
   /* ========================= export PNG ========================= */
   function exportPNG(v, statusEl, btn){
-    btn.disabled = true;
-    statusEl.textContent = '画像を生成中…';
     var node = document.getElementById('previewCard');
     var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + '.png';
-
     /* 12曲で折り返す幅を確保してから描き込む */
+    captureNodePNG(node, name, statusEl, btn, 'pv-export');
+  }
+
+  /* 指定した要素をPNGにして保存する。
+     exportClass を付けているあいだだけ、保存用のレイアウトに切り替わる。 */
+  function captureNodePNG(node, name, statusEl, btn, exportClass){
+    if (!node) return;
+    btn.disabled = true;
+    statusEl.textContent = '画像を生成中…';
+
     var prevWidth = node.style.width;
-    node.classList.add('pv-export');
+    if (exportClass) node.classList.add(exportClass);
     node.style.width = 'max-content';
 
     function restoreLayout(){
-      node.classList.remove('pv-export');
+      if (exportClass) node.classList.remove(exportClass);
       node.style.width = prevWidth;
     }
 
@@ -2245,6 +2371,30 @@
     pvHolder.appendChild(buildPreviewNode(v, { interactive: !isJewelDoc }));
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
+
+    /* プレート表とは別枠の「シンクのお相手記録」。Jewel表には出さない */
+    if (!isJewelDoc){
+      var syncBar = el('div', {class:'view-topbar', style:{marginTop:'26px', marginBottom:'10px'}});
+      var syncStatus = el('span', {class:'note', style:{width:'auto'}});
+      var syncBtn = el('button', {class:'btn', text:'お相手記録を画像として保存（PNG）'});
+      syncBar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
+      syncBar.appendChild(syncStatus);
+      syncBar.appendChild(syncBtn);
+      root.appendChild(syncBar);
+
+      var syncHolder = el('div', {class:'preview-wide'});
+      var syncNode = buildSyncRecordNode(v);
+      syncHolder.appendChild(syncNode);
+      root.appendChild(syncHolder);
+
+      syncBtn.addEventListener('click', function(){
+        var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
+        captureNodePNG(syncNode, fname, syncStatus, syncBtn, 'sync-export');
+      });
+
+      root.appendChild(el('div', {class:'pv-caption',
+        text:'書いた名前はこの端末の中にだけ残ります。'}));
+    }
   }
 
   /* ========================= view: edit ========================= */
@@ -2453,6 +2603,16 @@
     levelsCard.appendChild(addLevelBtn);
     editorCol.appendChild(levelsCard);
 
+    /* 舞・覇者は対象曲にLv.15があるので、15の欄が無ければ先頭に足す
+       （この表だけの例外。すでに保存してある表にも後から付く） */
+    (function ensureMaiHashaLv15(){
+      var vn = draft.versionName || '';
+      if (vn.indexOf('覇者') < 0 && vn.indexOf('舞 ＆') < 0) return;
+      var has = (draft.levels || []).some(function(l){ return (l.label || '').trim() === '15'; });
+      if (has) return;
+      draft.levels.unshift({ id: uid(), label: '15', color: '#ff7ad9', songs: [], hidden: false });
+    })();
+
     function renderLevelsEditor(){
       levelsEditorContainer.textContent = '';
       draft.levels.forEach(function(level){
@@ -2652,11 +2812,15 @@
 
   function buildPlateTierPreviewNode(t){
     var card = el('div', {id:'previewCard', style:{position:'relative'}});
-    card.appendChild(el('div', {class:'lr-corner-badge', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
     card.appendChild(el('div', {class:'pv-title', text: t.title}));
+
+    /* 左右差のマークを左端に、その右へ製作者を並べる */
+    var metaRow = el('div', {class:'ptier-meta-row'});
+    metaRow.appendChild(el('div', {class:'lr-corner-badge', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
     if (t.author && t.author.trim()){
-      card.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'製作者：' + t.author.trim()}));
+      metaRow.appendChild(el('div', {class:'note', text:'製作者：' + t.author.trim()}));
     }
+    card.appendChild(metaRow);
 
     var any = t.ranks.some(function(r){
       return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
