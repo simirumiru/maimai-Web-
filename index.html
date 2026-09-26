@@ -202,7 +202,9 @@
   .jewel-slot.no-img .placeholder-text{font-size:11px;color:var(--text-dim);}
   .pv-level{margin-bottom:18px;}
   .pv-level-label{font-family:var(--font-display);font-weight:700;font-size:17px;margin-bottom:8px;}
-  .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
+  /* 画像を少し大きくし、そのぶん隙間を詰める。
+     1つあたりの間隔（画像＋隙間）は 72px のままなので、折り返す位置は変わらない。 */
+  .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start;}
   /* PNG保存のあいだだけ、楽曲を大きくして12曲ごとに折り返す（画面上の見た目は変えない）。
      プレートは幅の割合で決まるので、全体が同じ比率のまま大きくなる。 */
   .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 100px);
@@ -211,7 +213,7 @@
   /* 3枚で1行、楽曲1枚に対して約3.7倍の幅になる */
   .pv-export .pv-badges{margin-left:0;margin-right:0;gap:8px;}
   .pv-export .pv-badge-img{flex:0 0 28%;}
-  .pv-thumb{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
+  .pv-thumb{position:relative;width:68px;height:68px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
   .mark-toggle-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
