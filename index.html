@@ -3183,7 +3183,8 @@
     root.appendChild(bar);
   }
 
-  /* 縮小プレビューの高さを実寸に合わせ、カード間で最大値に揃える */
+  /* 縮小プレビューの高さを、そのカード自身のプレートの直下で切る
+     （以前は全カードの最大値に揃えていたため、曲数の少ないバージョンで下が大きく余っていた） */
   var CARD_PREVIEW_SCALE = 0.62;
   function fitCardPreviews(root){
     var wraps = root.querySelectorAll('.card-preview');
@@ -3206,13 +3207,10 @@
     }
 
     function apply(){
-      var max = 0, list = [];
       for (var i = 0; i < wraps.length; i++){
         var h = measure(wraps[i]);
-        list.push(wraps[i]);
-        if (h > max) max = h;
+        if (h > 0) wraps[i].style.height = Math.ceil(h) + 'px';
       }
-      list.forEach(function(w){ w.style.height = Math.ceil(max) + 'px'; });
     }
 
     apply();
