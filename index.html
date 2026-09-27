@@ -1920,7 +1920,11 @@
   var listAnchorId = null;
 
   function goList(){ view = 'list'; currentId = null; draft = null; renderApp(); }
-  function goDetail(id){ listAnchorId = id; view = 'detail'; currentId = id; renderApp(); }
+  /* 詳細を開いたら、一覧でスクロールしていた位置を引き継がず一番上から見せる */
+  function scrollToTopNow(){
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch(e){ window.scrollTo(0, 0); }
+  }
+  function goDetail(id){ listAnchorId = id; view = 'detail'; currentId = id; renderApp(); scrollToTopNow(); }
   function goEditNew(){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     draft = defaultVersion(); currentId = null; view = 'edit'; renderApp();
@@ -2026,7 +2030,7 @@
 
   /* ---- プレート難易度メーカー ナビゲーション ---- */
   function goPlateTierList(){ plateTierView = 'list'; plateTierCurrentId = null; plateTierDraft = null; renderApp(); }
-  function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); }
+  function goPlateTierDetail(id){ plateTierView = 'detail'; plateTierCurrentId = id; renderApp(); scrollToTopNow(); }
   function goPlateTierEditNew(category, showLeftRight){
     plateTierDraft = defaultPlateTier(category, showLeftRight);
     plateTierCurrentId = null;
