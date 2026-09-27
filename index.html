@@ -1005,12 +1005,86 @@
   }
   var storageOK = testStorage();
 
+  /* ---- 読み込んだデータの穴埋め ----
+     古い版で保存したデータや、途中で項目が増える前のデータには
+     項目そのものが無いことがある。1か所でも undefined があると
+     描画の途中で止まり、一覧全体が真っ白になるので、ここで既定値を入れておく。 */
+  function normalizeVersion(v){
+    if (!v || typeof v !== 'object') return null;
+    if (!v.id) v.id = uid();
+    v.versionName     = (v.versionName == null) ? '' : String(v.versionName);
+    v.priceRange      = (v.priceRange  == null) ? '緑〜赤' : String(v.priceRange);
+    v.price1          = (v.price1      == null) ? '' : String(v.price1);
+    v.price2          = (v.price2      == null) ? '' : String(v.price2);
+    v.timeText        = (v.timeText    == null) ? '' : String(v.timeText);
+    v.subtitleText    = (v.subtitleText == null) ? '' : String(v.subtitleText);
+    v.timeExclusionNote = (v.timeExclusionNote == null) ? '' : String(v.timeExclusionNote);
+    v.themeColor      = v.themeColor || '#7ee787';
+    if (typeof v.updatedAt !== 'number') v.updatedAt = 0;
+
+    v.levels = Array.isArray(v.levels) ? v.levels : [];
+    v.levels.forEach(function(l){
+      if (!l.id) l.id = uid();
+      l.label = (l.label == null) ? '' : String(l.label);
+      l.color = l.color || '#f2f4f8';
+      l.songs = Array.isArray(l.songs) ? l.songs : [];
+      l.songs.forEach(function(s){
+        if (!s.id) s.id = uid();
+        s.name = (s.name == null) ? '' : String(s.name);
+      });
+    });
+
+    v.badges = Array.isArray(v.badges) ? v.badges : [];
+    v.badges.forEach(function(bd){
+      if (!bd.id) bd.id = uid();
+      bd.name = (bd.name == null) ? '' : String(bd.name);
+    });
+
+    /* 実績フレーム（Jewel）表 */
+    if (v.docType === 'jewel'){
+      v.stones = Array.isArray(v.stones) ? v.stones : [];
+      v.imgs = (v.imgs && typeof v.imgs === 'object') ? v.imgs : {};
+    }
+    return v;
+  }
+  function normalizeVersions(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(normalizeVersion).filter(Boolean);
+  }
+
+  function normalizePlateTier(t){
+    if (!t || typeof t !== 'object') return null;
+    if (!t.id) t.id = uid();
+    t.title    = (t.title  == null) ? '' : String(t.title);
+    t.author   = (t.author == null) ? '' : String(t.author);
+    t.category = t.category || '極';
+    if (typeof t.updatedAt !== 'number') t.updatedAt = 0;
+    t.ranks = Array.isArray(t.ranks) ? t.ranks : [];
+    t.ranks.forEach(function(r){
+      if (!r.id) r.id = uid();
+      r.label = (r.label == null) ? '' : String(r.label);
+      r.color = r.color || '#f2f4f8';
+      ['jiriki','kojinsa'].forEach(function(k){
+        r[k] = Array.isArray(r[k]) ? r[k] : [];
+        r[k].forEach(function(pl){
+          if (!pl.id) pl.id = uid();
+          pl.name = (pl.name == null) ? '' : String(pl.name);
+        });
+      });
+    });
+    return t;
+  }
+  function normalizePlateTiers(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(normalizePlateTier).filter(Boolean);
+  }
+
   function loadVersions(){
     if (!storageOK) return [];
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
       var parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      return normalizeVersions(parsed);
     }catch(e){ return []; }
   }
 
@@ -1036,7 +1110,7 @@
     try{
       var raw = localStorage.getItem(PLATE_TIER_STORAGE_KEY);
       var parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      return normalizePlateTiers(parsed);
     }catch(e){ return []; }
   }
 
@@ -1212,7 +1286,7 @@
   function attachSyncListeners(){
     if (syncState.unsubVersions) syncState.unsubVersions();
     syncState.unsubVersions = syncState.db.collection('plates').onSnapshot(function(snap){
-      allVersions = snap.docs.map(function(d){ return d.data(); });
+      allVersions = normalizeVersions(snap.docs.map(function(d){ return d.data(); }));
       /* 公開データが空なら、手元で初期プレート表を組み立てて見せる */
       seedVersionsIfEmpty();
       renderApp();
@@ -1724,8 +1798,11 @@
   }
 
   /* ========================= navigation ========================= */
+  /* 一覧に戻ったとき、さっき開いたバージョンの位置まで戻すための目印 */
+  var listAnchorId = null;
+
   function goList(){ view = 'list'; currentId = null; draft = null; renderApp(); }
-  function goDetail(id){ view = 'detail'; currentId = id; renderApp(); }
+  function goDetail(id){ listAnchorId = id; view = 'detail'; currentId = id; renderApp(); }
   function goEditNew(){
     if (!canEdit()){ showAlert('これは閲覧専用の公開版です。編集するには管理者としてログインしてください。'); return; }
     draft = defaultVersion(); currentId = null; view = 'edit'; renderApp();
@@ -2078,6 +2155,7 @@
     }
 
     function appendColoredRange(container, rangeText, startColor, endColor){
+      rangeText = (rangeText == null) ? '' : String(rangeText);
       var seps = ['〜','～','~'];
       var sepIdx = -1;
       for (var i = 0; i < rangeText.length; i++){
@@ -2439,19 +2517,25 @@
     }
 
     var grid = el('div', {class:'versions-grid'});
+    var anchorCard = null;
     sortedVersions().forEach(function(v, idx){
       var isJewel = (v.docType === 'jewel');
       var card = el('div', {class:'version-card', onclick: function(){ goDetail(v.id); }});
       card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : v.themeColor}}));
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
 
-      /* 実績プレート表のみ、完成品を縮小プレビューとして表示（Jewel表は出さない） */
+      /* 実績プレート表のみ、完成品を縮小プレビューとして表示（Jewel表は出さない）。
+         1件が壊れていても一覧全体が止まらないように包んでおく。 */
       if (!isJewel){
-        var pvWrap = el('div', {class:'card-preview'});
-        var pvInner = el('div', {class:'card-preview-inner'});
-        pvInner.appendChild(buildPreviewNode(v));
-        pvWrap.appendChild(pvInner);
-        card.appendChild(pvWrap);
+        try{
+          var pvWrap = el('div', {class:'card-preview'});
+          var pvInner = el('div', {class:'card-preview-inner'});
+          pvInner.appendChild(buildPreviewNode(v));
+          pvWrap.appendChild(pvInner);
+          card.appendChild(pvWrap);
+        }catch(err){
+          card.appendChild(el('div', {class:'note', text:'このバージョンのプレビューを表示できませんでした'}));
+        }
       }
 
       if (canEdit()){
@@ -2462,10 +2546,24 @@
         card.appendChild(actions);
       }
 
+      if (v.id === listAnchorId) anchorCard = card;
       grid.appendChild(card);
     });
     root.appendChild(grid);
     fitCardPreviews(root);
+
+    /* さっき開いたバージョンが画面に入るまで戻す。
+       プレビューの高さは画像の読み込み後に決まるので、少し置いて何度か合わせ直す。 */
+    if (anchorCard){
+      var target = anchorCard;
+      listAnchorId = null;            /* 一度戻したら目印は消す */
+      var jump = function(){
+        try { target.scrollIntoView({ block: 'center' }); } catch(e){}
+      };
+      jump();
+      setTimeout(jump, 160);
+      setTimeout(jump, 560);
+    }
   }
 
   /* ========================= view: detail ========================= */
@@ -2605,8 +2703,6 @@
         refreshPreview();
         return (draft[key] !== false);
       });
-      function sync(){}
-      sync();
       togWrap.appendChild(btn);
     });
     togRow.appendChild(togWrap);
@@ -3484,11 +3580,14 @@
       var marks = inner.querySelectorAll('.pv-badge-img');
       if (!marks.length) marks = inner.querySelectorAll('.pv-thumb, .pv-empty');
       if (!marks.length) return inner.getBoundingClientRect().height;
-      var bottom = 0;
+      /* 画面より上にスクロールしているカードは座標がマイナスになる。
+         0 から比べ始めると最下端を見失い、高さが異常に大きくなるので null から始める。 */
+      var bottom = null;
       for (var i = 0; i < marks.length; i++){
         var b = marks[i].getBoundingClientRect().bottom;
-        if (b > bottom) bottom = b;
+        if (bottom === null || b > bottom) bottom = b;
       }
+      if (bottom === null) return inner.getBoundingClientRect().height;
       return Math.max(0, bottom - innerTop) + 6;   /* ほんの少しだけ余白 */
     }
 
