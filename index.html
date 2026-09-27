@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>実績プレート表アーカイブ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&text=TopBtm&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -511,6 +512,24 @@
   .del-no{background:transparent;border:1px solid var(--text);color:var(--text);}
   .del-yes{background:var(--danger-bg);border-color:var(--danger-bg);color:#fff;}
 
+  /* ---- 画面の一番上・一番下へ移動するボタン（右下） ----
+     maimaiDX NET の Top / Bottom を参考にした角丸の三角形。色はサイトの青に合わせる */
+  .jump-nav{position:fixed;right:max(12px, env(safe-area-inset-right));
+    bottom:calc(16px + env(safe-area-inset-bottom));z-index:900;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    opacity:1;transition:opacity .5s ease;}
+  .jump-nav.is-idle{opacity:0;pointer-events:none;}
+  .jump-btn{display:block;width:52px;height:46px;padding:0;border:none;background:none;cursor:pointer;
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,.45));transition:transform .15s ease;
+    -webkit-tap-highlight-color:transparent;}
+  .jump-btn:hover{transform:scale(1.06);}
+  .jump-btn:active{transform:scale(.94);}
+  .jump-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px;}
+  .jump-btn svg{display:block;width:100%;height:100%;overflow:visible;}
+  .jump-btn text{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Arial Rounded MT Bold',sans-serif;
+    font-weight:800;paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round;}
+  @media (max-width:480px){ .jump-btn{width:46px;height:41px;} }
+
   /* ---- DX / ST の印 ----
      「.thumb img」などの枠側の指定に負けると100%に引き伸ばされて
      ジャケットを覆ってしまうので、枠ごとに名指しし、かつ
@@ -672,7 +691,9 @@
           /* 譜面定数。並べ替えに使う。不明な曲は -1 */
           konst: (typeof s.c === 'number' ? s.c : -1),
           remasKonst: (typeof s.rc === 'number' ? s.rc : -1),
-          ver: s.ver || ''
+          ver: s.ver || '',
+          /* 2つのバージョンにまたがる譜面（どちらが先か分からない曲）はここに2つ目が入る */
+          ver2: s.ver2 || ''
         };
       });
       SONG_DATA_FULL = true;
@@ -682,6 +703,8 @@
     }).catch(function(){ /* 無ければ埋め込みのまま */ });
   }
   var SONG_DATA_FULL = false;
+  /* その譜面が指定のバージョンに入っているか（2つ目のバージョンも見る） */
+  function songInVer(s, v){ return !!v && (s.ver === v || s.ver2 === v); }
 
   var SONG_IMAGE_CACHE_KEY = 'mmplate_song_image_cache_v1';
   function loadSongImageCache(){
@@ -942,7 +965,7 @@
     function guessVersion(){
       if (isExempt || !SONG_DATA_FULL) return '';
       var vers = {};
-      SONG_MASTER_LIST.forEach(function(s){ if (s.ver) vers[s.ver] = true; });
+      SONG_MASTER_LIST.forEach(function(s){ if (s.ver) vers[s.ver] = true; if (s.ver2) vers[s.ver2] = true; });
       var names = Object.keys(vers);
       /* 「maimai でらっくす UNiVERSE〈宙ver.〉」→「maimai でらっくす UNiVERSE」 */
       var base = docVersion.split('〈')[0].trim();
@@ -965,7 +988,7 @@
       SONG_MASTER_LIST.forEach(function(s){ if (s.ver && seen.indexOf(s.ver) < 0) seen.push(s.ver); });
       seen.forEach(function(v){
         var left = SONG_MASTER_LIST.filter(function(s){
-          return s.ver === v && !usedNames[s.name + '|' + (s.type || '')];
+          return songInVer(s, v) && !usedNames[s.name + '|' + (s.type || '')];
         }).length;
         verSelect.appendChild(el('option', {value: v}, [v + '（残り ' + left + '曲）']));
       });
@@ -994,7 +1017,7 @@
         if (levelFilter && s.level !== levelFilter) return false;
         if (!hasTargetChart(s)) return false;                /* 譜面種別で絞る */
         if (isExempt && SONG_DATA_FULL && !maiHashaSet[s.name]) return false;  /* 舞・覇者の対象曲のみ */
-        if (wantVer && s.ver !== wantVer) return false;
+        if (wantVer && !songInVer(s, wantVer)) return false;
         return !q || s.name.toLowerCase().indexOf(q) >= 0;
       });
 
@@ -1019,7 +1042,7 @@
         if (s.type) label += '　' + s.type;
         if (lvText) label += '　[Lv.' + lvText + ']';
         if (typeof kon === 'number' && kon >= 0) label += '　定数 ' + kon.toFixed(1);
-        if (s.ver && !wantVer) label += '　' + s.ver;
+        if (s.ver && !wantVer) label += '　' + s.ver + (s.ver2 ? ' ／ ' + s.ver2 : '');
         listWrap.appendChild(el('button', {
           class:'song-pick-row',
           text: label,
@@ -1065,6 +1088,7 @@
       listWrap.textContent = '';
       var matches = PLATE_MASTER_LIST.filter(function(p){
         if (p.cat !== category) return false;
+        if (p.ver === 'maimai でらっくす MAGiCAL') return false;   /* 稼働中の 現 は難易度表の対象外 */
         if (usedNames[p.name]) return false;   /* すでに配置済みのものは出さない */
         return true;
       });
@@ -1616,7 +1640,7 @@
     var wantVers = plateVersionToSongVersions(opt.ver);
     var pool = SONG_MASTER_LIST.filter(function(s){
       if (isExempt) return s.type === 'ST' && !!s.remas && maiSet[s.name];
-      return wantVers.indexOf(s.ver) >= 0;
+      return wantVers.some(function(v){ return songInVer(s, v); });
     });
 
     v.levels = SEED_LEVELS.map(function(L){
@@ -2348,7 +2372,7 @@
     card.appendChild(el('div', {class:'pv-divider'}));
 
     if (v.badges.length === 0){
-      card.appendChild(el('div', {class:'pv-empty', text:'（実績プレート画像未追加）'}));
+      /* 実績プレートが未登録のときは何も表示しない */
     } else {
       function makeBadgeNode(badge){
         var b = el('div', {class:'pv-badge-img'});
@@ -3194,8 +3218,6 @@
         ol.appendChild(el('li', {text:'続けて左右差のあり／なしを選びます'}));
         ol.appendChild(el('li', {text:'SS / S / A / B / C … のランクごとにプレートを追加していきます'}));
         empty.appendChild(ol);
-      } else {
-        empty.appendChild(el('div', {text:'まだ公開されているプレート難易度表がありません。'}));
       }
       root.appendChild(empty);
       return;
@@ -3924,6 +3946,73 @@
 
   loadSongsJson();
   renderApp();
+
+  /* ---- 画面の一番上・一番下へ移動するボタン ----
+     4秒間なにも操作しないと0.5秒かけて消え、触る・動かすと0.5秒かけて戻る */
+  (function setupJumpNav(){
+    var NS = 'http://www.w3.org/2000/svg';
+    function tri(up, label){
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 60 52');
+      svg.setAttribute('aria-hidden', 'true');
+      var pts = up ? '30,8 54,44 6,44' : '6,8 54,8 30,44';
+      /* 外側の白いふち → 本体の青（上が明るいグラデーション） → 文字 */
+      var defs = document.createElementNS(NS, 'defs');
+      var gid = 'jg' + (up ? 'u' : 'd');
+      var g = document.createElementNS(NS, 'linearGradient');
+      g.setAttribute('id', gid); g.setAttribute('x1', '0'); g.setAttribute('y1', '0');
+      g.setAttribute('x2', '0'); g.setAttribute('y2', '1');
+      [['0', '#b6d0fb'], ['1', '#6f9ef0']].forEach(function(s){
+        var st = document.createElementNS(NS, 'stop');
+        st.setAttribute('offset', s[0]); st.setAttribute('stop-color', s[1]); g.appendChild(st);
+      });
+      defs.appendChild(g); svg.appendChild(defs);
+      function poly(fill, stroke, w){
+        var p = document.createElementNS(NS, 'polygon');
+        p.setAttribute('points', pts); p.setAttribute('fill', fill);
+        p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', w);
+        p.setAttribute('stroke-linejoin', 'round');
+        return p;
+      }
+      svg.appendChild(poly('#f4f6fb', '#f4f6fb', 14));          /* ふち */
+      svg.appendChild(poly('url(#' + gid + ')', 'url(#' + gid + ')', 8));  /* 本体 */
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', '30');
+      t.setAttribute('y', up ? '39' : '23');
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-size', up ? '12.5' : '11');
+      t.setAttribute('fill', '#2f5fb8');
+      t.textContent = label;
+      svg.appendChild(t);
+      return svg;
+    }
+    function jump(toTop){
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var y = toTop ? 0 : Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+    }
+    var nav = el('div', {class:'jump-nav'});
+    var up = el('button', {class:'jump-btn', type:'button', 'aria-label':'一番上へ移動', title:'一番上へ',
+      onclick: function(){ jump(true); wake(); }});
+    up.appendChild(tri(true, 'Top'));
+    var down = el('button', {class:'jump-btn', type:'button', 'aria-label':'一番下へ移動', title:'一番下へ',
+      onclick: function(){ jump(false); wake(); }});
+    down.appendChild(tri(false, 'Bottom'));
+    nav.appendChild(up); nav.appendChild(down);
+    document.body.appendChild(nav);
+
+    var IDLE_MS = 4000, timer = null;
+    function sleep(){ nav.classList.add('is-idle'); }
+    function wake(){
+      nav.classList.remove('is-idle');
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(sleep, IDLE_MS);
+    }
+    ['scroll', 'wheel', 'touchstart', 'touchmove', 'pointerdown', 'mousemove', 'keydown'].forEach(function(ev){
+      window.addEventListener(ev, wake, { passive: true });
+    });
+    wake();
+  })();
 
 })();
 </script>
