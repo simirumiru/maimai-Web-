@@ -317,7 +317,6 @@
   .guide-h{font-size:17px;font-weight:800;margin:0 0 12px;padding-left:11px;
     border-left:3px solid var(--accent);line-height:1.35;}
   .guide-p{margin:0 0 10px;line-height:1.9;font-size:14.5px;}
-  .guide-p-tight{margin-bottom:2px;}
   .guide-p-soft{font-size:13px;color:var(--text-dim);}
   .guide-p:last-child{margin-bottom:0;}
   .guide-p-tight{margin:0;}
@@ -616,15 +615,6 @@
     });
   }
 
-  function shade(hex, amt){
-    var c = hex.replace('#','');
-    if (c.length === 3) c = c.split('').map(function(ch){ return ch+ch; }).join('');
-    var num = parseInt(c, 16) || 0;
-    var r = Math.min(255, Math.max(0, (num >> 16) + amt));
-    var g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amt));
-    var b = Math.min(255, Math.max(0, (num & 0xff) + amt));
-    return '#' + [r,g,b].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
-  }
 
   function resizeImageFile(file, maxSize, quality){
     maxSize = maxSize || 120; quality = quality || 0.78;
@@ -694,7 +684,7 @@
     }).then(function(list){
       if (!Array.isArray(list) || !list.length) return;
       /* 1曲につき「スタンダード」「でらっくす」が別エントリで入っている */
-      SONG_MASTER_LIST = list.map(function(s){
+      SONG_MASTER_LIST = list.filter(function(s){ return s && s.name; }).map(function(s){
         return {
           name: s.name,
           type: s.type || '',              /* 'ST' or 'DX' */
@@ -712,8 +702,8 @@
       });
       SONG_DATA_FULL = true;
       /* 楽曲データが揃った時点で、空なら初期プレート表を組み立てる */
-      if (seedVersionsIfEmpty()) renderApp();
-      else renderApp();
+      seedVersionsIfEmpty();
+      renderApp();
     }).catch(function(){ /* 無ければ埋め込みのまま */ });
   }
   var SONG_DATA_FULL = false;
@@ -731,7 +721,6 @@
     try{ localStorage.setItem(SONG_IMAGE_CACHE_KEY, JSON.stringify(songImageCache)); }catch(e){ /* 容量超過時は無視（致命的ではない） */ }
   }
   function getCachedSongImage(name){ return (name && songImageCache[name]) ? songImageCache[name] : ''; }
-  function setCachedSongImage(name, dataUrl){ if (!name) return; songImageCache[name] = dataUrl; persistSongImageCache(); }
 
   /* ---- 開発者があらかじめ用意した楽曲ジャケット画像 ----
      index.html と同じ場所に songs/ フォルダを置き、「曲名.png」で画像を入れておくと、
@@ -1443,6 +1432,15 @@
   function attachSyncListeners(){
     if (syncState.unsubVersions) syncState.unsubVersions();
     syncState.unsubVersions = syncState.db.collection('plates').onSnapshot(function(snap){
+      /* 電波が悪いときなどに届く「手元に何もない」空の結果では、前回の写しを消さない */
+      if (snap.metadata && snap.metadata.fromCache && snap.empty){
+        if (!firstSnapshotDone){
+          firstSnapshotDone = true;
+          if (!allVersions.length){ allVersions = loadVersions(); seedVersionsIfEmpty(); }
+          renderApp();
+        }
+        return;
+      }
       var raw = snap.docs.map(function(d){ return d.data(); });
       var json = JSON.stringify(raw);
       firstSnapshotDone = true;
@@ -1507,15 +1505,6 @@
     });
   }
 
-  function disconnectSync(){
-    if (syncState.unsubVersions) syncState.unsubVersions();
-    if (syncState.unsubReviews) syncState.unsubReviews();
-    syncState = { connected:false, connecting:false, isAdmin:false, db:null, error:'', unsubVersions:null, unsubReviews:null };
-    allReviews = [];
-    clearSyncSettings();
-    allVersions = loadVersions();
-    goList();
-  }
 
   function syncWriteVersion(v){
     if (syncState.connected && syncState.isAdmin && syncState.db){
@@ -1858,6 +1847,7 @@
       if (t && t.__dropInfo && t !== node) onDrop(source, t.__dropInfo);
     }
 
+    node.addEventListener('dragstart', function(e){ e.preventDefault(); });
     node.addEventListener('touchstart', start, { passive: true });
     node.addEventListener('touchmove', move, { passive: false });
     node.addEventListener('touchend', end);
@@ -2480,6 +2470,7 @@
 
     var wrote = false;
     (v.levels || []).forEach(function(level){
+      if (level.hidden) return;
       var songs = (level.songs || []).filter(function(s){ return !s.hidden; });
       if (!songs.length) return;
       wrote = true;
@@ -2588,7 +2579,9 @@
       if (holder.parentNode) holder.parentNode.removeChild(holder);
     }
 
-    window.html2canvas(shot, { scale: 2, backgroundColor: '#1e1e1e' }).then(function(canvas){
+    Promise.resolve().then(function(){
+      return window.html2canvas(shot, { scale: 2, backgroundColor: '#1e1e1e' });
+    }).then(function(canvas){
       restoreLayout();
       function finish(msg){
         statusEl.textContent = msg;
@@ -2639,41 +2632,7 @@
   }
 
   /* ========================= backup JSON (all versions) ========================= */
-  function exportAllJSON(){
-    var payload = { format: 'mmplate-backup-v4', versions: allVersions };
-    var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement('a');
-    link.download = 'maimai_plate_archive_backup.json';
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
 
-  function importAllJSON(file){
-    var reader = new FileReader();
-    reader.onload = function(){
-      try{
-        var loaded = JSON.parse(reader.result);
-        var newVersions;
-        if (Array.isArray(loaded)){
-          newVersions = loaded;                 /* 旧形式（配列のみ） */
-        } else if (loaded && Array.isArray(loaded.versions)){
-          newVersions = loaded.versions;        /* 新形式 */
-        } else {
-          throw new Error('invalid');
-        }
-        showConfirm('保存されているプレート表（' + allVersions.length + '件）を、読み込んだファイルの内容（' + newVersions.length + '件）で置き換えます。よろしいですか？', function(){
-          allVersions = newVersions;
-          persistVersions();
-          goList();
-        });
-      }catch(e){
-        showAlert('このファイルは読み込めませんでした。「全データをエクスポート」で保存したJSONファイルを選んでください。');
-      }
-    };
-    reader.readAsText(file);
-  }
 
   /* ========================= view: list ========================= */
   /* 赤線の表示ON/OFFボタン（押すと画面を描き直す） */
@@ -3571,8 +3530,9 @@
       }
       allReviews.forEach(function(rev){
         var card = el('div', {class:'submission-card'});
-        if (rev.rating){
-          card.appendChild(el('div', {class:'star-row', text: '★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}));
+        var stars = Math.max(0, Math.min(5, Math.round(Number(rev.rating) || 0)));
+        if (stars){
+          card.appendChild(el('div', {class:'star-row', text: '★'.repeat(stars) + '☆'.repeat(5 - stars)}));
         }
         card.appendChild(el('div', {style:{fontSize:'13px', margin:'6px 0', whiteSpace:'pre-wrap'}, text: rev.message}));
         card.appendChild(el('div', {class:'vc-meta', text: fmtDate(rev.submittedAt)}));
@@ -4050,6 +4010,19 @@
 
   loadSongsJson();
   renderApp();
+
+  /* 画面の向きや幅が変わったら、一覧のプレビューの高さを合わせ直す（高さだけの変化は無視） */
+  (function refitOnResize(){
+    var lastW = window.innerWidth, t = null;
+    window.addEventListener('resize', function(){
+      if (window.innerWidth === lastW) return;
+      lastW = window.innerWidth;
+      clearTimeout(t);
+      t = setTimeout(function(){
+        if (section === 'plates' && view === 'list') fitCardPreviews(document.getElementById('app'));
+      }, 150);
+    });
+  })();
 
   /* ---- 画面の一番上・一番下へ移動するボタン ----
      4秒間なにも操作しないと0.5秒かけて消え、触る・動かすと0.5秒かけて戻る */
