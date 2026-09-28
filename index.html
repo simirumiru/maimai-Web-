@@ -317,6 +317,8 @@
   .guide-h{font-size:17px;font-weight:800;margin:0 0 12px;padding-left:11px;
     border-left:3px solid var(--accent);line-height:1.35;}
   .guide-p{margin:0 0 10px;line-height:1.9;font-size:14.5px;}
+  .guide-p-tight{margin-bottom:2px;}
+  .guide-p-soft{font-size:13px;color:var(--text-dim);}
   .guide-p:last-child{margin-bottom:0;}
   .guide-p-tight{margin:0;}
   .guide-sub{font-size:12.5px;font-weight:700;color:var(--text-dim);letter-spacing:.04em;margin:16px 0 8px;}
@@ -3833,6 +3835,12 @@
         el('div', {class:'guide-cap-line', text:'「◯極」などの ◯ にはバージョンの漢字が入ります（例：超極）'}),
         el('div', {class:'guide-cap-line', text:'「舞◯」の ◯ には 極・将・神・舞舞 が入ります（例：舞極）'})
       ])
+    ]));
+
+    /* ---------- 2-2. 楽曲の順番 ---------- */
+    wrap.appendChild(section('楽曲の順番', [
+      para(['左から楽曲定数順に並んでいます。定数が同じ場合は製作者がAP基準でより難しいと思うものを左側に配置しています。'], 'guide-p guide-p-tight'),
+      para(['（独断と偏見で軽く決めた左右差なので違和感があった場合はレビュー等へお願いします🙏）'], 'guide-p guide-p-soft')
     ]));
 
     /* ---------- 3. 下埋め時間の算出方法 ---------- */
