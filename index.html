@@ -779,14 +779,18 @@
   }
 
   /* ---- 曲名とファイル名がどうしても噛み合わないものの対応表 ----
-     左が正しい曲名、右が songs/ に置いてあるファイル名（.png は不要）。
+     左が正しい曲名、右が songs/ に置いてあるファイル名（.png は不要。
+     .jpg / .webp の画像はその拡張子まで書く）。
      表示できない曲が出たら、ここに1行足せば直る。 */
   var SONG_FILE_OVERRIDES = {
     'False Amber (from the Black Bazaar, Or by A Kervan Trader from the Lands Afar, Or Buried Beneath the Shifting Sands That Lead Everywhere but Nowhere)': 'False Amber',
     'B.B.K.K.B.K.K.': 'B_B_K_K_B_K_K_',
     'D\u272aN\u2019T  ST\u272aP  R\u272aCKIN\u2019': 'D\u272aN_T ST\u272aP R\u272aCKIN_',
     'REVIVER \u30aa\u30eb\u30bf\u30f3\u30b7\u30a2\u30fb\u30b5\u30fc\u30ac -\u84bc\u306e\u9a0e\u58eb\u56e3- \u30aa\u30ea\u30b8\u30ca\u30ebVer.': 'REVIVER \u30aa\u30eb\u30bf\u30f3\u30b7\u30a2\u30fb\u30b5\u30fc\u30ac -\u84bc\u306e\u9a0e\u58eb\u56e3- \u30aa\u30ea\u30b8\u30ca\u30ebVer_',
-    'B.M.S.': 'B_M_S_'
+    'B.M.S.': 'B_M_S_',
+    '\u2200': '\u2200.jpg',
+    'TRUST': 'TRUST.webp',
+    'Trust': 'Trust\uff08TANO_C\uff09'
   };
 
   /* 1つの曲名に対して、ありうるファイル名を優先度順に並べて返す。
@@ -805,7 +809,9 @@
   }
   function songImageUrls(name){
     return songFileCandidates(name).map(function(f){
-      return SONG_IMAGE_DIR + encodeURIComponent(f) + IMAGE_EXT;
+      /* 拡張子まで書いてあるもの（.jpg / .webp など）はそのまま使う */
+      var hasExt = /\.(png|jpe?g|webp)$/i.test(f);
+      return SONG_IMAGE_DIR + encodeURIComponent(f) + (hasExt ? '' : IMAGE_EXT);
     });
   }
   function getBundledSongImage(name){
