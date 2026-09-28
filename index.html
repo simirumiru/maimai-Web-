@@ -238,12 +238,14 @@
   .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start;}
   /* PNG保存のあいだだけ、楽曲を大きくして12曲ごとに折り返す（画面上の見た目は変えない）。
      プレートは幅の割合で決まるので、全体が同じ比率のまま大きくなる。 */
-  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(12, 100px);
+  .pv-export .pv-thumb-grid{display:grid;grid-template-columns:repeat(var(--pv-cols, 12), 100px);
     gap:6px;justify-content:start;}
   .pv-export .pv-thumb{width:100px;height:100px;}
   /* 3枚で1行、楽曲1枚に対して約3.7倍の幅になる */
-  .pv-export .pv-badges{margin-left:0;margin-right:0;gap:8px;}
-  .pv-export .pv-badge-img{flex:0 0 28%;}
+  /* 画像保存のときだけ：1行目＝極・将・神、2行目＝舞舞・覇者 */
+  .pv-export .pv-badges{margin-left:0;margin-right:0;gap:8px;flex-direction:column;flex-wrap:nowrap;}
+  .pv-export .pv-badge-row{display:flex;gap:8px;}
+  .pv-export .pv-badges .pv-badge-img{flex:0 0 calc((100% - 16px) / 3);}
   .pv-thumb{position:relative;width:68px;height:68px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
@@ -292,16 +294,21 @@
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
   /* プレートの並びだけカードの余白ぶん外へ広げ、隙間も詰めて大きく見せる。
      並べ方（縦2列・横3列）と周りの作りはそのまま。 */
+  /* 画面上（一覧のプレビュー・詳細）：極→将→神→舞舞（→覇者）の順に1行2つずつ並べる */
   .pv-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;
     margin-left:calc(4px - var(--pv-pad));margin-right:calc(4px - var(--pv-pad));}
-  .pv-badge-img{flex:0 0 calc(50% - 2.5px);border-radius:6px;overflow:hidden;
+  .pv-badge-row{display:contents;}
+  /* PC（マウス操作の広い画面）では、画面上も 極・将・神／舞舞・覇者 の並びにする */
+  @media (hover:hover) and (pointer:fine) and (min-width:560px){
+    .pv-badges{flex-direction:column;flex-wrap:nowrap;}
+    .pv-badge-row{display:flex;gap:5px;}
+    .pv-badges .pv-badge-img{flex:0 0 calc((100% - 10px) / 3);}
+  }
+  .pv-badge-img{flex:0 0 calc(50% - 2.5px);min-width:0;border-radius:6px;overflow:hidden;
     border:1px solid var(--border);background:var(--canvas);box-shadow:0 2px 6px rgba(0,0,0,.35);}
   /* 高さは画像まかせ。こうすると元の比率のまま拡大・縮小されるだけになる */
   .pv-badge-img img{width:100%;height:auto;display:block;}
   .pv-badge-img.no-img{display:flex;align-items:center;justify-content:center;background:var(--panel-2);}
-  @media (min-width:560px){
-    .pv-badge-img{flex:0 0 calc(33.333% - 3.34px);}
-  }
   .pv-badge-img.no-img .placeholder-text{font-size:11px;color:var(--text-dim);padding:0 10px;}
   .badge-thumb.no-img{display:flex;align-items:center;justify-content:center;}
   .badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
@@ -2617,12 +2624,20 @@
         }
         return '';
       }
-      /* 極→将→神→舞舞 の順に1列に流し、折り返しで
-         縦画面=2列（極将／神舞舞）、横画面=3列（極将神／舞舞）になる */
+      /* 画面上は 極→将→神→舞舞（→覇者）の順に1行2つずつ。
+         画像保存のときだけ 1行目＝極・将・神、2行目＝舞舞（・覇者）に分ける */
       var badgeWrap = el('div', {class:'pv-badges'});
+      var rowTop = el('div', {class:'pv-badge-row'});
+      var rowBottom = el('div', {class:'pv-badge-row'});
       sortBadgesByCategory(v.badges).forEach(function(badge){
-        badgeWrap.appendChild(makeBadgeNode(badge));
+        var c = badgeCat(badge.name);
+        var target = (c === '極' || c === '将' || c === '神') ? rowTop : rowBottom;
+        /* 1行は3つまで。あふれた分は下の行へ */
+        if (target === rowTop && rowTop.children.length >= 3) target = rowBottom;
+        target.appendChild(makeBadgeNode(badge));
       });
+      if (rowTop.children.length) badgeWrap.appendChild(rowTop);
+      if (rowBottom.children.length) badgeWrap.appendChild(rowBottom);
       card.appendChild(badgeWrap);
     }
 
@@ -2715,6 +2730,13 @@
   function exportPNG(v, statusEl, btn){
     var node = document.getElementById('previewCard');
     var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + '.png';
+    /* 横幅は「1つのレベルに並ぶ曲の最大数（最大12）」に合わせ、右側に余計な余白を作らない */
+    if (node){
+      var maxSongs = 1;
+      var grids = node.querySelectorAll('.pv-level:not(.pv-level-off) .pv-thumb-grid');
+      for (var gi = 0; gi < grids.length; gi++) maxSongs = Math.max(maxSongs, grids[gi].children.length);
+      node.style.setProperty('--pv-cols', String(Math.min(12, maxSongs)));
+    }
     /* 12曲で折り返す幅を確保してから描き込む */
     captureNodePNG(node, name, statusEl, btn, 'pv-export');
   }
