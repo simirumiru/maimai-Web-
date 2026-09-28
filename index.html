@@ -209,6 +209,10 @@
   /* ---- Jewelフレーム表 ---- */
   .jewel-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px;margin-top:8px;}
   @media (max-width:760px){ .jewel-grid{grid-template-columns:1fr;} }
+  /* 画像保存時：横に3つずつ（時代順に左→右、行が終わったら次の行）。幅を固定して右側に余白を作らない */
+  .pv-export .jewel-grid{grid-template-columns:repeat(3, 308px);gap:22px 26px;}
+  .pv-export .jewel-slot{width:308px;max-width:308px;}
+  .pv-export .pv-title, .pv-export .pv-subtitle{max-width:976px;}
   .jewel-cell{min-width:0;}
   .jewel-cell-title{margin-bottom:6px;word-break:break-word;}
   .jewel-title-main{font-size:14px;font-weight:800;line-height:1.35;}
@@ -221,6 +225,14 @@
   .jewel-slot.no-img .placeholder-text{font-size:11px;color:var(--text-dim);}
   .pv-level{margin-bottom:18px;}
   .pv-level-label{font-family:var(--font-display);font-weight:700;font-size:17px;margin-bottom:8px;}
+  .pv-level-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;min-height:30px;}
+  .pv-level-head .pv-level-label{margin-bottom:0;}
+  .pv-level-toggle{flex:none;}
+  .pv-level.pv-level-off{margin-bottom:10px;}
+  /* 保存する画像には、ON/OFFボタンと隠したレベルを写さない */
+  .pv-export .pv-level-toggle{display:none;}
+  .pv-export .pv-level-off{display:none;}
+  .pv-export .pv-level-head{min-height:0;}
   /* 画像を少し大きくし、そのぶん隙間を詰める。
      1つあたりの間隔（画像＋隙間）は 72px のままなので、折り返す位置は変わらない。 */
   .pv-thumb-grid{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start;}
@@ -252,6 +264,7 @@
   .sync-level-toggle{flex:none;}
   /* 保存する画像にはボタンを写さない */
   .sync-export .sync-level-toggle{display:none;}
+  .sync-export .sync-level-off{display:none;}
   .sync-list{display:grid;grid-template-columns:1fr;gap:6px;}
   .sync-row{display:flex;align-items:center;gap:10px;min-width:0;}
   .sync-thumb{position:relative;width:40px;height:40px;border-radius:6px;overflow:hidden;
@@ -1374,6 +1387,24 @@
     var m = syncHidden[versionId];
     return !!(m && m[levelId]);
   }
+  /* 詳細画面のプレート表で、閲覧者が自分で隠したレベル（端末ごと） */
+  var PV_LEVEL_HIDDEN_KEY = 'mmplate_pv_level_hidden_v1';
+  var pvLevelHidden = (function(){
+    if (!storageOK) return {};
+    try{ var raw = localStorage.getItem(PV_LEVEL_HIDDEN_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  })();
+  function isPvLevelHidden(versionId, levelId){
+    var m = pvLevelHidden[versionId];
+    return !!(m && m[levelId]);
+  }
+  function togglePvLevel(versionId, levelId){
+    if (!pvLevelHidden[versionId]) pvLevelHidden[versionId] = {};
+    if (pvLevelHidden[versionId][levelId]) delete pvLevelHidden[versionId][levelId];
+    else pvLevelHidden[versionId][levelId] = true;
+    if (!storageOK) return;
+    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
+  }
   function toggleSyncLevel(versionId, levelId){
     if (!syncHidden[versionId]) syncHidden[versionId] = {};
     if (syncHidden[versionId][levelId]) delete syncHidden[versionId][levelId];
@@ -2482,7 +2513,30 @@
     v.levels.forEach(function(level){
       if (level.hidden) return;
       var block = el('div', {class:'pv-level'});
-      block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color}, text: level.label}));
+      /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
+      var lvOff = interactive && isPvLevelHidden(v.id, level.id);
+      if (interactive){
+        var lvHead = el('div', {class:'pv-level-head'});
+        /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
+        lvHead.appendChild(el('div', {class:'pv-level-label', style:{color: level.color}, text: level.label}));
+        var lvBtn = makeOnOffButton('このレベル', !lvOff, function(){
+          togglePvLevel(v.id, level.id);
+          var holder = card.parentNode;
+          if (holder) holder.replaceChild(buildPreviewNode(v, opts), card);
+          return !isPvLevelHidden(v.id, level.id);
+        });
+        lvBtn.classList.add('pv-level-toggle');
+        lvHead.appendChild(lvBtn);
+        block.appendChild(lvHead);
+        if (lvOff){
+          /* 非表示のレベルはボタンだけ残す（画像保存にはボタンも写らない） */
+          block.classList.add('pv-level-off');
+          card.appendChild(block);
+          return;
+        }
+      } else {
+        block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color}, text: level.label}));
+      }
       var visibleSongs = level.songs.filter(function(s){ return !s.hidden; });
       if (visibleSongs.length === 0){
         block.appendChild(el('div', {class:'pv-empty', text:'（画像未追加）'}));
@@ -2595,12 +2649,10 @@
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
       var off = isSyncLevelHidden(v.id, level.id);
 
-      var head = el('div', {class:'sync-level-head'});
-      /* 非表示のときはレベルの数字も出さない */
-      if (!off){
-        head.appendChild(el('div', {class:'sync-level', text: level.label || '',
-          style:{color: level.color || '#ffffff'}}));
-      }
+      var head = el('div', {class:'sync-level-head' + (off ? ' sync-level-off' : '')});
+      /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
+      head.appendChild(el('div', {class:'sync-level', text: level.label || '',
+        style:{color: level.color || '#ffffff'}}));
       /* 印は必ずボタン自身に付ける（レベルの数字に付いてしまうと保存時に消えない） */
       var lvToggle = makeOnOffButton('このレベル', !off, function(){
         toggleSyncLevel(v.id, level.id);
