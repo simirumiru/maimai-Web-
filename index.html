@@ -2512,6 +2512,7 @@
 
     v.levels.forEach(function(level){
       if (level.hidden) return;
+      if (opts.viewerHidden && isPvLevelHidden(v.id, level.id)) return;
       var block = el('div', {class:'pv-level'});
       /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
       var lvOff = interactive && isPvLevelHidden(v.id, level.id);
@@ -2871,7 +2872,8 @@
         try{
           var pvWrap = el('div', {class:'card-preview'});
           var pvInner = el('div', {class:'card-preview-inner'});
-          pvInner.appendChild(buildPreviewNode(v));
+          /* 一覧のプレビューでも、詳細画面でOFFにしたレベルは出さない */
+          pvInner.appendChild(buildPreviewNode(v, { viewerHidden: true }));
           pvWrap.appendChild(pvInner);
           card.appendChild(pvWrap);
         }catch(err){
