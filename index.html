@@ -3,9 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>実績プレート表アーカイブ</title>
+<title>maiプレート</title>
+<!-- ブックマーク・タブに出るアイコン -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2044%2044%22%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2222%22%20r%3D%2221.5%22%20fill%3D%22%23131417%22/%3E%3Cpath%20d%3D%22M23.15%205.54A16.5%2016.5%200%200%201%2032.82%209.55%22%20stroke%3D%22%23ff4fd8%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M34.45%2011.18A16.5%2016.5%200%200%201%2038.46%2020.85%22%20stroke%3D%22%23ff7a7a%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M38.46%2023.15A16.5%2016.5%200%200%201%2034.45%2032.82%22%20stroke%3D%22%23ffb84f%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M32.82%2034.45A16.5%2016.5%200%200%201%2023.15%2038.46%22%20stroke%3D%22%23ffe14f%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M20.85%2038.46A16.5%2016.5%200%200%201%2011.18%2034.45%22%20stroke%3D%22%237ee787%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M9.55%2032.82A16.5%2016.5%200%200%201%205.54%2023.15%22%20stroke%3D%22%233fd0ff%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M5.54%2020.85A16.5%2016.5%200%200%201%209.55%2011.18%22%20stroke%3D%22%238ab4f8%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M11.18%209.55A16.5%2016.5%200%200%201%2020.85%205.54%22%20stroke%3D%22%23b48cff%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Crect%20x%3D%2212%22%20y%3D%2217.5%22%20width%3D%2220%22%20height%3D%229%22%20rx%3D%223%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2212%22%20y%3D%2217.5%22%20width%3D%2220%22%20height%3D%224.5%22%20rx%3D%222.2%22%20fill%3D%22%23ffe7fa%22%20opacity%3D%22.9%22/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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">
+<!-- スマホのホーム画面に追加したときのアイコン（同じ場所に置いた画像ファイルを使う） -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-title" content="maiプレート">
+<meta name="theme-color" content="#131417">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&text=TopBtm&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -42,18 +50,14 @@
     padding:22px clamp(16px,4vw,40px);display:flex;align-items:center;gap:16px;
     border-bottom:1px solid var(--border);background:var(--bg);
   }
-  .logo-mark{width:38px;height:38px;position:relative;flex:none;cursor:pointer;}
-  .logo-dot{position:absolute;width:8px;height:8px;border-radius:50%;top:15px;left:15px;animation:pulse 2.4s ease-in-out infinite;}
-  .logo-mark .c0{background:#f2f4f8;top:15px;left:15px;animation-delay:0s;}
-  .logo-mark .c1{background:#ff4fd8;top:0;left:15px;animation-delay:.15s;}
-  .logo-mark .c2{background:#ffb84f;top:5px;left:28px;animation-delay:.3s;}
-  .logo-mark .c3{background:#3fd0ff;top:23px;left:28px;animation-delay:.45s;}
-  .logo-mark .c4{background:#7ee787;top:30px;left:15px;animation-delay:.6s;}
-  .logo-mark .c5{background:#b48cff;top:23px;left:2px;animation-delay:.75s;}
-  .logo-mark .c6{background:#ffe14f;top:5px;left:2px;animation-delay:.9s;}
-  @keyframes pulse{0%,100%{transform:scale(1);opacity:.85;}50%{transform:scale(1.35);opacity:1;}}
-  header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em;cursor:pointer;}
-  header h1:hover{color:var(--accent);}
+  .logo-mark{width:40px;height:40px;flex:none;cursor:pointer;}
+  .logo-mark svg{display:block;width:100%;height:100%;}
+  header.app-header .logo-mark + div{margin-left:-6px;}
+  header h1{font-size:25px;margin:0;line-height:1;cursor:pointer;white-space:nowrap;
+    font-family:'M PLUS Rounded 1c', var(--font-body);}
+  header h1 .brand-mai{font-weight:900;background:linear-gradient(95deg,#ff4fd8,#ffb84f);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  header h1 .brand-pl{font-weight:800;color:#f2f4f8;margin-left:.1em;}
   header p{margin:2px 0 0;font-size:12.5px;color:var(--text-dim);}
 
   #app{padding:20px clamp(16px,4vw,40px) 60px;max-width:1180px;margin:0 auto;}
@@ -550,18 +554,20 @@
     display:block;pointer-events:none;}
   /* 小さいサムネイルでは少しだけ大きめに出す */
   .sync-thumb img.chart-type-mark{width:60%;}
+  /* 画像保存中のお知らせ。画面の並びを動かさないよう、下に浮かせて出す */
+  .save-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;
+    background:var(--panel-3);color:var(--text);border:1px solid var(--border-strong);
+    border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;
+    box-shadow:0 6px 20px rgba(0,0,0,.45);pointer-events:none;}
+  .save-toast:empty{display:none;}
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="logo-mark" id="homeLogo" title="ホームに戻る">
-    <div class="logo-dot c0"></div><div class="logo-dot c1"></div><div class="logo-dot c2"></div>
-    <div class="logo-dot c3"></div><div class="logo-dot c4"></div><div class="logo-dot c5"></div>
-    <div class="logo-dot c6"></div>
-  </div>
+  <div class="logo-mark" id="homeLogo" title="ホームに戻る"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44"><path d="M23.57 4.07A18 18 0 0 1 33.57 8.21" stroke="#ff4fd8" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M35.79 10.43A18 18 0 0 1 39.93 20.43" stroke="#ff7a7a" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M39.93 23.57A18 18 0 0 1 35.79 33.57" stroke="#ffb84f" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M33.57 35.79A18 18 0 0 1 23.57 39.93" stroke="#ffe14f" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M20.43 39.93A18 18 0 0 1 10.43 35.79" stroke="#7ee787" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M8.21 33.57A18 18 0 0 1 4.07 23.57" stroke="#3fd0ff" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M4.07 20.43A18 18 0 0 1 8.21 10.43" stroke="#8ab4f8" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M10.43 8.21A18 18 0 0 1 20.43 4.07" stroke="#b48cff" stroke-width="6" stroke-linecap="round" fill="none"/><rect x="12" y="17.5" width="20" height="9" rx="3" fill="#fff"/><rect x="12" y="17.5" width="20" height="4.5" rx="2.2" fill="#ffe7fa" opacity=".9"/></svg></div>
   <div>
-    <h1 id="homeLink" title="ホームに戻る">実績プレート表アーカイブ</h1>
+    <h1 id="homeLink" title="ホームに戻る" aria-label="maiプレート"><span class="brand-mai">mai</span><span class="brand-pl">プレート</span></h1>
   </div>
   <div class="header-spacer"></div>
   <button id="headerReviewLink" class="header-quiet" title="このツールへの感想・要望を送る">レビュー</button>
@@ -1213,6 +1219,25 @@
   }
 
 
+  /* 公開データ（同期サーバー）の最新の写し。次に開いたとき、届くまでの間これを先に見せる。
+     ※古い手元データ（初期状態のままの表など）が一瞬映るのを防ぐため、手元データとは別に持つ */
+  var SYNC_CACHE_KEY = 'mmplate_versions_synccache_v1';
+  var lastSyncJson = '';
+  function loadSyncCache(){
+    if (!storageOK) return [];
+    try{
+      var raw = localStorage.getItem(SYNC_CACHE_KEY);
+      lastSyncJson = raw || '';
+      return raw ? normalizeVersions(JSON.parse(raw)) : [];
+    }catch(e){ return []; }
+  }
+  function saveSyncCache(json){
+    lastSyncJson = json;
+    if (!storageOK) return;
+    try{ localStorage.setItem(SYNC_CACHE_KEY, json); }
+    catch(e){ try{ localStorage.removeItem(SYNC_CACHE_KEY); }catch(e2){} }
+  }
+
   var PLATE_TIER_STORAGE_KEY = 'mmplate_platetiers_v1';
 
   var quotaWarning = '';
@@ -1410,12 +1435,20 @@
   function attachSyncListeners(){
     if (syncState.unsubVersions) syncState.unsubVersions();
     syncState.unsubVersions = syncState.db.collection('plates').onSnapshot(function(snap){
-      allVersions = normalizeVersions(snap.docs.map(function(d){ return d.data(); }));
+      var raw = snap.docs.map(function(d){ return d.data(); });
+      var json = JSON.stringify(raw);
+      firstSnapshotDone = true;
+      /* 前回の写しと全く同じなら、描き直さない（画面がちらつかないように） */
+      if (json === lastSyncJson && raw.length) return;
+      allVersions = normalizeVersions(raw);
+      saveSyncCache(json);
       /* 公開データが空なら、手元で初期プレート表を組み立てて見せる */
       seedVersionsIfEmpty();
       renderApp();
     }, function(err){
       syncState.error = '同期エラー（プレート表）: ' + err.message;
+      firstSnapshotDone = true;
+      seedVersionsIfEmpty();
       renderApp();
     });
     if (syncState.isAdmin){
@@ -1673,6 +1706,7 @@
   function seedVersionsIfEmpty(){
     if (seededOnce) return false;
     if (!SONG_DATA_FULL) return false;          /* 楽曲データが来てから */
+    if (SYNC_EXPECTED && !firstSnapshotDone) return false;  /* 公開データが届く前に初期表を作らない */
     if (allVersions && allVersions.length) return false;  /* 既にあるなら触らない */
     seededOnce = true;
     allVersions = versionOptions().map(buildSeedVersion);
@@ -1712,7 +1746,16 @@
     };
   }
 
-  var allVersions = loadVersions();
+  /* 同期サーバーにつなぐ設定があるか（あれば公開データが届くまで初期表を作らない） */
+  var SYNC_EXPECTED = (function(){
+    var cfg = DEFAULT_SYNC_CONFIG;
+    var stored = loadSyncSettings();
+    if (stored && stored.configJson){ try{ cfg = JSON.parse(stored.configJson); }catch(e){} }
+    return !!(cfg && cfg.apiKey);
+  })();
+  var firstSnapshotDone = false;
+  /* 同期するときは前回届いた公開データの写しを先に見せる（届いたら差し替え） */
+  var allVersions = SYNC_EXPECTED ? loadSyncCache() : loadVersions();
   var allPlateTiers = loadPlateTiers();
 
   var section = 'plates';  // 'plates' | 'plateTiers' | 'reviews'
@@ -2514,16 +2557,30 @@
     btn.disabled = true;
     statusEl.textContent = '画像を生成中…';
 
-    var prevWidth = node.style.width;
-    if (exportClass) node.classList.add(exportClass);
-    node.style.width = 'max-content';
+    /* 画面に出ている表はそのままにして、見えない所に写しを作ってから描き込む。
+       （表そのものを保存用の並びに切り替えると、一瞬画面の配置が変わって見えるため） */
+    var holder = document.createElement('div');
+    holder.setAttribute('aria-hidden', 'true');
+    holder.style.cssText = 'position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;';
+    var shot = node.cloneNode(true);
+    /* 入力中の文字は写しに引き継がれないことがあるので、値を写し直す */
+    var srcFields = node.querySelectorAll('input,textarea,select');
+    var dstFields = shot.querySelectorAll('input,textarea,select');
+    for (var fi = 0; fi < srcFields.length && fi < dstFields.length; fi++){
+      if (srcFields[fi].type === 'checkbox' || srcFields[fi].type === 'radio') dstFields[fi].checked = srcFields[fi].checked;
+      else dstFields[fi].value = srcFields[fi].value;
+    }
+    if (exportClass) shot.classList.add(exportClass);
+    shot.style.width = 'max-content';
+    holder.appendChild(shot);
+    /* 元の表と同じ場所（同じ親の中）に置くので、見た目の指定もそのまま効く */
+    node.parentNode.insertBefore(holder, node.nextSibling);
 
     function restoreLayout(){
-      if (exportClass) node.classList.remove(exportClass);
-      node.style.width = prevWidth;
+      if (holder.parentNode) holder.parentNode.removeChild(holder);
     }
 
-    window.html2canvas(node, { scale: 2, backgroundColor: '#1e1e1e' }).then(function(canvas){
+    window.html2canvas(shot, { scale: 2, backgroundColor: '#1e1e1e' }).then(function(canvas){
       restoreLayout();
       function finish(msg){
         statusEl.textContent = msg;
@@ -2638,6 +2695,10 @@
     }
 
     if (allVersions.length === 0){
+      if (SYNC_EXPECTED && !firstSnapshotDone){
+        root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text:'読み込み中…'}));
+        return;
+      }
       if (canEdit()){
         root.appendChild(el('div', {class:'empty-state', text:'まだ何も登録されていません。上のボタンから追加してください。'}));
       }
@@ -2701,7 +2762,7 @@
     var bar = el('div', {class:'view-topbar'});
     bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 一覧に戻る', onclick: goList}));
     bar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
-    var statusEl = el('span', {class:'note', style:{width:'auto'}});
+    var statusEl = el('span', {class:'save-toast', role:'status'});
     var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
     pngBtn.addEventListener('click', function(){ exportPNG(v, statusEl, pngBtn); });
     bar.appendChild(pngBtn);
@@ -2724,7 +2785,7 @@
     /* プレート表とは別枠の「シンクのお相手記録」。Jewel表には出さない */
     if (!isJewelDoc){
       var syncBar = el('div', {class:'view-topbar', style:{marginTop:'26px', marginBottom:'10px'}});
-      var syncStatus = el('span', {class:'note', style:{width:'auto'}});
+      var syncStatus = el('span', {class:'save-toast', role:'status'});
       var syncBtn = el('button', {class:'btn', text:'お相手記録を画像として保存（PNG）'});
       syncBar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
       syncBar.appendChild(syncStatus);
@@ -3255,7 +3316,7 @@
     var bar = el('div', {class:'view-topbar'});
     bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 一覧に戻る', onclick: goPlateTierList}));
     bar.appendChild(el('div', {style:{flex:'1'}}));
-    var statusEl = el('span', {class:'note', style:{width:'auto'}});
+    var statusEl = el('span', {class:'save-toast', role:'status'});
     var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
     pngBtn.addEventListener('click', function(){ exportPNG({versionName: t.title}, statusEl, pngBtn); });
     bar.appendChild(pngBtn);
@@ -3962,7 +4023,13 @@
     }
     if (!cfg || !cfg.apiKey) return;
     connectSync(cfg, null, null, function(err){
-      if (err){ syncState.error = '同期サーバーへの接続に失敗しました: ' + err.message; }
+      if (err){
+        syncState.error = '同期サーバーへの接続に失敗しました: ' + err.message;
+        /* つながらないときは手元のデータで表示する */
+        firstSnapshotDone = true;
+        if (!allVersions.length) allVersions = loadVersions();
+        seedVersionsIfEmpty();
+      }
       renderApp();
     });
   })();
