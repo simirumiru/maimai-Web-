@@ -461,7 +461,11 @@
   .ptier-badge-thumb.no-img{background:var(--panel-2);}
   .ptier-badge-thumb.no-img .placeholder-text{font-size:10px;color:var(--text-dim);text-align:center;padding:2px;}
   /* ---- 長押しドラッグ ---- */
-  .draggable{cursor:grab;touch-action:manipulation;}
+  .draggable{cursor:grab;touch-action:manipulation;
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  /* 画像そのものを長押し・ドラッグの対象にしない（「画像を保存」や残像の原因になるため） */
+  .draggable img{pointer-events:none;-webkit-user-drag:none;user-select:none;}
+  body.is-drag-active, body.is-drag-active *{cursor:grabbing !important;user-select:none;-webkit-user-select:none;}
   .draggable.is-dragging{opacity:.35;}
   .drag-ghost{position:fixed;z-index:2000;pointer-events:none;opacity:.9;
     transform:translate(-50%,-50%) scale(1.04);box-shadow:0 8px 20px rgba(0,0,0,.55);
@@ -1766,51 +1770,91 @@
 
 
 
-  /* ---- 長押しでドラッグして並べ替え ----
-     スマホは長押し（約400ms）→ドラッグ、PCは左ボタン長押し→ドラッグ。
-     onDrop(from, to) には「どのランク・どの列の何番目か」を渡す。 */
-  var LONG_PRESS_MS = 400;
+  /* ---- ドラッグして並べ替え ----
+     スマホ：少し長押し（約0.3秒）してから指を動かす。長押しの前に指が大きく動いたら普通のスクロール。
+     PC　　：左ボタンを押したまま少し動かすとすぐにつかめる（長押し不要）。
+     onDrop(from, to) には「どこの何番目か」を渡す。 */
+  var LONG_PRESS_MS = 300;
+  var activeDragCleanup = null;
+  function removeStrayGhosts(){
+    var g = document.querySelectorAll('.drag-ghost');
+    for (var i = 0; i < g.length; i++) if (g[i].parentNode) g[i].parentNode.removeChild(g[i]);
+    var d = document.querySelectorAll('.is-dragging');
+    for (var k = 0; k < d.length; k++) d[k].classList.remove('is-dragging');
+    var hv = document.querySelectorAll('.drop-hover');
+    for (var m = 0; m < hv.length; m++) hv[m].classList.remove('drop-hover');
+    document.body.classList.remove('is-drag-active');
+  }
+  function cancelActiveDrag(){
+    if (activeDragCleanup) activeDragCleanup();
+    activeDragCleanup = null;
+    removeStrayGhosts();
+  }
+  /* 別のアプリに切り替えたときなどに、つかんだままの表示が残らないようにする */
+  window.addEventListener('blur', cancelActiveDrag);
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) cancelActiveDrag(); });
 
   function makeDraggable(node, source, onDrop){
-    var timer = null, dragging = false, ghost = null;
+    var timer = null, dragging = false, ghost = null, startPt = null;
+    var suppressClick = false, lastPt = null, scrollRaf = null;
 
     function pointOf(e){
-      if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      var t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+      if (t) return { x: t.clientX, y: t.clientY };
       return { x: e.clientX, y: e.clientY };
     }
-
-    function start(e){
-      var pt = pointOf(e);
-      timer = setTimeout(function(){
-        dragging = true;
-        node.classList.add('is-dragging');
-        ghost = node.cloneNode(true);
-        ghost.classList.add('drag-ghost');
-        var r = node.getBoundingClientRect();
-        ghost.style.width = r.width + 'px';
-        ghost.style.height = r.height + 'px';
-        document.body.appendChild(ghost);
-        moveGhost(pt);
-        if (navigator.vibrate) { try { navigator.vibrate(15); } catch(err){} }
-      }, LONG_PRESS_MS);
-    }
-
-    function moveGhost(pt){
-      if (!ghost) return;
-      ghost.style.left = pt.x + 'px';
-      ghost.style.top = pt.y + 'px';
-    }
-
-    function move(e){
-      if (!dragging){
-        /* 長押し成立前に動いたらキャンセル */
-        if (timer){ clearTimeout(timer); timer = null; }
-        return;
+    function dist(a, b){ return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+    function isControl(t){
+      while (t && t !== node){
+        if (/^(BUTTON|INPUT|SELECT|TEXTAREA|LABEL|A)$/.test(t.tagName)) return true;
+        t = t.parentNode;
       }
-      e.preventDefault();
-      var pt = pointOf(e);
-      moveGhost(pt);
+      return false;
+    }
+
+    function begin(pt){
+      cancelActiveDrag();
+      dragging = true;
+      activeDragCleanup = cleanup;
+      node.classList.add('is-dragging');
+      document.body.classList.add('is-drag-active');
+      ghost = node.cloneNode(true);
+      ghost.classList.remove('is-dragging');
+      ghost.classList.add('drag-ghost');
+      ghost.removeAttribute('id');
+      var r = node.getBoundingClientRect();
+      ghost.style.width = r.width + 'px';
+      ghost.style.height = r.height + 'px';
+      document.body.appendChild(ghost);
+      moveTo(pt);
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch(err){} }
+    }
+
+    function moveTo(pt){
+      lastPt = pt;
+      if (ghost){
+        ghost.style.left = pt.x + 'px';
+        ghost.style.top = pt.y + 'px';
+      }
       highlight(pt);
+      autoScroll();
+    }
+
+    /* 画面の上下の端に近づいたら、自動でスクロールする */
+    function autoScroll(){
+      if (scrollRaf || !dragging || !lastPt) return;
+      var EDGE = 70, vh = window.innerHeight;
+      var dy = 0;
+      if (lastPt.y < EDGE) dy = -Math.ceil((EDGE - lastPt.y) / 5);
+      else if (lastPt.y > vh - EDGE) dy = Math.ceil((lastPt.y - (vh - EDGE)) / 5);
+      if (!dy) return;
+      scrollRaf = requestAnimationFrame(function(){
+        scrollRaf = null;
+        if (!dragging) return;
+        window.scrollBy(0, dy);
+        highlight(lastPt);
+        autoScroll();
+      });
     }
 
     function targetAt(pt){
@@ -1828,44 +1872,88 @@
       if (t && t !== node) t.classList.add('drop-hover');
     }
 
-    function end(e){
+    function cleanup(){
       if (timer){ clearTimeout(timer); timer = null; }
-      if (!dragging) return;
+      if (scrollRaf){ cancelAnimationFrame(scrollRaf); scrollRaf = null; }
       dragging = false;
-      node.classList.remove('is-dragging');
-
-      var pt = (e.changedTouches && e.changedTouches[0])
-        ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
-        : { x: e.clientX, y: e.clientY };
-      var t = targetAt(pt);
-
       if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
       ghost = null;
+      node.classList.remove('is-dragging');
+      document.body.classList.remove('is-drag-active');
       var all = document.querySelectorAll('.drop-hover');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('drop-hover');
-
-      if (t && t.__dropInfo && t !== node) onDrop(source, t.__dropInfo);
+      detachMouse();
+      if (activeDragCleanup === cleanup) activeDragCleanup = null;
     }
 
-    node.addEventListener('dragstart', function(e){ e.preventDefault(); });
-    node.addEventListener('touchstart', start, { passive: true });
-    node.addEventListener('touchmove', move, { passive: false });
-    node.addEventListener('touchend', end);
-    node.addEventListener('touchcancel', end);
+    function finish(pt){
+      var t = dragging ? targetAt(pt) : null;
+      var info = t && t !== node ? t.__dropInfo : null;
+      cleanup();
+      if (info) onDrop(source, info);
+    }
 
-    node.addEventListener('mousedown', function(e){
-      if (e.button !== 0) return;
-      if (e.target.tagName === 'BUTTON') return;
-      start(e);
-      function mm(ev){ move(ev); }
-      function mu(ev){
-        document.removeEventListener('mousemove', mm);
-        document.removeEventListener('mouseup', mu);
-        end(ev);
+    /* ---- スマホ（タッチ） ---- */
+    node.addEventListener('touchstart', function(e){
+      if (e.touches.length > 1 || isControl(e.target)){ cleanup(); return; }
+      startPt = pointOf(e);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function(){ timer = null; begin(startPt); }, LONG_PRESS_MS);
+    }, { passive: true });
+    node.addEventListener('touchmove', function(e){
+      var pt = pointOf(e);
+      if (dragging){
+        if (e.cancelable) e.preventDefault();
+        moveTo(pt);
+        return;
       }
-      document.addEventListener('mousemove', mm);
-      document.addEventListener('mouseup', mu);
+      /* 長押しが成立する前に指が動いたら、普通のスクロールとして扱う（少しの揺れは許す） */
+      if (timer && startPt && dist(pt, startPt) > 12){ clearTimeout(timer); timer = null; }
+    }, { passive: false });
+    node.addEventListener('touchend', function(e){
+      if (timer){ clearTimeout(timer); timer = null; }
+      if (!dragging) return;
+      if (e.cancelable) e.preventDefault();   /* 離したときの「タップ」扱いを防ぐ */
+      finish(pointOf(e));
     });
+    node.addEventListener('touchcancel', cleanup);
+    /* 長押しで出る「画像を保存」などのメニューを出さない */
+    node.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    /* ブラウザ標準の画像ドラッグは使わない */
+    node.addEventListener('dragstart', function(e){ e.preventDefault(); });
+
+    /* ---- PC（マウス） ---- */
+    function onMouseMove(ev){
+      var pt = pointOf(ev);
+      if (!dragging){
+        if (startPt && dist(pt, startPt) > 6) begin(pt);
+        return;
+      }
+      ev.preventDefault();
+      moveTo(pt);
+    }
+    function onMouseUp(ev){
+      var was = dragging;
+      detachMouse();
+      if (was){ suppressClick = true; finish(pointOf(ev)); }
+      else cleanup();
+    }
+    function detachMouse(){
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+    node.addEventListener('mousedown', function(e){
+      if (e.button !== 0 || isControl(e.target)) return;
+      e.preventDefault();          /* 文字の選択を始めない */
+      startPt = pointOf(e);
+      detachMouse();
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+    /* ドラッグで離したときに「クリック」扱いにならないようにする */
+    node.addEventListener('click', function(e){
+      if (suppressClick){ suppressClick = false; e.preventDefault(); e.stopPropagation(); }
+    }, true);
   }
 
   /* プレート種別ごとの一覧バーの色 */
@@ -2983,6 +3071,23 @@
       draft.levels.unshift({ id: uid(), label: '15', color: '#ff7ad9', songs: [], hidden: false });
     })();
 
+    function moveSong(from, to){
+      function listOf(info){
+        var l = draft.levels.filter(function(x){ return x.id === info.levelId; })[0];
+        return l ? l.songs : null;
+      }
+      var src = listOf(from), dst = listOf(to);
+      if (!src || !dst) return;
+      if (from.index < 0 || from.index >= src.length) return;
+      var moved = src.splice(from.index, 1)[0];
+      var at = to.index;
+      if (at < 0) at = 0;
+      if (at > dst.length) at = dst.length;
+      dst.splice(at, 0, moved);
+      renderLevelsEditor();
+      refreshPreview();
+    }
+
     function renderLevelsEditor(){
       levelsEditorContainer.textContent = '';
       draft.levels.forEach(function(level){
@@ -3007,7 +3112,7 @@
 
         var block = el('div', {class:'level-block' + (level.hidden ? ' is-level-hidden' : '')}, [head]);
         var grid2 = el('div', {class:'thumb-grid'});
-        level.songs.forEach(function(song){
+        level.songs.forEach(function(song, sIdx){
           var thumbItem = el('div', {class:'thumb-item'});
           var srcSong = song.img || resolveSongImage(song.name);
           var thumb = el('div', {class:'thumb'});
@@ -3047,10 +3152,16 @@
           });
           thumbItem.appendChild(typeRow);
 
+          /* ドラッグで並べ替え・別のレベルへ移動できる */
+          var here = { levelId: level.id, index: sIdx };
+          thumbItem.__dropInfo = here;
+          thumbItem.classList.add('draggable');
+          makeDraggable(thumbItem, here, moveSong);
+
           grid2.appendChild(thumbItem);
         });
 
-        grid2.appendChild(el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'この表に入れる曲を選ぶ', onclick: function(){
+        var addSongTile = el('div', {class:'thumb-pick-add', text:'登録曲から選択', title:'この表に入れる曲を選ぶ', onclick: function(){
           /* この表に登録済みの曲は選択肢から外す */
           /* 同じ曲でもST譜面とDX譜面は別枠として数える */
           var usedSongs = {};
@@ -3076,7 +3187,10 @@
             });
             renderLevelsEditor(); refreshPreview();
           }, null, usedSongs, { versionName: draft.versionName });
-        }}));
+        }});
+        /* 末尾や空のレベルにも落とせるようにする */
+        addSongTile.__dropInfo = { levelId: level.id, index: level.songs.length };
+        grid2.appendChild(addSongTile);
         block.appendChild(grid2);
         levelsEditorContainer.appendChild(block);
       });
@@ -3368,9 +3482,8 @@
       if (from.index < 0 || from.index >= src.length) return;
 
       var moved = src.splice(from.index, 1)[0];
+      /* 落とした相手のいた位置に入る（後ろへ動かしたときは相手の後ろ、前へ動かしたときは相手の前） */
       var at = to.index;
-      /* 同じ列の中で後ろへ動かすときは、抜いた分だけ位置がずれる */
-      if (src === dst && from.index < at) at--;
       if (at < 0) at = 0;
       if (at > dst.length) at = dst.length;
       dst.splice(at, 0, moved);
