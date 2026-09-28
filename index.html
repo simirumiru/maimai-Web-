@@ -2542,10 +2542,14 @@
         var b = el('div', {class:'pv-badge-img'});
         var srcB = badge.img || resolveBadgeImage(badge.name);
         if (srcB){
-          b.appendChild(makeResolvedImg(srcB, getCachedPlateBadge(badge.name), function(){
+          var bImg = makeResolvedImg(srcB, getCachedPlateBadge(badge.name), function(){
             b.classList.add('no-img');
             b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
-          }));
+          });
+          /* 実績プレートは縦横比が決まっている（320×51）ので、読み込み前から場所を確保しておく。
+             画像が後から届いても高さが変わらず、画面がずれない。 */
+          if (badgeCat(badge.name)){ bImg.setAttribute('width', '320'); bImg.setAttribute('height', '51'); }
+          b.appendChild(bImg);
         } else {
           b.classList.add('no-img');
           b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
@@ -2842,7 +2846,17 @@
     if (anchorCard){
       var target = anchorCard;
       listAnchorId = null;            /* 一度戻したら目印は消す */
+      /* 自分でスクロールし始めたら、それ以降は位置を戻さない（引き戻されてカクつくのを防ぐ） */
+      var userMoved = false;
+      var EVTS = ['touchstart', 'wheel', 'keydown', 'mousedown'];
+      var onUser = function(){
+        userMoved = true;
+        EVTS.forEach(function(t){ window.removeEventListener(t, onUser, true); });
+      };
+      EVTS.forEach(function(t){ window.addEventListener(t, onUser, { capture: true, passive: true }); });
+      setTimeout(onUser, 1500);        /* 念のため、しばらくしたら見張りをやめる */
       var jump = function(){
+        if (userMoved || !target.isConnected) return;
         try { target.scrollIntoView({ block: 'center' }); } catch(e){}
       };
       jump();
