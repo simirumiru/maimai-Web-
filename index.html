@@ -536,8 +536,12 @@
 
   /* ---- 画面の一番上・一番下へ移動するボタン（右下） ----
      maimaiDX NET の Top / Bottom を参考にした角丸の三角形。色はサイトの青に合わせる */
+  /* 画面下のツールバーが出たり引っ込んだりしても動かないように、
+     「一番小さいときの画面の高さ（svh）」を基準に上から位置を決める */
   .jump-nav{position:fixed;right:max(12px, env(safe-area-inset-right));
-    bottom:calc(16px + env(safe-area-inset-bottom));z-index:900;
+    top:calc(100vh - 110px - env(safe-area-inset-bottom));
+    top:calc(100svh - 110px - env(safe-area-inset-bottom));z-index:900;
+    -webkit-transform:translateZ(0);transform:translateZ(0);
     display:flex;flex-direction:column;align-items:center;gap:2px;
     opacity:1;transition:opacity .5s ease;}
   .jump-nav.is-idle{opacity:0;pointer-events:none;}
@@ -551,6 +555,9 @@
   .jump-btn text{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Arial Rounded MT Bold',sans-serif;
     font-weight:800;paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round;}
   @media (max-width:480px){ .jump-btn{width:46px;height:41px;} }
+  @media (max-width:480px){
+    .jump-nav{top:calc(100vh - 100px - env(safe-area-inset-bottom));top:calc(100svh - 100px - env(safe-area-inset-bottom));}
+  }
 
   /* ---- DX / ST の印 ----
      「.thumb img」などの枠側の指定に負けると100%に引き伸ばされて
