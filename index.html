@@ -525,6 +525,11 @@
   .onoff-idle{color:var(--text);}
 
   .del-ask{font-weight:700;font-size:15px;margin:0 0 4px;}
+  .modal-box p.del-ask-oneline{white-space:nowrap;overflow:hidden;font-size:15px;}
+  /* 1行で書き切る確認画面は横幅を広めにとる */
+  .modal-backdrop:has(.modal-box-wide){padding:10px;}
+  .modal-box.modal-box-wide{max-width:560px;padding:18px 14px;}
+  .btn.mark-clear{background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:700;}
   .del-actions{display:flex;gap:10px;justify-content:flex-end;}
   .del-no{background:transparent;border:1px solid var(--text);color:var(--text);}
   .del-yes{background:var(--danger-bg);border-color:var(--danger-bg);color:#fff;}
@@ -925,19 +930,30 @@
   }
 
   /* 削除の確認。「〜を削除しますか？」と、いいえ（左）／はい（右） */
-  function showDeleteConfirm(message, onYes){
+  /* opts.yesText … 右のボタンの文字（既定は「はい」）
+     opts.oneLine … 文を必ず1行に収める（入りきらないときは文字を小さくする） */
+  function showDeleteConfirm(message, onYes, opts){
+    opts = opts || {};
     var backdrop = el('div', {class:'modal-backdrop'});
-    var box = el('div', {class:'modal-box'});
-    box.appendChild(el('p', {class:'del-ask', text: message}));
+    var box = el('div', {class:'modal-box' + (opts.oneLine ? ' modal-box-wide' : '')});
+    var ask = el('p', {class:'del-ask' + (opts.oneLine ? ' del-ask-oneline' : ''), text: message});
+    box.appendChild(ask);
     var actions = el('div', {class:'modal-actions del-actions'});
     actions.appendChild(el('button', {class:'btn del-no', text:'いいえ',
       onclick: function(){ closeModal(backdrop); }}));
-    actions.appendChild(el('button', {class:'btn del-yes', text:'はい',
+    actions.appendChild(el('button', {class:'btn del-yes', text: opts.yesText || 'はい',
       onclick: function(){ closeModal(backdrop); onYes(); }}));
     box.appendChild(actions);
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
     document.body.appendChild(backdrop);
+    if (opts.oneLine){
+      var size = parseFloat(getComputedStyle(ask).fontSize) || 15;
+      while (ask.scrollWidth > ask.clientWidth + 0.5 && size > 9){
+        size -= 0.5;
+        ask.style.fontSize = size + 'px';
+      }
+    }
   }
 
   function showConfirm(message, onConfirm){
@@ -2726,7 +2742,8 @@
 
   /* ========================= view: list ========================= */
   /* 赤線の表示ON/OFFボタン（押すと画面を描き直す） */
-  function makeMarkToggleBar(){
+  /* v を渡したとき（バージョン詳細）だけ「赤線削除」ボタンも付ける */
+  function makeMarkToggleBar(v){
     var bar = el('div', {class:'mark-toggle-bar'});
     var btn = el('button', {
       class: 'btn btn-sm' + (showSongMarks ? ' mark-on' : ' btn-hidden-on'),
@@ -2738,6 +2755,21 @@
       renderApp();
     });
     bar.appendChild(btn);
+    if (v){
+      bar.appendChild(el('button', {
+        class: 'btn btn-sm mark-clear',
+        text: '赤線削除',
+        title: 'この表につけた赤線をすべて消します',
+        onclick: function(){
+          var name = v.versionName || 'この表';
+          showDeleteConfirm(name + 'の赤線を全て削除しますか？', function(){
+            delete songMarks[v.id];
+            persistSongMarks();
+            renderApp();
+          }, { yesText: '削除', oneLine: true });
+        }
+      }));
+    }
     return bar;
   }
 
@@ -2832,7 +2864,7 @@
     root.appendChild(statusEl);
 
     var isJewelDoc = (v.docType === 'jewel');
-    if (!isJewelDoc) root.appendChild(makeMarkToggleBar());
+    if (!isJewelDoc) root.appendChild(makeMarkToggleBar(v));
 
     var pvHolder = el('div', {class:'preview-wide'});
     pvHolder.appendChild(buildPreviewNode(v, { interactive: !isJewelDoc }));
