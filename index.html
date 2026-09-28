@@ -338,6 +338,8 @@
   .guide-callout .guide-p:last-child{margin-bottom:0;}
   .guide-p-after{margin-top:12px;}
   .guide-sign{margin:12px 0 0;text-align:right;font-weight:700;color:var(--text-dim);}
+  .guide-p-note{font-size:13.5px;line-height:1.8;color:var(--text-dim);}
+  .guide-link{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:2px;}
 
   /* 獲得条件の表 */
   .guide-cond{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
@@ -3969,6 +3971,16 @@
       para(['ここまで読んでいただきありがとうございます。']),
       para(['初めてのサイト開発で至らない点も多いかと思いますが、皆様の実績プレート取得に少しでも貢献できれば幸いです。']),
       el('p', {class:'guide-sign', text:'るみる'})
+    ]));
+
+    /* ---------- 5. 注意事項（権利表記・免責） ---------- */
+    var contactLink = el('a', {class:'guide-link', href:'https://x.com/rumiru_0', target:'_blank', rel:'noopener noreferrer', text:'@rumiru_0'});
+    wrap.appendChild(section('注意事項', [
+      para(['当サイトは個人が非営利で運営している', b('非公式のファンメイドサイト'), 'です。株式会社セガおよび関連会社とは一切関係ありません。'], 'guide-p guide-p-note'),
+      para(['「maimai」「maimai でらっくす」は株式会社セガの商標または登録商標です。'], 'guide-p guide-p-note'),
+      para(['楽曲のジャケット画像・実績プレート画像・実績フレーム画像などの著作権は、株式会社セガおよび各権利者に帰属します。'], 'guide-p guide-p-note'),
+      para(['掲載している譜面定数・下埋め時間・料金などは、有志による公開データや独自の集計をもとにしたもので、正確さを保証するものではありません。'], 'guide-p guide-p-note'),
+      para(['掲載内容に問題がある場合は、X（旧Twitter）の ', contactLink, ' までDMでご連絡ください。確認のうえ、速やかに削除などの対応をいたします。'], 'guide-p guide-p-note')
     ]));
 
     root.appendChild(wrap);
