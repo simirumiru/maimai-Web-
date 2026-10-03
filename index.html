@@ -1251,6 +1251,10 @@
     add(toFileName(name).replace(/\./g, '_'));                /* ピリオドも「_」に */
     add(toFileName(name).replace(/\./g, '_').replace(/\u3000/g, ' '));
     add(String(name));                                       /* 置換なしの生の曲名 */
+    /* Mac で作ったファイル名は濁点などが分かれた形（NFD）になっていることがあるので、その形も試す */
+    if (String.prototype.normalize){
+      list.slice().forEach(function(f){ add(f.normalize('NFD')); });
+    }
     return list;
   }
   /* まず軽い WebP（曲名.webp）を探し、無ければ今までの PNG／指定の拡張子を読む。
@@ -1296,7 +1300,16 @@
   }
   /* 楽曲ジャケット専用（綴り違いを自動で試す） */
   function makeSongImg(name, primarySrc, fallbackDataUrl, onAllFailed){
-    return makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, songImageUrls(name));
+    var cands = songImageUrls(name);
+    /* 表に画像の場所が直接書いてある曲（曲名とファイル名が違う曲など）は、
+       その名前の .webp を最初に試し、無ければ書いてある .png／.jpg を読む */
+    var m = primarySrc && /(^|\/)songs\/.+\.(png|jpe?g)$/i.exec(String(primarySrc).split(/[?#]/)[0]);
+    if (m){
+      var webp = String(primarySrc).replace(/\.(png|jpe?g)(?=([?#].*)?$)/i, '.webp');
+      cands = [webp, primarySrc].concat(cands.filter(function(u){ return u !== webp && u !== primarySrc; }));
+      primarySrc = webp;
+    }
+    return makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, cands);
   }
 
   /* ---- 曲数からの自動計算（下埋め時間・料金） ---- */
