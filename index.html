@@ -1190,9 +1190,9 @@
      短く付け直した名前でも読めるように、上から順に試す。
      最後の1つは別サイトの画像なので、表示はできてもPNG保存には写らない。 */
   var CHART_TYPE_SOURCES = {
-    dx: ['marks/music_dx.png', 'marks/DX.png', 'marks/dx.png',
+    dx: ['marks/music_dx.webp', 'marks/music_dx.png', 'marks/DX.png', 'marks/dx.png',
          'https://maimaidx.jp/maimai-mobile/img/music_dx.png'],
-    st: ['marks/music_standard.png', 'marks/ST.png', 'marks/st.png',
+    st: ['marks/music_standard.webp', 'marks/music_standard.png', 'marks/ST.png', 'marks/st.png',
          'https://maimaidx.jp/maimai-mobile/img/music_standard.png']
   };
   function makeChartTypeMark(kind){
@@ -1286,6 +1286,12 @@
   function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, candidates){
     var queue = (candidates || []).slice();
     if (queue.length && queue[0] === primarySrc) queue.shift();
+    /* プレート・Jewel の画像は、軽い .webp を先に試し、無ければ今までの .png を読む */
+    if (primarySrc && /(^|\/)(plates|jewels)\/[^?#]+\.png$/i.test(String(primarySrc))){
+      var webpSrc = String(primarySrc).replace(/\.png$/i, '.webp');
+      queue.unshift(primarySrc);
+      primarySrc = webpSrc;
+    }
     var img = el('img', {src: primarySrc, alt:'', loading:'lazy', decoding:'async'});
     var triedFallback = false;
     img.addEventListener('error', function(){
