@@ -4,6 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>maiプレート</title>
+<!-- Vercel Web Analytics（Vercelの管理画面で Analytics を有効にすると集計が始まる）。
+     赤線のバックアップの # 以降は送らない -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  window.va('beforeSend', function (event) {
+    try { var u = new URL(event.url); u.hash = ''; event.url = u.toString(); } catch (e) {}
+    return event;
+  });
+</script>
+<script>
+  /* 集計は本番（maiplate.vercel.app や独自ドメイン）だけ。テスト環境（ほかの *.vercel.app / 手元）は数えない */
+  (function(){
+    var h = location.hostname;
+    if (h === 'localhost' || h === '127.0.0.1' || h === '' || (/\.vercel\.app$/.test(h) && h !== 'maiplate.vercel.app')) return;
+    var s = document.createElement('script'); s.defer = true; s.src = '/_vercel/insights/script.js';
+    document.head.appendChild(s);
+  })();
+</script>
 <!-- ブックマーク・タブに出るアイコン -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2044%2044%22%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2222%22%20r%3D%2221.5%22%20fill%3D%22%23131417%22/%3E%3Cpath%20d%3D%22M23.15%205.54A16.5%2016.5%200%200%201%2032.82%209.55%22%20stroke%3D%22%23ff4fd8%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M34.45%2011.18A16.5%2016.5%200%200%201%2038.46%2020.85%22%20stroke%3D%22%23ff7a7a%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M38.46%2023.15A16.5%2016.5%200%200%201%2034.45%2032.82%22%20stroke%3D%22%23ffb84f%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M32.82%2034.45A16.5%2016.5%200%200%201%2023.15%2038.46%22%20stroke%3D%22%23ffe14f%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M20.85%2038.46A16.5%2016.5%200%200%201%2011.18%2034.45%22%20stroke%3D%22%237ee787%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M9.55%2032.82A16.5%2016.5%200%200%201%205.54%2023.15%22%20stroke%3D%22%233fd0ff%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M5.54%2020.85A16.5%2016.5%200%200%201%209.55%2011.18%22%20stroke%3D%22%238ab4f8%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Cpath%20d%3D%22M11.18%209.55A16.5%2016.5%200%200%201%2020.85%205.54%22%20stroke%3D%22%23b48cff%22%20stroke-width%3D%226.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Crect%20x%3D%2212%22%20y%3D%2217.5%22%20width%3D%2220%22%20height%3D%229%22%20rx%3D%223%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%2212%22%20y%3D%2217.5%22%20width%3D%2220%22%20height%3D%224.5%22%20rx%3D%222.2%22%20fill%3D%22%23ffe7fa%22%20opacity%3D%22.9%22/%3E%3C/svg%3E">
 <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAPsklEQVR4nNRbCXRUVZr+3nu1pNZUaslKWBN2DJsgiGxpMCAInAHR1sFWR4/L9OljTzvOOD0tdHtGPd19utVpPHPaHkamu512tBGSwbigtmAIDBBAtpBAhBCy1JKqJLWktjf/fVVZiiz1KgnB+erUeffdd9997//vf///v/9/nwK3AjabPj3I2xSKsI2dhsMKu0cVtcNu78Aog8NNhNlsNgLCGo7j7qEnTRdFzsZxYERrBrjFL4qwc5xoh4hzoiiWAZFyl8vVhpuEEWeA0WgrUCj49UToOhHiXUS8EsMAMSHEgTtIjCmNRjv3uN3uKxhBjBgDTCbbHEHB/5SK6268phTUyLUWIsdciFxLIcbYpkKt0iHgbsL4Rg/GhjXwRQM4572MGv9VXPRfwUXfFQTFUH+PKgsjssPjcBzDCGDYDJBGXMm9TMW/otHu7m9c1kzMmrASt00qRkHefAi80P8LRIGii43IsydKeUSM4GjbGXzaeoT+lTjru9R9jaRCBMe9F0Lkx+0Ox0UMA0NmgNZqzUkDv4Pm6iNEt4LVqZVarFn4FFYUPQyTIVN2X1xUxJ0nryLdGxiwTXOnE7ua92Jnw7skLX6pjvgQJgr+nUd0h8PhuI4hYEgMIHFfygvcPiI8nZ0LvAIr5jyMexc9i3S9FUNBprMDt59rSNqOMeIX9W9jd3MZIvSLwx4JRze73fYvkSJSZoDZbNvM8fzvqahm57nWKXhmw79J83o4ECJRlFTUyG7P9MVjF15ETeBqV1WnGI0+5HLZ30MKEFJpbDZn/YBY9rsukV8172/wtxt/iwxDNoYLNhKF9U7Z7W2qDDyYtRbuUDtOeqtZFXunLRqN3u33e4/I7Uc2A8xW26+I8O1M0Rm1ViL8Laya/xgEQYGRgKktgPxmT0r3KGnqrTYvwmzdFHzuPoaA2MnUcIlGqzX5fb6P5PQhawpYLJmvkNZ9npXNhly8+PBHMOltGEks+PoabG4vhoqmoAOrTj6JxpA9ViGKrzqdLf+Q7L6kDIjP+f+ONebws8f/gnzLZIwkxjW6MbO2GUNCmoP8SvrzYZy1e7Gs4jl60RhZpBO2kk54d7DbB2WAyZRZJCi4w1TUqDVGfO8H72Ax5mG48AXa0EDmWxcIweLxI7+pFVO1E2BQ6FLohSxAzlEaoUTFeZL62vhhKTpCkhPlJ+uwmKzDyYF6GZAB5MePAaesIGbmC0o1tv3zXkw2zERuc+pz3hvwoPL8Bzhx8UNcs5+Du6Ol33ZZKjOmaydhvXkZNtlWDs6QbCLecqHfS2ccTty9txSdkQjNBNSHgr657e3tjv7aDsSANLM18zCJ/Gx2UvLIqyhadj8MbTzyr8t37avrj6D86Juoqv2YXiSKVCDQr8R8J57J24oFxpmJF9VkLQr+Z9D73z5/AX938CupTGuSQy5Hywoqhvs+px8Q8T8m4u9n5SkL1mH5ludjHfEizG5FUsVx+foJvPbnR1Fa8Ss0umqlV0gV9NK0LriCP7Tsx4HWo5ilL0C2Ku5kZVCf+qZB759ts+KM04Uat4fprrEarU70+7xf3NiuDwP0er1NEJTvkD1Rm7LG4b4f7oagiI16lForwhw0AX7AB39+8j/xr3seh6s9uVcnF41BO95pKUe+OhszdQWAoZ58cXvS+1blj8H7tZfRFgwyjs7hed2uUMibYGr6MsCQ8S9E/DJW3vD0TlhyJyVc92qjSCMGqEOJcuALdWDX/h+i9PBrKYu7HETpt991ENfJ3N1lK4QqPbnVUAkCCtPT8V7tJTIMXBopdCU5SeW92yRQYTKZxgkKNdMsaXmFt+OhfxrAqySJ1nuJCUGOvRlaQ0689rOl8PlSc2SGigxadFVu3QyLVp4+WrVnH6rsksQEwiFM93ia67quJcgyL6h20CGNlVdsfWHgHonuDn0UTnMETmsEf9z91KgRz9Aa8uHxzz6R3f6lOxZ0FUkKxBd7X+tmgNVqNRBlD7DyxNtWIK9gLuSgYt8buHK+AqONL6834tdVJ2W1XZiTjWV5ufEz7oFYqC6GbgaQybyHbL6Kleeu3Car44aa4zi455e4VXj52AmcaGmR1faxGdOlI6NRFPm1XfXdDOAEYSM7qtQ6jJuxJGmH0WgUZW89y3xu3CpE6Nnf/+IgC4wkbfsdsghpQkznd9HK0MUAJfWyhhUmzfkOFEpV0g4vHC2Fu3lE45NDQrXbjdLLdUnbMYuwamx+7EQUS8BoRpwBtOApZqtcVp489+6knTGO30rRvxGvHq+SJQXrJoyXjiySxWhm5bhjz3WLRP7UhUk7aqg51mf0BeLwonkLsXHdvcjNzoFSNaxoeB+EgiFcb2rEB2X7cPj4EdJZ3eEwSQqYmZubOXgc8s6cXoEbjmdSUB5jABfz+dN0JuiMyWN6l77+IuFcRVNm764/YfbMIiiVI0v4jXjw3vtw8swpbHhkK4KhYHf9gavXkjIgW6eDTqmANxRmylCiuUsHSKzJzJcX12usPZFwvmbl6lEhnoE9o2jGbSi+c1lC/TF7cteYYYbZHCuIokSzxADihnRizZUX6HA2JSqdpYuXjArxXVCpVChevjKhji165GCqOUM6ivFBV5D7a0I8wmsZMyVpB+FQJzpaGxPqsnKGHxRNFVZb4lS92t6OznAYagWZukxiRo6L/HXKM4jktrbqgXoLua9aTMuIMSAe0k/jSXl1v32vxM6AsDdU96lze0fPDe5Caz+utyQFE2iRNJVWoumUPBFonBW0WLFR1ml2ncQUJd/j/dPYZ/MRjutmQEdn8qBkk+NqnzqHhwIU6aRPldzNzTezvtkz6Fnujr4M+IanGEH+AKF1RndBIzxce08Vr85W8FEh0KUK6/UCIlyMcQOhUTNAJF1NN6pHJkQ+VHBspGEcpAF5sJmJOUieUs7doZWIMR0XjAMTUWsQ4J0wAd9WjM1LnuYwGXtElNGuoHx7k8WaJVWItFj+hogMUz8T2yLQRkQpmNWm4vCNToFGLY80zfBSYDcTk3PTkraJRnvEm9HOhjtAbqSHacXOa7EU9DWtIP37A69SQ2HJRNjZswo7deo0RhsHDx5KOM81q6BWJZeAmsZYBprRTIdYcI+EQpoGwWuXIQeaafMTzsvLP0JVVRVGC4zhhw9XJtQtmGyQde+lOAOI6G/YIab+OC7GgIZLsjoxLlqdcO73+/HoY0/A47n55rCtrQ3bHn5EemZv3D3HJOv+2i4GiLFBj2k8UawkJizrbLwKkRYZnDC4KBkWrpJ0Q2+LV19fj8LJ01BcvBJTp0yBRqvBSMLv8+NCdTUOHPhMikUkQkTJnIykfXQGI6h3dEplencpnCQxIMJFyykR8TxHHXvPHIG+aPGgHSlMFhiXrEX7of0J9ezFPvnkU+k/mth4hxUGbXITXHmxZxeeKHIfsKM0BdwOR0VcKaDtL6WQg6zv/f0Q0h03AyKe25gnq+Xeo7HsGNHa5nI1S0qkyy8M0hSQ4uVth8pkBRfSxk+VpOBWg43+lDHapO0iZNL3VrpiJxz3YVd9t2NMc18SibDLDu/pSshBzpM7wKUlf/jNglbNY/v9+bLafnW+DR5fLIjSRStDT1CUi+4X40Pv3Ps7WZ2qsvOR/eR23Cq8/NfjMMaa3Plh+O3HsRUsURgkHd+dWe1mQHw76m5Wbv+yDP7aM3L6hWXdNujmLcNoo7goHQ8uz5LVtupyOz484Y6fie84HI7uFVFCZigaCW6ng2Qom3e9ArkY+8LrUKTrMVowGRR480eUJLWSwJrE7sjmQHjp3fquYoBoTMgMJRj8QCDg1mj0bEPzHcGGy9DNXQZVZnINy6fpMe+7Y8E7a+G86MDNxNZ7rNizcxqMeUS1jqy5gf4W9hLECF/ftXjFeQ9eeT+WqSbx/01rq/NPva/38XgEQX9CEMQnWDbVd+44MkoeAKdIbmONWjfmrVVAa9OivuIKxOjIGkklxQF++cJE/OPT+RRx7ic9r42v4zt6mOALhLH1F9UUsIlIpi/Y6dsSDAZ9vW/rw4Bg0OvV6HRpHLjlEQp0hFzNMC4uQTJY1LVIV11D5ows5C8aC+cFsib2oe/66o3Z03R4++eFuHupefCGGiK+TYQU1CA8sbMWR+LOD61rt7d53B/feEu/Pq/f563UaHXL2c6KAClDZc44aCbNwGCYZPgUKj7GXH2WATO2zELegjEIePxwX/WkvEmEeeNrlmfgtZ9MkkY9J1Mt70Y2DShavvuzZrxRFtf8EL9qddqfRj9bZAYMYBkMBqtSpT3BNklxag0mvrEfmonT+m07RnuEGPD5QF2hsy2Ai+UXUXeAdESNAz67r9922VYlphVqsX6lGZtWW2DQDyHC1Cji7CkfVm8/g86QOORNUhJMJttsQcGz3LeG0xlQ8PM/QD25O9cOngshn4gfp/+KOpI/xJ3tnZKyDNY1Y1bEibsmiJheoB0awTfg+Cdt2LzjAtr90oLJHwmLi9zullMDtZezUfI+juclzclIXPtfz0Exfh40ghNmVR0EPozhgEMUd0UaURypx3Dx9XkvVjx0Gl1kidHolmSbp5OGUPx+31mtRqchV3EJ67bx4GncvklPsbV2koCR2AvE4QpvJJPuR5box1DR5Ahi/eNn4fXHJVEUXyXiX092n6zN0n6/94BWo2czakXIG+KqS8/BOi0L6WPSMVJwcGlYEJW32eFGfHnUg83PnIfdGY59TSJiu8vV8hM598reLU5MOKjW6avIAm8I+8PK6tLztKiIIndeHiVah58MCNKrLI2m9tEHW+G9/GY9nn3pMnyxkfeT2G9qbbW/JbePlL4XCPi81WqVdj85SSVEsun68QY0HK3H2CXjodKpMBwoOJF0wXXZeZVmexD3ff8C3i9niRCOafsr5HwVE/GHkAKGNHRGo9GsUKaVEiOk0JFCo8SsrbehaNtc6GypbHjuwZSoC98NJ//+qcneiZ2/b8R/vN9Cox7TQST1leFQ4B6KF7qQIoYjuwqLxfaUCH47+QqSi8ZTWHrahumY8+j8lPQDT5bgydDXgyrBuvoA3tjdgD/usyMcNzw06i6a7z+l6M5v0I+TIwcj8Nmc0SwoNdtJCJ/q+pSG9Zo5M5tc4nyMWzIB2UXZpCf6316bJoaxPlKHmdHEnB6b3/97uh0HKtz4otKDqnMd6PW6nSTur4fDgVeGMuq9MWKpTIPVOkUJ/tfkPvdZOAhqARkTzciYkEF/CywFFlpg8WiqrMMczoni+Xqw7f3nan2oueJHTZ0f1fQPBvs6VyTueyJh/MjjaZGXxEiCEc/lsu22lHXdRNNi/Qh/OltGubw/f2s/ne0P8Y+nS4gJ61L9eJranqZpVSaK4U//X308LQvfos/n/w8AAP//skZGMQAAAAZJREFUAwARC/BPoE0JyQAAAABJRU5ErkJggg==">
@@ -11,30 +29,58 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="maiプレート">
-<meta name="theme-color" content="#131417">
+<meta name="theme-color" content="#f3f8fb">
+<script>
+  /* 表示モード（ノーマル／ダーク）を、画面が出る前に反映（ちらつき防止） */
+  try{
+    var _t = localStorage.getItem('mmplate_theme_v1');
+    if (_t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else if (_t === 'custom'){
+      var _v = JSON.parse(localStorage.getItem('mmplate_theme_vars_v1') || 'null');
+      if (_v){
+        document.documentElement.setAttribute('data-theme', 'custom');
+        for (var _k in _v) document.documentElement.style.setProperty(_k, _v[_k]);
+      }
+    }
+  }catch(e){}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
-    /* 土台（70%）：暗いグレー。純黒は文字がにじみ目が疲れるので避ける */
-    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
-    /* 線：区切りは控えめに、入力欄の枠は見分けられる濃さ（3:1以上）に */
-    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
-    /* 文字：純白を避ける。本文 ≒ 白87%、補足 ≒ 白60%、無効 ≒ 白38% */
-    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
-    /* 操作色（5%）：彩度を落とした青。強調したい所だけに使う */
-    --accent:#8ab4f8; --accent-ink:#0e1b30; --accent-soft:rgba(138,180,248,.13); --accent-line:rgba(138,180,248,.38);
+    /* 土台：ほんのり水色がかった白。maimai らしい明るさを、彩度を抑えて落ち着かせる */
+    --bg:#f3f8fb; --panel:#ffffff; --panel-2:#eef5f9; --panel-3:#e2eef5;
+    /* 線：区切りは淡く、入力欄の枠は見分けられる濃さに */
+    --border:#dce8ef; --border-ctl:#bfd3df; --border-strong:#8fb0c4;
+    /* 文字：真っ黒を避けた紺寄りの墨色 */
+    --text:#17252f; --text-dim:#5a6c78; --text-faint:#8fa0ab;
+    /* 操作色：maimai の水色を、白地で読める濃さに */
+    --accent:#0a84b8; --accent-ink:#ffffff; --accent-soft:rgba(10,132,184,.10); --accent-line:rgba(10,132,184,.32);
     /* 意味のある色 */
+    --ok:#1e9e5a; --ok-soft:rgba(30,158,90,.12);
+    --danger:#d43f3a; --danger-bg:#e0463f; --danger-soft:rgba(212,63,58,.08); --danger-line:rgba(212,63,58,.32);
+    --warn:#a8670f; --warn-soft:rgba(214,158,46,.13); --warn-line:rgba(214,158,46,.42);
+    /* 表そのもの（保存される画像）の背景。これまでの表画像と同じ #1e1e1e */
+    --canvas:#ffffff;
+    --shadow-sm:0 1px 2px rgba(16,42,62,.06), 0 2px 8px rgba(16,42,62,.05);
+    --shadow-md:0 10px 30px rgba(16,42,62,.14);
+    --radius:14px;
+    --font-display:'Orbitron','Noto Sans JP',sans-serif;
+    --font-body:'Noto Sans JP',sans-serif;
+  }
+  /* 表（画像として保存される部分）は、これまでどおりの暗い配色のまま */
+  #previewCard .btn, .sync-card .btn{border-radius:8px;}
+  #previewCard, .sync-card, .card-preview-inner{color:var(--text);}
+  html[data-theme="dark"] #previewCard, html[data-theme="dark"] .sync-card, html[data-theme="dark"] .card-preview-inner{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
+    --accent:#8ab4f8; --accent-ink:#0e1b30; --accent-soft:rgba(138,180,248,.13); --accent-line:rgba(138,180,248,.38);
     --ok:#81c995; --ok-soft:rgba(129,201,149,.16);
     --danger:#f28b82; --danger-bg:#c4372e; --danger-soft:rgba(242,139,130,.10); --danger-line:rgba(242,139,130,.34);
     --warn:#fdd663; --warn-soft:rgba(253,214,99,.10); --warn-line:rgba(253,214,99,.34);
-    /* 表そのもの（保存される画像）の背景。これまでの表画像と同じ #1e1e1e */
-    --canvas:#1e1e1e;
-    --radius:12px;
-    --font-display:'Orbitron','Noto Sans JP',sans-serif;
-    --font-body:'Noto Sans JP',sans-serif;
+    color:var(--text);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -48,7 +94,8 @@
 
   header.app-header{
     padding:22px clamp(16px,4vw,40px);display:flex;align-items:center;gap:16px;
-    border-bottom:1px solid var(--border);background:var(--bg);
+    border-bottom:1px solid var(--border);background:rgba(255,255,255,.86);
+    -webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);
   }
   .logo-mark{width:40px;height:40px;flex:none;cursor:pointer;}
   .logo-mark svg{display:block;width:100%;height:100%;}
@@ -57,7 +104,7 @@
     font-family:'M PLUS Rounded 1c', var(--font-body);}
   header h1 .brand-mai{font-weight:900;background:linear-gradient(95deg,#ff4fd8,#ffb84f);
     -webkit-background-clip:text;background-clip:text;color:transparent;}
-  header h1 .brand-pl{font-weight:800;color:#f2f4f8;margin-left:.1em;}
+  header h1 .brand-pl{font-weight:800;color:var(--text);margin-left:.1em;}
   header p{margin:2px 0 0;font-size:12.5px;color:var(--text-dim);}
 
   #app{padding:20px clamp(16px,4vw,40px) 60px;max-width:1180px;margin:0 auto;}
@@ -102,8 +149,8 @@
   .star-row{display:flex;gap:2px;font-size:20px;color:var(--warn);letter-spacing:2px;}
   button.star-btn{background:none;border:none;font-size:22px;color:var(--warn);padding:0 2px;line-height:1;}
 
-  .btn{border:1px solid var(--border-ctl);background:var(--panel-2);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
-  .btn:hover{border-color:var(--accent);background:var(--panel-3);}
+  .btn{border:1px solid var(--border-ctl);background:var(--panel);color:var(--text);border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
+  .btn:hover{border-color:var(--accent);background:var(--panel-2);}
   .btn:disabled{opacity:.35;cursor:default;}
   .btn:disabled:hover{border-color:var(--border-ctl);background:var(--panel-2);}
   .btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
@@ -125,7 +172,7 @@
   /* ---- list / cards ---- */
   .versions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:18px;}
   @media (max-width:520px){ .versions-grid{grid-template-columns:1fr;} }
-  .version-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;}
+  .version-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:14px;cursor:pointer;transition:border-color .15s, box-shadow .15s;box-shadow:var(--shadow-sm);}
   .version-card:hover{border-color:var(--accent);}
   .vc-swatch{width:100%;height:6px;border-radius:4px;margin-bottom:10px;}
   .vc-title{font-weight:700;font-size:14px;margin-bottom:4px;word-break:break-word;}
@@ -151,7 +198,7 @@
   .vc-actions{display:flex;flex-wrap:wrap;gap:6px;}
 
   /* ---- cards (editor) ---- */
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 20px;margin-bottom:16px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 20px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
   .card h2{font-size:14px;margin:0 0 12px;color:var(--accent);letter-spacing:.03em;display:flex;align-items:center;gap:8px;}
   .card h2 .hint{font-size:11px;color:var(--text-dim);font-weight:400;}
   .field{margin-bottom:12px;}
@@ -342,6 +389,7 @@
   .guide-p-tight{margin:0;}
   .guide-sub{font-size:12.5px;font-weight:700;color:var(--text-dim);letter-spacing:.04em;margin:16px 0 8px;}
   .guide-sub:first-of-type{margin-top:0;}
+  .guide-card .guide-sub.guide-sub-gap{margin-top:16px;}
   .guide-mini{font-size:12.5px;font-weight:700;color:var(--text-dim);margin:14px 0 7px;}
   .guide-caption{color:var(--text-dim);line-height:1.8;margin:12px 0 0;}
   /* それぞれ折り返さず1行で。狭い画面では文字を少し小さくして収める */
@@ -393,15 +441,15 @@
     background:var(--danger-soft);border:1px solid var(--danger-line);}
 
   /* 語句の色（元の資料の色づかいに合わせる） */
-  .gk-green{color:#7fd48a;font-weight:700;}
-  .gk-red{color:#f08a84;font-weight:700;}
-  .gk-purple{color:#c4a6ff;font-weight:700;}
+  .gk-green{color:#239a4a;font-weight:700;}
+  .gk-red{color:#d4403a;font-weight:700;}
+  .gk-purple{color:#7c4ddb;font-weight:700;}
   .gk-white{color:var(--text);font-weight:700;}
-  .gk-remas{color:#d6cfee;font-weight:700;}
-  .gk-fc{color:#7fd48a;}
-  .gk-sss{color:#f2cf5b;}
-  .gk-ap{color:#f4b76a;}
-  .gk-fdx{color:#f4b76a;}
+  .gk-remas{color:#8a6fc7;font-weight:700;}
+  .gk-fc{color:#239a4a;}
+  .gk-sss{color:#b88600;}
+  .gk-ap{color:#d9730d;}
+  .gk-fdx{color:#d9730d;}
   .gk-clear{color:var(--danger);}
   .gk-emph{color:var(--danger);font-weight:700;}
   .gk-nw{white-space:nowrap;}
@@ -457,8 +505,8 @@
 
   /* 左右差の表示。タイトルに重ならないよう、製作者と同じ行の左端に置く */
   .ptier-meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px;}
-  .lr-corner-badge{font-size:11.5px;font-weight:700;color:#fdd663;flex:none;
-    border:1px solid #fdd663;border-radius:6px;padding:3px 8px;background:rgba(19,20,23,.6);}
+  .lr-corner-badge{font-size:11.5px;font-weight:700;color:var(--text);flex:none;
+    border:1px solid var(--border-ctl);border-radius:999px;padding:3px 10px;background:var(--panel-3);}
   .ptier-meta-row .note{margin:0;}
   /* 完成品：1行3枚、幅いっぱいに使う。枚数が変わっても大きさは同じ */
   .ptier-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;align-items:start;}
@@ -504,8 +552,8 @@
   .tt-count{color:var(--text-dim);font-size:11px;flex:none;}
   .tt-points{font-family:var(--font-display);font-weight:700;color:var(--accent);flex:none;}
 
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
-  .modal-box{background:var(--panel-2);border:1px solid var(--border-ctl);border-radius:12px;padding:20px;max-width:380px;width:100%;box-shadow:0 12px 30px rgba(0,0,0,.5);}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(18,40,58,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+  .modal-box{background:var(--panel);border:1px solid var(--border-ctl);border-radius:18px;padding:22px;max-width:380px;width:100%;box-shadow:var(--shadow-md);}
   .modal-box p{margin:0 0 16px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;}
 
@@ -540,7 +588,7 @@
 
   .onoff-btn{display:inline-flex;align-items:center;gap:2px;}
   .onoff-label{color:var(--text);margin-right:3px;}
-  .onoff-active{color:var(--ok);font-weight:800;}
+  .onoff-active{color:var(--accent);font-weight:800;}
   .onoff-slash{color:var(--text);}
   .onoff-idle{color:var(--text);}
 
@@ -549,7 +597,41 @@
   /* 1行で書き切る確認画面は横幅を広めにとる */
   .modal-backdrop:has(.modal-box-wide){padding:10px;}
   .modal-box.modal-box-wide{max-width:560px;padding:18px 14px;}
-  .btn.mark-clear{background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:700;}
+  /* ---- 更新のお知らせ ---- */
+  .notice-box{position:relative;max-width:440px;padding:26px 22px 22px;}
+  .notice-close{position:absolute;top:8px;right:8px;width:44px;height:44px;border:none;border-radius:50%;
+    background:transparent;color:var(--text);font-size:30px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .notice-close:hover{background:var(--panel-3);}
+  .notice-badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--accent-ink);
+    background:var(--accent);border-radius:999px;padding:3px 10px;margin-bottom:10px;}
+  .notice-title{margin:0 40px 14px 0;font-size:18px;font-weight:800;line-height:1.4;}
+  .notice-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .notice-list li{border-left:3px solid var(--accent);padding-left:10px;}
+  .notice-item-title{font-weight:800;font-size:14px;margin-bottom:2px;}
+  .notice-item-text{font-size:13px;line-height:1.7;color:var(--text-dim);}
+  .notice-box .notice-item-text{white-space:normal;}
+  .notice-box{max-height:86vh;overflow-y:auto;}
+  .notice-past{margin-top:16px;border-top:1px solid var(--border);padding-top:10px;}
+  .notice-past summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text-dim);padding:4px 0;}
+  .notice-past-ver{font-size:12px;font-weight:800;color:var(--accent);margin:12px 0 8px;}
+  .app-version{display:block;margin-top:6px;color:var(--text-faint);font-size:11px;}
+  /* ---- 赤線のバックアップ ---- */
+  .backup-url{width:100%;box-sizing:border-box;font-size:12px;font-family:monospace;padding:8px 10px;margin:0 0 10px;
+    background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:8px;}
+  .modal-box p.backup-note{font-size:12px;color:var(--text-dim);margin-bottom:14px;}
+  .missing-list{overflow-y:auto;flex:1;min-height:0;border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin:4px 0 14px;}
+  .missing-ver{font-weight:800;font-size:12.5px;margin:10px 0 4px;color:var(--accent);}
+  .missing-ver:first-child{margin-top:4px;}
+  .missing-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0;cursor:pointer;}
+  .missing-lv{flex:none;min-width:30px;font-weight:700;}
+  .missing-name{min-width:0;word-break:break-word;}
+  .plate-mode-seg{display:inline-flex;margin-left:auto;border:1px solid var(--border-ctl);border-radius:8px;overflow:hidden;flex:none;}
+  .plate-mode-seg button{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text-dim);
+    font:inherit;font-size:12.5px;font-weight:700;line-height:1.2;padding:5px 0;min-width:32px;cursor:pointer;}
+  .plate-mode-seg button + button{border-left:1px solid var(--border-ctl);}
+  .plate-mode-seg button.is-active{background:var(--accent);color:var(--accent-ink);}
+  .pv-badge-img.is-tappable{cursor:pointer;}
+  .btn.mark-clear{background:var(--panel);border:1px solid var(--danger);color:var(--danger);font-weight:700;}
   .del-actions{display:flex;gap:10px;justify-content:flex-end;}
   .del-no{background:transparent;border:1px solid var(--text);color:var(--text);}
   .del-yes{background:var(--danger-bg);border-color:var(--danger-bg);color:#fff;}
@@ -597,8 +679,339 @@
   .save-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;
     background:var(--panel-3);color:var(--text);border:1px solid var(--border-strong);
     border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;
-    box-shadow:0 6px 20px rgba(0,0,0,.45);pointer-events:none;}
+    box-shadow:var(--shadow-md);pointer-events:none;}
   .save-toast:empty{display:none;}
+
+  /* ---- 右上のメニューボタン（文字つきで分かりやすく） ---- */
+  .menu-btn{display:inline-flex;align-items:center;gap:8px;flex:none;cursor:pointer;
+    background:var(--panel-2);color:var(--text);border:1px solid var(--border-strong);border-radius:10px;
+    padding:8px 12px 8px 10px;font:inherit;font-size:13.5px;font-weight:700;line-height:1;}
+  .menu-btn:hover{border-color:var(--accent);}
+  .menu-btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
+  .menu-icon{display:inline-flex;flex-direction:column;justify-content:space-between;width:18px;height:13px;}
+  .menu-icon i{display:block;height:2px;border-radius:2px;background:currentColor;}
+  /* ---- メニュー（右から出る） ---- */
+  .menu-backdrop{position:fixed;inset:0;z-index:1100;background:rgba(18,40,58,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;justify-content:flex-end;}
+  .menu-panel{width:min(360px, 88vw);height:100%;overflow-y:auto;background:var(--panel);border-left:1px solid var(--border);
+    box-shadow:-12px 0 30px rgba(16,42,62,.16);padding:12px 12px calc(20px + env(safe-area-inset-bottom));
+    animation:menuIn .18s ease-out;}
+  @keyframes menuIn{from{transform:translateX(24px);opacity:0;}to{transform:none;opacity:1;}}
+  .menu-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px 8px;
+    border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .menu-title{font-weight:800;font-size:16px;}
+  .menu-close{width:44px;height:44px;border:none;border-radius:50%;background:transparent;color:var(--text);
+    font-size:30px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .menu-close:hover{background:var(--panel-3);}
+  .menu-list{display:flex;flex-direction:column;gap:4px;}
+  .menu-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:transparent;border:1px solid transparent;border-radius:10px;color:var(--text);padding:10px 10px;font:inherit;}
+  .menu-item:hover{background:var(--panel-2);}
+  .menu-item.is-current{background:var(--panel-2);border-color:var(--border-ctl);}
+  .menu-item.is-current .menu-item-label{color:var(--accent);}
+  .menu-item-icon{flex:none;width:36px;height:36px;border-radius:9px;background:var(--panel-3);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;}
+  .menu-item-icon svg{width:20px;height:20px;}
+  .menu-item-text{display:flex;flex-direction:column;min-width:0;}
+  .menu-item-label{font-weight:700;font-size:14.5px;line-height:1.35;}
+  .menu-item-desc{font-size:11.5px;color:var(--text-dim);line-height:1.45;margin-top:1px;}
+  /* ---- ホーム ---- */
+  .home{max-width:880px;margin:0 auto;}
+  .home-hero{text-align:center;padding:clamp(18px,5vw,40px) 8px clamp(22px,5vw,36px);
+    border:1px solid var(--border);border-radius:18px;margin-bottom:26px;
+    background:radial-gradient(560px 260px at 50% -60px, rgba(63,208,255,.20), transparent 72%), radial-gradient(420px 200px at 100% 120%, rgba(255,79,216,.07), transparent 70%), var(--panel);box-shadow:var(--shadow-sm);}
+  .home-hero-mark{width:72px;height:72px;margin:0 auto 10px;}
+  .home-hero-mark svg{display:block;width:100%;height:100%;}
+  .home-hero-title{margin:0;font-family:'M PLUS Rounded 1c', var(--font-body);font-size:clamp(32px,7vw,44px);line-height:1.1;}
+  .home-hero-title .brand-mai{font-weight:900;background:linear-gradient(95deg,#ff4fd8,#ffb84f);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .home-hero-title .brand-pl{font-weight:800;color:var(--text);margin-left:.08em;}
+  .home-hero-lead{margin:12px auto 18px;max-width:34em;text-wrap:balance;color:var(--text-dim);font-size:14px;line-height:1.7;}
+  .home-hero-cta{font-size:15px;padding:11px 22px;border-radius:10px;}
+  .home-h{font-size:15px;font-weight:800;margin:0 0 12px;padding-left:10px;border-left:3px solid var(--accent);}
+  .home-cards{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:10px;margin-bottom:28px;}
+  @media (min-width:700px){ .home-cards{grid-template-columns:repeat(3, minmax(0,1fr));} }
+  .home-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;cursor:pointer;
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 13px;color:var(--text);font:inherit;
+    transition:border-color .15s ease, transform .15s ease;}
+  .home-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .home-card-icon{width:38px;height:38px;border-radius:10px;background:var(--panel-3);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+  .home-card-label{font-weight:800;font-size:14.5px;line-height:1.35;}
+  .home-card-desc{font-size:12px;color:var(--text-dim);line-height:1.55;}
+  .home-features{border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:18px clamp(14px,3vw,22px);margin-bottom:10px;}
+  .home-feature-list{display:grid;grid-template-columns:1fr;gap:14px;}
+  @media (min-width:700px){ .home-feature-list{grid-template-columns:1fr 1fr;gap:16px 22px;} }
+  .home-feature{display:flex;gap:12px;align-items:flex-start;}
+  .home-feature-icon{flex:none;width:34px;height:34px;border-radius:9px;background:var(--panel-3);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;}
+  .home-feature-icon svg, .home-card-icon svg{width:20px;height:20px;}
+  .home-feature-title{font-weight:700;font-size:14px;line-height:1.45;}
+  .home-feature-desc{font-size:12.5px;color:var(--text-dim);line-height:1.65;margin-top:2px;}
+  @media (max-width:380px){ .menu-btn-text{font-size:12.5px;} .menu-btn{padding:8px 10px 8px 9px;} }
+
+  /* ---- ホームのメニュー：アイコン＋名前の横並び ---- */
+  .home-card{flex-direction:row;align-items:center;gap:12px;padding:14px;min-height:64px;}
+  .home-card-icon{margin-bottom:0;flex:none;}
+  .home-card-label{font-size:14px;}
+  /* ---- シンプルなページ（取り込み） ---- */
+  .simple-page{max-width:560px;margin:0 auto;}
+  .page-title{font-size:24px;font-weight:800;margin:6px 0 6px;letter-spacing:.01em;}
+  .page-lead{color:var(--text-dim);margin:0 0 22px;font-size:14px;}
+  .steps{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .step{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--border);
+    border-radius:14px;padding:12px 14px;box-shadow:var(--shadow-sm);}
+  .step-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+    font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .step-text{display:flex;flex-direction:column;font-size:13px;color:var(--text-dim);line-height:1.6;}
+  .step-text strong{color:var(--text);font-size:14.5px;}
+  .page-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+  .btn-lg{font-size:14.5px;padding:11px 22px;}
+  .bookmarklet-link{text-decoration:none;font-size:13px;padding:11px 18px;}
+  .page-notes p{margin:0 0 6px;font-size:12px;color:var(--text-faint);line-height:1.7;}
+
+  .app-header{position:relative;}
+  .test-env-badge{position:absolute;left:50%;top:3px;transform:translateX(-50%);font-size:10px;font-weight:800;color:#fff;background:#e0463f;border-radius:999px;padding:2px 9px;white-space:nowrap;pointer-events:none;}
+  .test-env-badge[hidden]{display:none;}
+  .missing-fix-head{margin-top:14px;color:var(--accent);}
+  .menu-btn{padding:11px 18px 11px 15px;font-size:16px;gap:10px;border-radius:12px;min-height:46px;}
+  .menu-icon{width:22px;height:16px;}
+  .menu-icon i{height:2.5px;}
+  @media (max-width:380px){ .menu-btn{padding:10px 14px 10px 12px;} .menu-btn-text{font-size:15px;} }
+  .page-notes .page-note-line{margin:0;}
+
+  /* ---- ダークモード ---- */
+  html[data-theme="dark"]{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
+    --accent:#8ab4f8; --accent-ink:#0e1b30; --accent-soft:rgba(138,180,248,.13); --accent-line:rgba(138,180,248,.38);
+    --ok:#81c995; --ok-soft:rgba(129,201,149,.16);
+    --danger:#f28b82; --danger-bg:#c4372e; --danger-soft:rgba(242,139,130,.10); --danger-line:rgba(242,139,130,.34);
+    --warn:#fdd663; --warn-soft:rgba(253,214,99,.10); --warn-line:rgba(253,214,99,.34);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3); --shadow-md:0 10px 30px rgba(0,0,0,.45);
+    --canvas:#1e1e1e;
+    color-scheme:dark;
+  }
+  html[data-theme="dark"] header.app-header{background:rgba(27,28,33,.86);}
+  html[data-theme="dark"] .modal-backdrop, html[data-theme="dark"] .menu-backdrop{background:rgba(0,0,0,.55);}
+  html[data-theme="dark"] .gk-green, html[data-theme="dark"] .gk-fc{color:#7fd48a;}
+  html[data-theme="dark"] .gk-red{color:#f08a84;}
+  html[data-theme="dark"] .gk-purple{color:#c4a6ff;}
+  html[data-theme="dark"] .gk-remas{color:#d6cfee;}
+  html[data-theme="dark"] .gk-sss{color:#f2cf5b;}
+  html[data-theme="dark"] .gk-ap, html[data-theme="dark"] .gk-fdx{color:#f4b76a;}
+  html[data-theme="dark"] .home-hero{background:radial-gradient(560px 260px at 50% -60px, rgba(63,208,255,.14), transparent 72%), var(--panel);}
+  .theme-seg{display:inline-flex;margin-top:14px;border:1px solid var(--border-ctl);border-radius:999px;overflow:hidden;background:var(--panel-2);}
+  .theme-seg button{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text-dim);
+    font:inherit;font-size:13.5px;font-weight:700;padding:8px 18px;cursor:pointer;}
+  .theme-seg button.is-active{background:var(--accent);color:var(--accent-ink);}
+  /* ---- 左上の戻るボタン ---- */
+  .back-btn{flex:none;width:40px;height:40px;margin-right:-6px;border:1px solid var(--border-ctl);border-radius:12px;background:var(--panel-2);
+    color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .back-btn[hidden]{display:none;}
+  .back-btn svg{width:22px;height:22px;}
+  .back-btn:hover{border-color:var(--accent);}
+  /* ---- 一覧の上：極将神舞消・13↓ ---- */
+  .plate-mode-seg button.seg-clear{color:var(--danger);font-weight:800;}
+  .list-mode-seg{margin-left:auto;}
+  /* スマホ幅で戻るボタンが出ているときは、ロゴの丸を省いて横に収める */
+  @media (max-width:440px){
+    header.app-header.has-back{gap:10px;padding-left:12px;padding-right:12px;}
+    header.app-header.has-back .logo-mark{display:none;}
+    header.app-header.has-back .logo-mark + div{margin-left:0;}
+  }
+  .notice-ver{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px;}
+  .notice-title + .notice-ver{margin-top:0;}
+  .notice-ver-no{font-size:15px;font-weight:800;color:var(--accent);}
+  .notice-ver-date{font-size:12.5px;color:var(--text-faint);font-weight:700;}
+  .notice-box .notice-item-text{white-space:pre-line;}
+  .notice-past summary{list-style:none;}
+  .notice-past summary::-webkit-details-marker{display:none;}
+  .mode-hint{display:inline-flex;align-items:center;gap:2px;margin-left:auto;font-size:12px;font-weight:700;color:var(--text-dim);
+    background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:2px 2px 2px 10px;}
+  .mode-hint + .list-mode-seg{margin-left:6px;}
+  .mode-hint-close{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text-dim);
+    width:28px;height:28px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+  .mode-hint-close:hover{background:var(--panel-3);}
+  .mark-clear[hidden]{display:none;}
+  /* 説明書きは、必ず極将神舞のすぐ左に並べる（スマホで折り返しても右寄せのまま） */
+  .mode-row{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto;flex-wrap:nowrap;max-width:100%;}
+  .mode-row .mode-hint{margin-left:0;white-space:nowrap;}
+  .mode-row .list-mode-seg{margin-left:0;}
+  @media (max-width:420px){
+    .mode-row{gap:4px;}
+    .mode-hint{font-size:10.5px;padding-left:8px;letter-spacing:-.02em;}
+    .mode-hint-close{width:24px;height:24px;font-size:16px;}
+    .mode-row .list-mode-seg button{min-width:30px;}
+  }
+  /* ---- 内容の上の戻るボタン ---- */
+  .page-back{display:inline-flex;align-items:center;gap:4px;margin:0 0 14px -4px;padding:8px 14px 8px 8px;min-height:40px;
+    border:1px solid var(--border-ctl);border-radius:999px;background:var(--panel);color:var(--text);
+    font:inherit;font-size:14px;font-weight:800;cursor:pointer;}
+  .page-back:hover{border-color:var(--accent);}
+  .page-back svg{flex:none;}
+  /* ---- 説明書き：極〜舞の下に、上を指す吹き出し ---- */
+  .mode-row{flex-direction:column;align-items:flex-end;gap:10px;}
+  .mode-row .mode-hint{position:relative;padding:4px 4px 4px 12px;border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent);border-radius:10px;}
+  .mode-row .mode-hint::before{content:"";position:absolute;top:-7px;right:58px;width:12px;height:12px;background:inherit;
+    border-left:1px solid var(--accent-line);border-top:1px solid var(--accent-line);transform:rotate(45deg);border-top-left-radius:2px;}
+  .mode-row .mode-hint{background-color:var(--panel);background-image:linear-gradient(var(--accent-soft),var(--accent-soft));}
+  .mode-row .mode-hint::before{background-color:var(--panel);background-image:linear-gradient(var(--accent-soft),var(--accent-soft));}
+  .mode-row .mode-hint .mode-hint-close{color:var(--accent);}
+  /* ---- 更新情報の強調文（文中にボタンの見た目） ---- */
+  .notice-emph{margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--danger-soft);border:1px solid var(--danger-line);
+    color:var(--text);font-size:13px;font-weight:800;line-height:2;}
+  .notice-seg{display:inline-flex;vertical-align:middle;margin:0 4px;background:var(--panel);}
+  .notice-seg .notice-seg-btn{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:3px 0;
+    font-size:12px;font-weight:700;line-height:1.2;color:var(--text-dim);}
+  .notice-seg .notice-seg-btn + .notice-seg-btn{border-left:1px solid var(--border-ctl);}
+  .mark-toggle-bar:has(.mode-row){align-items:flex-start;}
+  header h1 .brand-ver{font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--text-faint);
+    margin-left:6px;letter-spacing:.02em;vertical-align:baseline;-webkit-text-fill-color:currentColor;}
+  @media (max-width:400px){
+    header.app-header{gap:8px;padding-left:12px;padding-right:12px;}
+    header h1{font-size:21px;}
+    header h1 .brand-ver{font-size:9.5px;margin-left:4px;}
+    header.app-header .logo-mark + div{margin-left:0;}
+    .menu-btn{padding:9px 12px 9px 10px;gap:7px;min-height:42px;}
+    .menu-btn-text{font-size:14px;}
+    .menu-icon{width:19px;height:14px;}
+  }
+  @media (max-width:340px){
+    header.app-header{gap:6px;padding-left:10px;padding-right:10px;}
+    .logo-mark{width:34px;height:34px;}
+    header h1{font-size:19px;}
+    .menu-btn{padding:8px 10px 8px 9px;gap:6px;}
+    .menu-btn-text{font-size:13px;}
+  }
+  .modal-box > p{white-space:pre-line;}
+  .modal-box{max-height:86vh;overflow-y:auto;}
+  .notice-box{display:flex;flex-direction:column;overflow:hidden;padding:0;}
+  .notice-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;
+    padding:14px 10px 10px 22px;border-bottom:1px solid var(--border);}
+  .notice-head .notice-title{margin:0;}
+  .notice-head .notice-close{position:static;flex:none;}
+  .notice-scroll{overflow-y:auto;padding:16px 22px 22px;-webkit-overflow-scrolling:touch;}
+  .notice-scroll > .notice-ver:first-child{margin-top:0;}
+
+  /* ---- 明るい表（ノーマル・カスタム）：暗い表向けの白文字や淡い色を、読める色に置き換える ---- */
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .pv-title,
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .pv-bracket,
+  html:not([data-theme="dark"]) .sync-card:not(.sync-export) .sync-title,
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .jewel-cell-title,
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .tier-group-label{color:var(--text) !important;}
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .pv-subtitle{color:#0a84b8 !important;}
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .pv-range-start{color:#1e9e5a !important;}
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .pv-range-end{color:#d43f3a !important;}
+  /* ---- カスタム：ホームの見出しの光もテーマ色に ---- */
+  html[data-theme="custom"] .home-hero{background:radial-gradient(560px 260px at 50% -60px, var(--accent-soft), transparent 72%), var(--panel);}
+  /* ---- 表示モードの選択：カスタムの色 ---- */
+  .theme-colors{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px;}
+  .theme-color{width:34px;height:34px;border-radius:50%;border:3px solid var(--panel);cursor:pointer;padding:0;
+    box-shadow:0 0 0 1px var(--border-ctl);}
+  .theme-color.is-active{box-shadow:0 0 0 2px var(--text);}
+  .theme-color[hidden]{display:none;}
+  .theme-colors[hidden]{display:none;}
+
+  /* ---- 明るいテーマ（ノーマル・カスタム）の表の中：背景は白、線や文字は色をつけない ---- */
+  html:not([data-theme="dark"]) #previewCard, html:not([data-theme="dark"]) .sync-card, html:not([data-theme="dark"]) .card-preview-inner{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
+    --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
+    --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c;
+    --canvas:#ffffff;}
+  /* ---- ボタンの背景はどこでも白（テーマ色で塗るのは主なボタンと選択中だけ） ---- */
+  .btn-ghost{background:var(--panel);}
+  .plate-mode-seg, .theme-seg, .menu-btn{background:var(--panel);}
+  /* ---- 画像として保存：どのテーマでも今までどおりの黒い表で書き出す ---- */
+  html #previewCard.pv-export, html .sync-card.sync-export{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
+    --accent:#8ab4f8; --accent-ink:#0e1b30; --accent-soft:rgba(138,180,248,.13); --accent-line:rgba(138,180,248,.38);
+    --ok:#81c995; --danger:#f28b82; --danger-bg:#c4372e; --warn:#fdd663;
+    --canvas:#1e1e1e;
+    color:var(--text);}
+  /* ---- 編集画面のランク欄・空の案内枠も白に（テーマの色を付けない） ---- */
+  .level-block{background:var(--panel);}
+  .empty-state{background:var(--panel);}
+  html:not([data-theme="dark"]) .level-block .tier-group-label{color:var(--text-dim);}
+  /* ---- 入力欄：中は白（ダークは表の地の色）。色を付けるのは枠だけ ---- */
+  input:not([type=checkbox]):not([type=radio]):not([type=color]), textarea, select{background-color:var(--panel);}
+  /* ---- 詳細の上：左に画像保存、右に極〜舞（1行） ---- */
+  .detail-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .detail-actions .plate-mode-seg{margin-left:auto;}
+  /* ---- 画像として保存：黒／白 ---- */
+  .save-group{display:inline-flex;align-items:stretch;border:1px solid var(--border-ctl);border-radius:999px;overflow:hidden;background:var(--panel);flex:none;}
+  .save-group-label{appearance:none;-webkit-appearance:none;border:none;background:var(--panel);cursor:pointer;
+    display:inline-flex;align-items:center;padding:7px 12px 7px 14px;font:inherit;font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;}
+  .save-group-label:hover{background:var(--accent-soft);}
+  .save-group-label:disabled{opacity:.5;cursor:default;}
+  .save-base{appearance:none;-webkit-appearance:none;border:none;border-left:1px solid var(--border-ctl);cursor:pointer;
+    font:inherit;font-size:12.5px;font-weight:800;min-width:40px;padding:7px 12px;}
+  .save-base-dark{background:#1e1e1e;color:#f2f4f8;}
+  .save-base-white{background:#ffffff;color:#17252f;}
+  .save-base:disabled{opacity:.5;cursor:default;}
+  /* ---- 白で保存するときの表 ---- */
+  html #previewCard.pv-export.export-white, html .sync-card.sync-export.export-white{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
+    --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
+    --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c;
+    --accent:#0a84b8; --accent-ink:#ffffff; --ok:#1e9e5a; --danger:#d43f3a; --danger-bg:#e0463f; --warn:#a8670f;
+    --canvas:#ffffff;
+    color:var(--text);}
+  .export-white .pv-title, .export-white .pv-bracket, .export-white .jewel-cell-title,
+  .export-white .tier-group-label, .export-white.sync-card .sync-title{color:#17252f !important;}
+  .export-white .pv-subtitle{color:#0a84b8 !important;}
+  .export-white .pv-range-start{color:#1e9e5a !important;}
+  .export-white .pv-range-end{color:#d43f3a !important;}
+  /* 選んでいる色に枠（内側に太めの線） */
+  .save-base{position:relative;}
+  .save-base.is-selected{box-shadow:inset 0 0 0 3px var(--accent);}
+  .save-base-dark.is-selected{box-shadow:inset 0 0 0 3px var(--accent), inset 0 0 0 4px #1e1e1e;}
+  /* ---- 難易度表：保存画像だけの大きな左右差マーク ---- */
+  .lr-big{display:none;}
+  .pv-export .ptier-title{align-items:center;gap:18px;}
+  .pv-export .lr-big{display:inline-flex;align-items:center;font-size:.72em;font-weight:800;line-height:1;
+    padding:.28em .6em;border-radius:999px;border:2px solid var(--border-ctl);background:var(--panel-3);color:var(--text);white-space:nowrap;}
+  .pv-export .ptier-meta-row .lr-corner-badge{display:none;}
+  /* ---- ？ボタン ---- */
+  .help-btn{appearance:none;-webkit-appearance:none;width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;
+    border:1.5px solid var(--border-ctl);background:var(--panel);color:var(--text-dim);font:inherit;font-size:16px;font-weight:800;line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;padding:0;}
+  .help-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .help-btn-list{margin-left:auto;}
+  .mark-toggle-bar .help-btn-list + .mode-row{margin-left:0;flex-basis:100%;}
+  .preview-wide{position:relative;}
+  .help-btn-card{position:absolute;top:10px;right:10px;z-index:2;}
+  .help-box{position:relative;max-width:420px;padding:24px 22px 22px;}
+  .help-q, .help-a{display:flex;gap:10px;align-items:flex-start;}
+  .help-q{font-weight:800;font-size:15px;margin:0 36px 14px 0;line-height:1.6;}
+  .help-a-body p{margin:0 0 8px;font-size:14px;line-height:2;}
+  .help-mark{flex:none;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;color:#fff;margin-top:1px;}
+  .help-mark-q{background:var(--accent);}
+  .help-mark-a{background:#e0463f;}
+  .preview-wide > #previewCard:not(.pv-export) > .pv-title:first-child{padding-right:34px;}
+  /* ---- スクロールしても使える操作バー ---- */
+  .sticky-tools{position:fixed;left:0;right:0;top:0;z-index:40;pointer-events:none;
+    transform:translateY(-110%);transition:transform .18s ease;}
+  .sticky-tools.is-shown{transform:none;pointer-events:auto;}
+  .sticky-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+    padding:8px clamp(10px,3vw,24px);background:var(--panel);border-bottom:1px solid var(--border);
+    box-shadow:0 6px 18px rgba(0,0,0,.10);}
+  html[data-theme="dark"] .sticky-inner{box-shadow:0 6px 18px rgba(0,0,0,.45);}
+  .sticky-inner .page-back{margin:0;min-height:32px;padding:4px 10px 4px 4px;font-size:12.5px;box-shadow:none;}
+  .sticky-inner .page-back svg{width:16px;height:16px;}
+  .sticky-inner .onoff-btn{padding:4px 7px;font-size:11px;}
+  .sticky-spacer{flex:1 1 0;min-width:0;}
+  .sticky-inner .help-btn{position:static;width:28px;height:28px;font-size:14px;margin:0;}
+  .sticky-inner .plate-mode-seg{margin-left:auto;}
+  @media (max-width:420px){
+    .sticky-inner{gap:5px;padding:6px 8px;}
+    .sticky-inner .page-back{padding:4px 8px 4px 3px;font-size:12px;}
+    .sticky-inner .onoff-btn{padding:4px 6px;font-size:10.5px;}
+  }
+  .sticky-tools.no-anim{transition:none;}
 </style>
 </head>
 <body>
@@ -608,8 +1021,11 @@
   <div>
     <h1 id="homeLink" title="ホームに戻る" aria-label="maiプレート"><span class="brand-mai">mai</span><span class="brand-pl">プレート</span></h1>
   </div>
+  <span id="testEnvBadge" class="test-env-badge" hidden>テスト環境</span>
   <div class="header-spacer"></div>
-  <button id="headerReviewLink" class="header-quiet" title="このツールへの感想・要望を送る">レビュー</button>
+  <button id="headerMenuBtn" class="menu-btn" type="button" aria-haspopup="dialog" title="メニューを開く">
+    <span class="menu-icon" aria-hidden="true"><i></i><i></i><i></i></span><span class="menu-btn-text">メニュー</span>
+  </button>
 </header>
 
 <div id="app"></div>
@@ -631,7 +1047,9 @@
       if (k === 'class') node.className = v;
       else if (k === 'text') node.textContent = v;
       else if (k.indexOf('on') === 0 && typeof v === 'function') node.addEventListener(k.slice(2), v);
-      else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
+      else if (k === 'style' && typeof v === 'object'){
+        Object.keys(v).forEach(function(sk){ if (sk.indexOf('--') === 0) node.style.setProperty(sk, v[sk]); else node.style[sk] = v[sk]; });
+      }
       else if (v === true) node.setAttribute(k, '');
       else if (v === false || v === null || v === undefined) { /* skip */ }
       else node.setAttribute(k, v);
@@ -722,6 +1140,7 @@
     }).then(function(list){
       if (!Array.isArray(list) || !list.length) return;
       /* 1曲につき「スタンダード」「でらっくす」が別エントリで入っている */
+      bothTypeMemo = null;
       SONG_MASTER_LIST = list.filter(function(s){ return s && s.name; }).map(function(s){
         return {
           name: s.name,
@@ -855,7 +1274,7 @@
   function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, candidates){
     var queue = (candidates || []).slice();
     if (queue.length && queue[0] === primarySrc) queue.shift();
-    var img = el('img', {src: primarySrc, alt:''});
+    var img = el('img', {src: primarySrc, alt:'', loading:'lazy', decoding:'async'});
     var triedFallback = false;
     img.addEventListener('error', function(){
       if (queue.length){ img.src = queue.shift(); return; }
@@ -1185,6 +1604,17 @@
      古い版で保存したデータや、途中で項目が増える前のデータには
      項目そのものが無いことがある。1か所でも undefined があると
      描画の途中で止まり、一覧全体が真っ白になるので、ここで既定値を入れておく。 */
+  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）。表に入っていても出さない */
+  function excludedSongsFor(v){
+    if (!v || v.docType === 'jewel' || isMaiHashaDoc(v)) return [];
+    var list = [
+      { name: 'ジングルベル', ver: 'maimai' },
+      { name: '前前前世', ver: 'maimai MURASAKi PLUS' }
+    ];
+    var vers = docSongVersions(v);
+    return list.filter(function(e){ return vers.indexOf(e.ver) >= 0; }).map(function(e){ return e.name; });
+  }
+  function isExcludedSong(v, name){ return excludedSongsFor(v).indexOf(name) >= 0; }
   function normalizeVersion(v){
     if (!v || typeof v !== 'object') return null;
     if (!v.id) v.id = uid();
@@ -1202,7 +1632,7 @@
     v.levels.forEach(function(l){
       if (!l.id) l.id = uid();
       l.label = (l.label == null) ? '' : String(l.label);
-      l.color = l.color || '#f2f4f8';
+      l.color = (v.docType !== 'jewel' && specLevelColor(l.label)) || l.color || '#f2f4f8';
       l.songs = Array.isArray(l.songs) ? l.songs : [];
       l.songs.forEach(function(s){
         if (!s.id) s.id = uid();
@@ -1215,17 +1645,34 @@
       if (!bd.id) bd.id = uid();
       bd.name = (bd.name == null) ? '' : String(bd.name);
     });
+    var vc = specVersionColor(v);
+    if (vc) v.themeColor = vc;
 
     /* 実績フレーム（Jewel）表 */
     if (v.docType === 'jewel'){
+      v.noteText = JEWEL_NOTE_TEXT;
       v.stones = Array.isArray(v.stones) ? v.stones : [];
       v.imgs = (v.imgs && typeof v.imgs === 'object') ? v.imgs : {};
     }
+    var exNames = excludedSongsFor(v);
+    if (exNames.length) (v.levels || []).forEach(function(l){
+      if (l && Array.isArray(l.songs)) l.songs = l.songs.filter(function(sg){ return !sg || exNames.indexOf(sg.name) < 0; });
+    });
     return v;
   }
   function normalizeVersions(list){
     if (!Array.isArray(list)) return [];
-    return list.map(normalizeVersion).filter(Boolean);
+    return withDefaultJewel(list.map(normalizeVersion).filter(Boolean));
+  }
+  /* 実績フレーム（Jewel）の表が無いときは、初期の表を1つ足して出す（いちばん下に並ぶ） */
+  function withDefaultJewel(list){
+    if (!list.length) return list;
+    if (list.some(function(v){ return v && v.docType === 'jewel'; })) return list;
+    var j = defaultJewelDoc();
+    j.id = 'jewel-default';
+    j.updatedAt = 0;
+    list.push(normalizeVersion(j));
+    return list;
   }
 
   function normalizePlateTier(t){
@@ -1335,6 +1782,20 @@
     appId: "1:34214984666:web:a770535da80abf8d11dee3"
   };
 
+  /* ---- 本番とテスト環境 ----
+     本番：maiplate.vercel.app（と、今後つける独自ドメイン）
+     テスト：それ以外の *.vercel.app（GitHubの test ブランチなどのプレビュー）と手元のPC
+     テスト環境では Firebase の別の置き場所（test_plates / test_reviews）を使うので、
+     テストで表を公開・編集しても本番の表は変わらない。 */
+  var IS_TEST_ENV = (function(){
+    var h = location.hostname;
+    if (h === 'maiplate.vercel.app') return false;
+    if (h === 'localhost' || h === '127.0.0.1' || h === '') return true;
+    return /\.vercel\.app$/.test(h);
+  })();
+  var PLATES_COL = IS_TEST_ENV ? 'test_plates' : 'plates';
+  var REVIEWS_COL = IS_TEST_ENV ? 'test_reviews' : 'reviews';
+
   var SYNC_SETTINGS_KEY = 'mmplate_sync_settings_v1';
   function loadSyncSettings(){
     if (!storageOK) return null;
@@ -1390,10 +1851,106 @@
     if (!storageOK) return;
     try{ localStorage.setItem(SYNC_HIDDEN_KEY, JSON.stringify(syncHidden)); }catch(e){}
   }
-  function isSyncLevelHidden(versionId, levelId){
-    var m = syncHidden[versionId];
-    return !!(m && m[levelId]);
+  /* ---- 13以下（13〜10+）の欄 ----
+     閲覧者の画面では初めはOFF（隠す）。舞・覇者の表だけは例外で、初めからON。 */
+  var LOWER_LEVEL_DEFS = [
+    { label: '13',  color: '#52D6FC' },
+    { label: '12+', color: '#93E3FD' },
+    { label: '12',  color: '#CBF0FF' },
+    { label: '11+', color: '#B1DD8B' },
+    { label: '11',  color: '#CDE8B5' },
+    { label: '10+', color: '#DFEED4' }
+  ];
+  var TOP_LEVEL_DEFS = [
+    { label: '15',  color: '#E292FE' },
+    { label: '14+', color: '#D357FE' },
+    { label: '14',  color: '#864FFE' },
+    { label: '13+', color: '#74A7FF' }
+  ];
+  function specLevelColor(label){
+    var all = TOP_LEVEL_DEFS.concat(LOWER_LEVEL_DEFS);
+    for (var i = 0; i < all.length; i++) if (all[i].label === label) return all[i].color;
+    return '';
   }
+  /* バージョンの色：メインタイトルが同じもの（無印とPLUS）は同じ色。実績フレーム（Jewel）は変えない */
+  var VERSION_COLOR_SPEC = {
+    'maimai ＆ maimai PLUS': '#0056d6',
+    'maimai GreeN': '#76bb40',
+    'maimai ORANGE': '#ffa57d',
+    'maimai PiNK': '#ee719e',
+    'maimai MURASAKi': '#e292fe',
+    'maimai MiLK': '#93e3fd',
+    'maimai FiNALE': '#8a79ff',
+    'maimai でらっくす': '#fff994',
+    'maimai でらっくす Splash': '#7ee787',
+    'maimai でらっくす UNiVERSE': '#00a1d8',
+    'maimai でらっくす FESTiVAL': '#f4a4c0',
+    'maimai でらっくす BUDDiES': '#ffab01',
+    'maimai でらっくす PRiSM': '#cbf0ff',
+    'maimai でらっくす CiRCLE': '#e63b7a',
+    'maimai でらっくす MAGiCAL': '#96d35f',
+    '舞 ＆ 覇者対象Re:MASTER': '#999999'
+  };
+  function specVersionColor(v){
+    if (!v || v.docType === 'jewel') return '';
+    var ver = '';
+    (v.badges || []).some(function(b){ var p = plateInfo(b.name); if (p){ ver = p.ver; return true; } return false; });
+    if (ver){
+      if (VERSION_COLOR_SPEC[ver]) return VERSION_COLOR_SPEC[ver];
+      if (VERSION_COLOR_SPEC[ver.replace(/ PLUS$/, '')]) return VERSION_COLOR_SPEC[ver.replace(/ PLUS$/, '')];
+    }
+    /* プレートで分からないときは表のタイトルから（表記ゆれに強い見分け方） */
+    var name = String(v.versionName || '').normalize('NFKC');
+    var m = /〈\s*(.+?)\s*ver/i.exec(String(v.versionName || ''));
+    if (m){
+      for (var full in PLATE_VERSION_SHORT){
+        if (PLATE_VERSION_SHORT[full] === m[1]){
+          var c = VERSION_COLOR_SPEC[full] || VERSION_COLOR_SPEC[full.replace(/ PLUS$/, '')];
+          if (c) return c;
+        }
+      }
+    }
+    var low = name.toLowerCase();
+    var KW = [['magical','maimai でらっくす MAGiCAL'],['circle','maimai でらっくす CiRCLE'],['prism','maimai でらっくす PRiSM'],
+      ['buddies','maimai でらっくす BUDDiES'],['festival','maimai でらっくす FESTiVAL'],['universe','maimai でらっくす UNiVERSE'],
+      ['splash','maimai でらっくす Splash'],['覇者','舞 ＆ 覇者対象Re:MASTER'],['re:master','舞 ＆ 覇者対象Re:MASTER'],
+      ['でらっくす','maimai でらっくす'],['finale','maimai FiNALE'],['milk','maimai MiLK'],['murasaki','maimai MURASAKi'],
+      ['pink','maimai PiNK'],['orange','maimai ORANGE'],['green','maimai GreeN'],['maimai','maimai ＆ maimai PLUS']];
+    for (var i = 0; i < KW.length; i++) if (low.indexOf(KW[i][0]) >= 0) return VERSION_COLOR_SPEC[KW[i][1]];
+    return '';
+  }
+  var LEVEL_RANK = { '15':0, '14+':1, '14':2, '13+':3, '13':4, '12+':5, '12':6, '11+':7, '11':8, '10+':9 };
+  function plateInfo(name){
+    for (var i = 0; i < PLATE_MASTER_LIST.length; i++){
+      if (PLATE_MASTER_LIST[i].name === name) return PLATE_MASTER_LIST[i];
+    }
+    return null;
+  }
+  function plateCatOf(name){ var p = plateInfo(name); return p ? p.cat : ''; }
+  function isMaiHashaDoc(v){
+    if (!v) return false;
+    if ((v.versionName || '').indexOf('覇者') >= 0) return true;
+    return (v.badges || []).some(function(b){
+      var p = plateInfo(b.name);
+      return !!(p && p.ver === '舞 ＆ 覇者対象Re:MASTER');
+    });
+  }
+  function isDefaultOffLevel(v, level){
+    if (!v || !level || isMaiHashaDoc(v)) return false;
+    return LOWER_LEVEL_DEFS.some(function(d){ return d.label === level.label; });
+  }
+  /* 保存値：true＝隠す / false＝表示する（自分で切り替えたもの）。未設定なら初期値に従う */
+  function readHiddenFlag(map, v, level){
+    var m = map[v.id];
+    if (m && Object.prototype.hasOwnProperty.call(m, level.id)) return !!m[level.id];
+    return isDefaultOffLevel(v, level);
+  }
+  function flipHiddenFlag(map, v, level){
+    var now = readHiddenFlag(map, v, level);
+    if (!map[v.id]) map[v.id] = {};
+    map[v.id][level.id] = !now;
+  }
+  function isSyncLevelHidden(v, level){ return readHiddenFlag(syncHidden, v, level); }
   /* 詳細画面のプレート表で、閲覧者が自分で隠したレベル（端末ごと） */
   var PV_LEVEL_HIDDEN_KEY = 'mmplate_pv_level_hidden_v1';
   var pvLevelHidden = (function(){
@@ -1401,21 +1958,14 @@
     try{ var raw = localStorage.getItem(PV_LEVEL_HIDDEN_KEY); return raw ? JSON.parse(raw) : {}; }
     catch(e){ return {}; }
   })();
-  function isPvLevelHidden(versionId, levelId){
-    var m = pvLevelHidden[versionId];
-    return !!(m && m[levelId]);
-  }
-  function togglePvLevel(versionId, levelId){
-    if (!pvLevelHidden[versionId]) pvLevelHidden[versionId] = {};
-    if (pvLevelHidden[versionId][levelId]) delete pvLevelHidden[versionId][levelId];
-    else pvLevelHidden[versionId][levelId] = true;
+  function isPvLevelHidden(v, level){ return readHiddenFlag(pvLevelHidden, v, level); }
+  function togglePvLevel(v, level){
+    flipHiddenFlag(pvLevelHidden, v, level);
     if (!storageOK) return;
     try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
   }
-  function toggleSyncLevel(versionId, levelId){
-    if (!syncHidden[versionId]) syncHidden[versionId] = {};
-    if (syncHidden[versionId][levelId]) delete syncHidden[versionId][levelId];
-    else syncHidden[versionId][levelId] = true;
+  function toggleSyncLevel(v, level){
+    flipHiddenFlag(syncHidden, v, level);
     persistSyncHidden();
   }
 
@@ -1446,17 +1996,125 @@
   }
   /* 赤線を表示するかどうか（この端末に保存） */
   var SONG_MARKS_VISIBLE_KEY = 'mmplate_song_marks_visible_v1';
-  var showSongMarks = (function(){
-    if (!storageOK) return true;
-    try{
-      var raw = localStorage.getItem(SONG_MARKS_VISIBLE_KEY);
-      return raw === null ? true : (raw === '1');
-    }catch(e){ return true; }
-  })();
+  var showSongMarks = true;   /* 赤線ON/OFFボタンは廃止。表示はプレートを選んでいるかどうかで決まる */
   function setShowSongMarks(on){
     showSongMarks = !!on;
     if (!storageOK) return;
     try{ localStorage.setItem(SONG_MARKS_VISIBLE_KEY, showSongMarks ? '1' : '0'); }catch(e){}
+  }
+
+  /* ---- プレートごとの進捗（全・極・将・神・舞舞・覇者） ----
+     「全」は今までの赤線。それ以外は「表のID::プレート種別」で別々に保存する。 */
+  var PLATE_MODE_ORDER = ['極', '将', '神', '舞舞', '覇者'];
+  var PLATE_MODE_LABEL = { '':'全', '極':'極', '将':'将', '神':'神', '舞舞':'舞', '覇者':'覇' };
+  var PLATE_MODE_KEY = 'mmplate_plate_mode_v1';
+  /* 選んでいるプレート（極〜覇）は、そのタブを開いている間だけ覚える。
+     サイトを新しく開いたときは、何も選ばれていない状態から始まる */
+  var plateModes = (function(){
+    try{ localStorage.removeItem(PLATE_MODE_KEY); localStorage.removeItem('mmplate_list_mode_v1'); }catch(e){}
+    try{ var raw = sessionStorage.getItem(PLATE_MODE_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  })();
+  function availablePlateModes(v){
+    var have = {};
+    ((v && v.badges) || []).forEach(function(b){ var c = plateCatOf(b.name); if (c) have[c] = true; });
+    return PLATE_MODE_ORDER.filter(function(c){ return have[c]; });
+  }
+  var BASE_PLATE_MODES = ['極', '将', '神', '舞舞'];
+  /* 詳細・一覧で出すボタン：極・将・神・舞（舞＆覇者の表だけ覇も） */
+  function selectablePlateModes(v){
+    if (!v || v.docType === 'jewel') return [];
+    return availablePlateModes(v).indexOf('覇者') >= 0 ? BASE_PLATE_MODES.concat(['覇者']) : BASE_PLATE_MODES.slice();
+  }
+  function getPlateMode(v){
+    if (!v || !v.id) return '';
+    var m = plateModes[v.id] || '';
+    return (m && selectablePlateModes(v).indexOf(m) >= 0) ? m : '';
+  }
+  function setPlateMode(versionId, mode){
+    if (mode) plateModes[versionId] = mode; else delete plateModes[versionId];
+    try{ sessionStorage.setItem(PLATE_MODE_KEY, JSON.stringify(plateModes)); }catch(e){}
+  }
+  /* 一覧のボタン：全部の表を同じプレートの表示にする（そのプレートが無い表は「全」のまま） */
+  var LIST_MODE_KEY = 'mmplate_list_mode_v1';
+  var listMode = (function(){ try{ return sessionStorage.getItem(LIST_MODE_KEY) || ''; }catch(e){ return ''; } })();
+  function setListMode(m){
+    listMode = m || '';
+    try{ if (listMode) sessionStorage.setItem(LIST_MODE_KEY, listMode); else sessionStorage.removeItem(LIST_MODE_KEY); }catch(e){}
+  }
+  /* まとめて選んだプレートが無い表（例：将のときの真）は、プレート画像を出さない */
+  function hideBadgesForListMode(v){
+    return !!listMode && !getPlateMode(v) && availablePlateModes(v).indexOf(listMode) < 0;
+  }
+  function setAllPlateModes(m){
+    setListMode(m);
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel') return;
+      setPlateMode(v.id, (m && selectablePlateModes(v).indexOf(m) >= 0) ? m : '');
+    });
+  }
+  function commonListMode(){
+    if (listMode) return listMode;
+    var cand = ['極', '将', '神', '舞舞'];
+    for (var i = 0; i < cand.length; i++){
+      var m = cand[i], seen = false, ok = true;
+      allVersions.forEach(function(v){
+        if (v.docType === 'jewel' || selectablePlateModes(v).indexOf(m) < 0) return;
+        seen = true;
+        if (getPlateMode(v) !== m) ok = false;
+      });
+      if (seen && ok) return m;
+    }
+    return '';
+  }
+  function lowerLevelsForToggle(){
+    var out = [];
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel' || isMaiHashaDoc(v)) return;
+      (v.levels || []).forEach(function(l){ if (!l.hidden && isDefaultOffLevel(v, l) && (l.songs || []).some(function(s){ return !s.hidden; })) out.push([v, l]); });
+    });
+    return out;
+  }
+  /* 一覧の 13+↓・13↓・12+↓：そのレベルから下（10+まで）をまとめて出す／隠す（舞＆覇者の表は対象外） */
+  var LEVEL_CUT_ORDER = ['13+', '13', '12+', '12', '11+', '11', '10+'];
+  function levelsFrom(fromLabel){
+    var idx = LEVEL_CUT_ORDER.indexOf(fromLabel), out = [];
+    if (idx < 0) return out;
+    var labels = LEVEL_CUT_ORDER.slice(idx);
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel' || isMaiHashaDoc(v)) return;
+      (v.levels || []).forEach(function(l){
+        if (!l.hidden && labels.indexOf(l.label) >= 0 && (l.songs || []).some(function(s){ return !s.hidden; })) out.push([v, l]);
+      });
+    });
+    return out;
+  }
+  /* ボタンのON／OFF：そのレベル自身が（どれかの表で）出ているか */
+  function isCutShown(fromLabel){
+    return levelsFrom(fromLabel).some(function(p){ return p[1].label === fromLabel && !isPvLevelHidden(p[0], p[1]); });
+  }
+  function setShownFrom(fromLabel, show){
+    levelsFrom(fromLabel).forEach(function(p){
+      if (!pvLevelHidden[p[0].id]) pvLevelHidden[p[0].id] = {};
+      pvLevelHidden[p[0].id][p[1].id] = !show;
+    });
+    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
+  }
+  function anyLowerShown(){
+    return lowerLevelsForToggle().some(function(p){ return !isPvLevelHidden(p[0], p[1]); });
+  }
+  function setAllLowerShown(show){
+    lowerLevelsForToggle().forEach(function(p){
+      if (!pvLevelHidden[p[0].id]) pvLevelHidden[p[0].id] = {};
+      pvLevelHidden[p[0].id][p[1].id] = !show;
+    });
+    if (!storageOK) return;
+    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
+  }
+  function plateMarkKey(versionId, mode){ return mode ? versionId + '::' + mode : versionId; }
+  function plateNameForMode(v, mode){
+    var b = (v.badges || []).filter(function(x){ return plateCatOf(x.name) === mode; })[0];
+    return b ? b.name : mode;
   }
 
   function toggleSongMark(versionId, songId){
@@ -1492,13 +2150,15 @@
     if (window.firebase && window.firebase.firestore) return Promise.resolve();
     var base = 'https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/';
     return loadScriptOnce(base + 'firebase-app-compat.min.js')
-      .then(function(){ return loadScriptOnce(base + 'firebase-auth-compat.min.js'); })
-      .then(function(){ return loadScriptOnce(base + 'firebase-firestore-compat.min.js'); });
+      .then(function(){ return Promise.all([
+        loadScriptOnce(base + 'firebase-auth-compat.min.js'),
+        loadScriptOnce(base + 'firebase-firestore-compat.min.js')
+      ]); });
   }
 
   function attachSyncListeners(){
     if (syncState.unsubVersions) syncState.unsubVersions();
-    syncState.unsubVersions = syncState.db.collection('plates').onSnapshot(function(snap){
+    syncState.unsubVersions = syncState.db.collection(PLATES_COL).onSnapshot(function(snap){
       /* 電波が悪いときなどに届く「手元に何もない」空の結果では、前回の写しを消さない */
       if (snap.metadata && snap.metadata.fromCache && snap.empty){
         if (!firstSnapshotDone){
@@ -1511,6 +2171,7 @@
       var raw = snap.docs.map(function(d){ return d.data(); });
       var json = JSON.stringify(raw);
       firstSnapshotDone = true;
+      setTimeout(maybeReapplyStoredImport, 0);
       /* 前回の写しと全く同じなら、描き直さない（画面がちらつかないように） */
       if (json === lastSyncJson && raw.length) return;
       allVersions = normalizeVersions(raw);
@@ -1526,7 +2187,7 @@
     });
     if (syncState.isAdmin){
       if (syncState.unsubReviews) syncState.unsubReviews();
-      syncState.unsubReviews = syncState.db.collection('reviews').onSnapshot(function(snap){
+      syncState.unsubReviews = syncState.db.collection(REVIEWS_COL).onSnapshot(function(snap){
         allReviews = snap.docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
         allReviews.sort(function(a,b){ return (b.submittedAt||0) - (a.submittedAt||0); });
         renderApp();
@@ -1575,16 +2236,38 @@
 
   function syncWriteVersion(v){
     if (syncState.connected && syncState.isAdmin && syncState.db){
-      syncState.db.collection('plates').doc(v.id).set(v).catch(function(e){ showAlert('同期への保存に失敗しました: ' + e.message); });
+      syncState.db.collection(PLATES_COL).doc(v.id).set(v).catch(function(e){ showAlert('同期への保存に失敗しました: ' + e.message); });
     }
   }
   function syncDeleteVersion(id){
     if (syncState.connected && syncState.isAdmin && syncState.db){
-      syncState.db.collection('plates').doc(id).delete().catch(function(){});
+      syncState.db.collection(PLATES_COL).doc(id).delete().catch(function(){});
     }
   }
 
 
+
+  /* テスト環境だけ：本番の表（plates）を丸ごと test_plates に写す（本番は読むだけで変えない） */
+  function copyProdToTest(){
+    if (!IS_TEST_ENV || !canEdit() || !syncState.db) return;
+    showConfirm('本番の表をテスト環境にコピーしますか？（テスト環境の表は上書きされます。本番は変わりません）', function(){
+      var db = syncState.db;
+      db.collection('plates').get().then(function(snap){
+        var docs = snap.docs.map(function(d){ return { id: d.id, data: d.data() }; });
+        return db.collection(PLATES_COL).get().then(function(cur){
+          var keep = {}; docs.forEach(function(d){ keep[d.id] = true; });
+          var jobs = [];
+          cur.docs.forEach(function(d){ if (!keep[d.id]) jobs.push(db.collection(PLATES_COL).doc(d.id).delete()); });
+          docs.forEach(function(d){ jobs.push(db.collection(PLATES_COL).doc(d.id).set(d.data)); });
+          return Promise.all(jobs).then(function(){ return docs.length; });
+        });
+      }).then(function(n){
+        showAlert(n + '件の表をコピーしました。');
+      }).catch(function(e){
+        showAlert('コピーに失敗しました: ' + e.message + '\nFirebase のルールに test_plates を追加したか確認してください。');
+      });
+    });
+  }
 
   function submitReview(message, rating, onDone){
     if (!syncState.connected || !syncState.db){
@@ -1595,7 +2278,7 @@
       onDone(new Error('内容を入力してください。'));
       return;
     }
-    syncState.db.collection('reviews').add({
+    syncState.db.collection(REVIEWS_COL).add({
       message: message.trim(),
       rating: rating || 0,
       submittedAt: Date.now()
@@ -1609,7 +2292,7 @@
   function deleteReview(rev){
     if (!syncState.db || !rev._docId) return;
     showConfirm('このレビューを削除しますか？', function(){
-      syncState.db.collection('reviews').doc(rev._docId).delete().catch(function(){});
+      syncState.db.collection(REVIEWS_COL).doc(rev._docId).delete().catch(function(){});
     });
   }
 
@@ -1652,13 +2335,15 @@
     return doc;
   }
 
+  /* 実績フレーム表のタイトル下の解説（左から CLEAR・AP・FDX の順に並ぶ） */
+  var JEWEL_NOTE_TEXT = 'CLEARフレーム・AP Jewel・FDX Jewel';
   function defaultJewelDoc(){
     return {
       id: uid(),
       docType: 'jewel',
       versionName: '実績フレーム（Jewel）一覧',
       versionNameColor: '#f2f4f8',
-      noteText: '',
+      noteText: JEWEL_NOTE_TEXT,
       noteColor: '#3fd0ff',
       jewels: JEWEL_STONE_DEFS.map(function(d){
         return {
@@ -1711,6 +2396,95 @@
      楽曲は songs.json から、そのバージョン・その難易度のものを拾う。
      プレート画像は対象バージョンのものを自動で並べる。 */
   /* プレート表のバージョン名 → songs.json 側のバージョン名（複数のことがある） */
+  /* DX／STマーク：でらっくす以降の表（熊〜現）では、決まっていない曲も楽曲データから自動で付ける。
+     真〜輝・舞＆覇者・実績フレーム表には付けない（作成者が付けたものはそのまま出す） */
+  /* 同じ曲に ST と DX の両方の譜面があるか（どのバージョンでも） */
+  var bothTypeMemo = null;
+  function songHasBothTypes(name){
+    if (!bothTypeMemo){
+      var t = {};
+      SONG_MASTER_LIST.forEach(function(m){ (t[m.name] = t[m.name] || {})[m.type] = true; });
+      bothTypeMemo = {};
+      Object.keys(t).forEach(function(n){ if (t[n].ST && t[n].DX) bothTypeMemo[n] = true; });
+    }
+    return !!bothTypeMemo[name];
+  }
+  function isDeluxeDoc(v){
+    if (!v || v.docType === 'jewel' || isMaiHashaDoc(v)) return false;
+    return docSongVersions(v).some(function(x){ return x.indexOf('でらっくす') >= 0; });
+  }
+  /* 決まり：熊〜現の表で、STとDXの両方がある曲にだけ、その譜面の種類のマークを付ける
+     （例：Calamity Fortune のDX、Halcyon や 華の集落、秋のお届け のSTとDX） */
+  function ruleChartType(v, song, levelLabel){
+    if (!SONG_DATA_FULL || !song.name) return song.chartType || '';
+    if (!songHasBothTypes(song.name)) return '';
+    return deriveChartType(v, song, levelLabel) || song.chartType || '';
+  }
+  function chartTypeFor(v, song, levelLabel){
+    if (!isDeluxeDoc(v)) return song.chartType || '';
+    /* 決まりで付け直した後の表は、管理者が付け外ししたとおりに出す */
+    if (v.autoTypeV2) return song.chartType || '';
+    return ruleChartType(v, song, levelLabel);
+  }
+  /* 楽曲データから、その表での ST／DX を決める（決められなければ空） */
+  function deriveChartType(v, song, levelLabel){
+    if (!v || v.docType === 'jewel' || isMaiHashaDoc(v) || !SONG_DATA_FULL || !song.name) return '';
+    var vers = docSongVersions(v);
+    if (!vers.some(function(x){ return x.indexOf('でらっくす') >= 0; })) return '';
+    if (song.srcType === 'ST' || song.srcType === 'DX') return song.srcType.toLowerCase();
+    var cands = SONG_MASTER_LIST.filter(function(m){
+      return m.name === song.name && vers.some(function(x){ return songInVer(m, x); });
+    });
+    var types = {};
+    cands.forEach(function(m){ types[m.type] = true; });
+    var keys = Object.keys(types);
+    if (keys.length === 1) return keys[0] === 'ST' ? 'st' : (keys[0] === 'DX' ? 'dx' : '');
+    if (keys.length > 1 && levelLabel){
+      var byLv = {};
+      cands.forEach(function(m){ if (m.level === levelLabel) byLv[m.type] = true; });
+      var k2 = Object.keys(byLv);
+      if (k2.length === 1) return k2[0] === 'ST' ? 'st' : (k2[0] === 'DX' ? 'dx' : '');
+    }
+    return '';
+  }
+  /* 表の楽曲に DX／ST マークを実際に付ける（付いていない曲だけ）。管理者画面で後から変えられる */
+  function autoFillChartTypes(v, missing){
+    var n = 0;
+    if (!isDeluxeDoc(v)) return n;
+    (v.levels || []).forEach(function(l){
+      (l.songs || []).forEach(function(s){
+        if (!s.name) return;
+        if (!songHasBothTypes(s.name)){ s.chartType = ''; return; }
+        var c = deriveChartType(v, s, l.label);
+        if (c){ s.chartType = c; n++; }
+        else if (missing) missing.push((v.versionName || '') + '　' + l.label + '　' + s.name);
+      });
+    });
+    v.autoTypeDone = true;
+    v.autoTypeV2 = true;
+    return n;
+  }
+  function needsAutoType(v){
+    return isDeluxeDoc(v) && !v.autoTypeV2;
+  }
+  /* 管理者がログインしているとき、まだ自動で付けていない表（熊〜現）に1回だけマークを付けて保存する */
+  var autoTypeRan = false;
+  function maybeAutoFillChartTypes(){
+    if (autoTypeRan || !canEdit() || !SONG_DATA_FULL) return;
+    if (SYNC_EXPECTED && !firstSnapshotDone) return;
+    if (!allVersions.length) return;
+    autoTypeRan = true;
+    var changed = [], missing = [];
+    allVersions.forEach(function(v){ if (needsAutoType(v)){ autoFillChartTypes(v, missing); changed.push(v); } });
+    if (!changed.length) return;
+    changed.forEach(function(v){ syncWriteVersion(v); });
+    persistVersions();
+    renderApp();
+    /* 付けられなかった曲は管理者に知らせる（編集画面から手で付けられる） */
+    if (missing.length){
+      showAlert('DX/STマークを付け直しました（STとDXの両方がある曲だけ）。\nSTかDXか見分けられず、付けられなかった曲（' + missing.length + '曲）：\n' + missing.join('\n'));
+    }
+  }
   function plateVersionToSongVersions(ver){
     if (!ver) return [];
     /* 「A ＆ B」形式はそれぞれに分ける */
@@ -1720,14 +2494,21 @@
     return [ver];
   }
 
-  var SEED_LEVELS = [
-    { label: '15',  color: '#ff7ad9' },
-    { label: '14+', color: '#ffb84f' },
-    { label: '14',  color: '#ff4fd8' },
-    { label: '13+', color: '#3fd0ff' }
-  ];
+  var SEED_LEVELS = TOP_LEVEL_DEFS.concat(LOWER_LEVEL_DEFS);
   var seededOnce = false;
 
+  /* 収録曲数から除く曲（真：ジングルベル、菫：前前前世） */
+  var SEED_EXCLUDED_SONGS = {
+    'maimai ＆ maimai PLUS': [{ name: 'ジングルベル', type: 'ST' }],
+    'maimai MURASAKi PLUS': [{ name: '前前前世', type: 'ST' }]
+  };
+  /* 表に書く時間：譜面数 × 3分24秒 を、分の1の位で四捨五入（表の解説の書き方と同じ） */
+  function computeSeedTime(songCount, tiers){
+    var totalMin = Math.round(songCount * tiers * SEC_PER_CHART / 60);
+    var m10 = Math.round(totalMin / 10) * 10;
+    var hours = Math.floor(m10 / 60), mins = m10 % 60;
+    return hours > 0 ? (hours + '時間' + mins + '分') : (mins + '分');
+  }
   function buildSeedVersion(opt){
     var v = defaultVersion();
     var isExempt = (opt.ver === '舞 ＆ 覇者対象Re:MASTER');
@@ -1741,8 +2522,10 @@
     MAI_HASHA_SONGS.forEach(function(n){ maiSet[n] = true; });
     /* 「maimai ＆ maimai PLUS」のように2バージョンをまとめた表記に対応する */
     var wantVers = plateVersionToSongVersions(opt.ver);
+    var exSeed = (SEED_EXCLUDED_SONGS[opt.ver] || []).map(function(e){ return e.name; });
     var pool = SONG_MASTER_LIST.filter(function(s){
       if (isExempt) return s.type === 'ST' && !!s.remas && maiSet[s.name];
+      if (exSeed.indexOf(s.name) >= 0) return false;
       return wantVers.some(function(v){ return songInVer(s, v); });
     });
 
@@ -1757,6 +2540,24 @@
       return { id: uid(), label: L.label, color: L.color, songs: songs, hidden: false };
     });
 
+    /* 下埋め料金・時間：そのバージョンの収録曲数（楽曲データの全譜面。ST/DXは別に数える）から計算 */
+    if (!isExempt){
+      var ex = SEED_EXCLUDED_SONGS[opt.ver] || [];
+      var count = SONG_MASTER_LIST.filter(function(s){
+        if (!wantVers.some(function(x){ return songInVer(s, x); })) return false;
+        return !ex.some(function(e){ return e.name === s.name && e.type === s.type; });
+      }).length;
+      if (count > 0){
+        var pr = computeAutoPrice(count);
+        v.price1 = '1人 ' + yen(pr.p1);
+        v.price2 = '2人 ' + yen(pr.p2);
+        var tiers = getTierCount(v.priceRange) || 3;
+        v.timeText = computeSeedTime(count, tiers);
+        v.seedSongCount = count;
+        if (ex.length) v.timeExclusionNote = ex.map(function(e){ return e.name; }).join('・') + '除外';
+      }
+    }
+
     /* そのバージョンの実績プレートを 極→将→神→舞舞 の順で並べる */
     v.badges = sortBadgesByCategory(platesOfVersion(opt.ver).map(function(p){
       return { id: uid(), name: p.name, img: resolvePlateImage(p.name) };
@@ -1766,6 +2567,285 @@
     return v;
   }
 
+  /* ---- 管理者用：13〜10+ の欄と楽曲を songs.json から追加する ----
+     ・すでに同じ数字の欄がある表は、その欄には手を付けない
+     ・表にすでに入っている譜面（曲名＋ST/DX）は重ねて入れない
+     ・並びは譜面定数の高い順（同じなら曲名順）
+     ・DX/STの印は、今までの表と同じく「でらっくす以降の表で、その曲にST譜面とDX譜面の両方があるとき」だけ付ける */
+  function docSongVersions(v){
+    var ver = '';
+    (v.badges || []).some(function(b){ var p = plateInfo(b.name); if (p){ ver = p.ver; return true; } return false; });
+    if (!ver) ver = String(v.versionName || '').split('〈')[0].trim();
+    return plateVersionToSongVersions(ver);
+  }
+  function addLowerLevelsTo(v){
+    var result = { levels: 0, songs: 0 };
+    if (!SONG_DATA_FULL || !v || v.docType === 'jewel' || isMaiHashaDoc(v)) return result;
+    var vers = docSongVersions(v);
+    if (!vers.length) return result;
+    var deluxe = vers.some(function(x){ return x.indexOf('でらっくす') >= 0; });
+
+    var types = {};
+    SONG_MASTER_LIST.forEach(function(s){ (types[s.name] = types[s.name] || {})[s.type] = true; });
+
+    var used = {};
+    (v.levels || []).forEach(function(l){
+      (l.songs || []).forEach(function(s){
+        if (!s.name) return;
+        var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
+        if (t){ used[s.name + '|' + t] = true; }
+        else { used[s.name + '|ST'] = true; used[s.name + '|DX'] = true; }
+      });
+    });
+    var haveLabel = {};
+    (v.levels || []).forEach(function(l){ haveLabel[l.label] = true; });
+
+    LOWER_LEVEL_DEFS.forEach(function(def){
+      if (haveLabel[def.label]) return;
+      var pool = SONG_MASTER_LIST.filter(function(s){
+        return s.level === def.label && !used[s.name + '|' + s.type] && !isExcludedSong(v, s.name) &&
+               vers.some(function(x){ return songInVer(s, x); });
+      }).sort(function(a, b){
+        var ka = a.konst >= 0 ? a.konst : -1, kb = b.konst >= 0 ? b.konst : -1;
+        if (kb !== ka) return kb - ka;
+        return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0);
+      });
+      if (!pool.length) return;   /* 曲が1つもない欄は作らない */
+      var songs = pool.map(function(s){
+        var both = types[s.name] && types[s.name].ST && types[s.name].DX;
+        return { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '',
+                 chartType: (deluxe && both) ? String(s.type).toLowerCase() : '' };
+      });
+      var lv = { id: uid(), label: def.label, color: def.color, songs: songs, hidden: false };
+      /* 数字の大きい順に並ぶ位置へ差し込む */
+      var rank = LEVEL_RANK[def.label];
+      var at = v.levels.length;
+      for (var i = 0; i < v.levels.length; i++){
+        var r = LEVEL_RANK[v.levels[i].label];
+        if (typeof r === 'number' && r > rank){ at = i; break; }
+      }
+      v.levels.splice(at, 0, lv);
+      result.levels++;
+      result.songs += songs.length;
+    });
+    return result;
+  }
+
+  /* ---- 管理者用：楽曲データ（songs.json）にあって表にない譜面を探して追加する ----
+     ・対象は 15〜10+ のMASTER譜面（舞・覇者と実績フレーム表は対象外）
+     ・同じ数字の欄の中で、譜面定数の高い順になる位置へ差し込む（定数が未確定の曲は欄の最後）
+     ・欄がなければ作る */
+  function songKeyOf(s){
+    var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
+    return t ? [s.name + '|' + t] : [s.name + '|ST', s.name + '|DX'];
+  }
+  function findMissingSongs(v){
+    var out = [];
+    if (!SONG_DATA_FULL || !v || v.docType === 'jewel' || isMaiHashaDoc(v)) return out;
+    var vers = docSongVersions(v);
+    if (!vers.length) return out;
+    var used = {};
+    (v.levels || []).forEach(function(l){
+      (l.songs || []).forEach(function(s){ if (s.name) songKeyOf(s).forEach(function(k){ used[k] = true; }); });
+    });
+    SONG_MASTER_LIST.forEach(function(s){
+      if (typeof LEVEL_RANK[s.level] !== 'number') return;
+      if (used[s.name + '|' + s.type]) return;
+      if (!vers.some(function(x){ return songInVer(s, x); })) return;
+      if (isExcludedSong(v, s.name)) return;
+      out.push(s);
+    });
+    out.sort(function(a, b){
+      var ra = LEVEL_RANK[a.level], rb = LEVEL_RANK[b.level];
+      if (ra !== rb) return ra - rb;
+      return (b.konst >= 0 ? b.konst : -1) - (a.konst >= 0 ? a.konst : -1);
+    });
+    return out;
+  }
+  function insertSongByConstant(v, s){
+    var types = {};
+    SONG_MASTER_LIST.forEach(function(m){ if (m.name === s.name) types[m.type] = true; });
+    var deluxe = docSongVersions(v).some(function(x){ return x.indexOf('でらっくす') >= 0; });
+    var lv = (v.levels || []).filter(function(l){ return l.label === s.level; })[0];
+    if (!lv){
+      var def = SEED_LEVELS.filter(function(d){ return d.label === s.level; })[0];
+      lv = { id: uid(), label: s.level, color: def ? def.color : '#ffffff', songs: [], hidden: false };
+      var rank = LEVEL_RANK[s.level], at = v.levels.length;
+      for (var i = 0; i < v.levels.length; i++){
+        var r = LEVEL_RANK[v.levels[i].label];
+        if (typeof r === 'number' && r > rank){ at = i; break; }
+      }
+      v.levels.splice(at, 0, lv);
+    }
+    function konstOf(song){
+      var t = song.srcType || (song.chartType ? String(song.chartType).toUpperCase() : '');
+      var m = SONG_MASTER_LIST.filter(function(x){ return x.name === song.name && (!t || x.type === t) && x.level === lv.label; })[0];
+      return m && m.konst >= 0 ? m.konst : -1;
+    }
+    var pos = lv.songs.length;
+    if (s.konst >= 0){
+      for (var k = 0; k < lv.songs.length; k++){
+        var c = konstOf(lv.songs[k]);
+        if (c >= 0 && c < s.konst){ pos = k; break; }
+      }
+    }
+    var entry = { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '',
+      chartType: (deluxe && types.ST && types.DX) ? String(s.type).toLowerCase() : '' };
+    if (!(s.konst >= 0)) entry.noConst = true;   /* 定数が分かったら「位置を直す」の対象にする */
+    lv.songs.splice(pos, 0, entry);
+  }
+
+  /* ---- 定数が後から確定した曲を、定数順の正しい位置へ動かす ----
+     対象：定数未確定のまま追加した曲（noConst の印）と、稼働中バージョンの曲で定数順になっていないもの。
+     曲の id はそのまま（赤線が消えないように）。 */
+  var CURRENT_SONG_VER = PLATE_MASTER_LIST.length ? PLATE_MASTER_LIST[PLATE_MASTER_LIST.length - 1].ver : '';
+  function masterOfTableSong(song, levelLabel){
+    var t = song.srcType || (song.chartType ? String(song.chartType).toUpperCase() : '');
+    return SONG_MASTER_LIST.filter(function(x){ return x.name === song.name && (!t || x.type === t) && x.level === levelLabel; })[0] || null;
+  }
+  function findMisplacedSongs(v){
+    var out = [];
+    if (!SONG_DATA_FULL || !v || v.docType === 'jewel' || isMaiHashaDoc(v)) return out;
+    (v.levels || []).forEach(function(lv){
+      var songs = lv.songs || [], n = songs.length;
+      var ms = songs.map(function(s){ return masterOfTableSong(s, lv.label); });
+      var ks = ms.map(function(m){ return m && m.konst >= 0 ? m.konst : -1; });
+      /* 定数の高い順に並んでいる最大の並び（同じ数なら前にある曲を優先）を残し、
+         そこから外れた曲だけを「位置がずれている」とみなす */
+      var best = [], prev = [];
+      for (var i = 0; i < n; i++){
+        prev[i] = -1; best[i] = null;
+        if (ks[i] < 0) continue;
+        var sc = [1, n - i];
+        for (var j = 0; j < i; j++){
+          if (!best[j] || ks[j] < ks[i]) continue;
+          var c = [best[j][0] + 1, best[j][1] + (n - i)];
+          if (c[0] > sc[0] || (c[0] === sc[0] && c[1] > sc[1])){ sc = c; prev[i] = j; }
+        }
+        best[i] = sc;
+      }
+      var end = -1;
+      for (var e = 0; e < n; e++){
+        if (best[e] && (end < 0 || best[e][0] > best[end][0] || (best[e][0] === best[end][0] && best[e][1] > best[end][1]))) end = e;
+      }
+      var keep = {};
+      while (end >= 0){ keep[end] = true; end = prev[end]; }
+      songs.forEach(function(s, i){
+        var m = ms[i];
+        if (!m || !(m.konst >= 0)) return;
+        var flagged = !!s.noConst;
+        if (!flagged && m.ver !== CURRENT_SONG_VER && m.ver2 !== CURRENT_SONG_VER) return;
+        var bad = !keep[i];
+        if (bad || flagged) out.push({ lv: lv, song: s, konst: m.konst, type: m.type, moved: bad });
+      });
+    });
+    return out;
+  }
+  function moveSongToConstantPos(lv, song, konst){
+    var idx = lv.songs.indexOf(song);
+    if (idx < 0) return;
+    lv.songs.splice(idx, 1);
+    var pos = lv.songs.length;
+    for (var k = 0; k < lv.songs.length; k++){
+      var m = masterOfTableSong(lv.songs[k], lv.label);
+      if (m && m.konst >= 0 && m.konst < konst){ pos = k; break; }
+    }
+    delete song.noConst;
+    lv.songs.splice(pos, 0, song);
+  }
+  function openAddMissingSongs(){
+    if (!canEdit()) return;
+    if (!SONG_DATA_FULL){ showAlert('楽曲データ（songs.json）の読み込みが終わってから、もう一度押してください。'); return; }
+    var groups = [], fixes = [];
+    allVersions.forEach(function(v){
+      var miss = findMissingSongs(v);
+      if (miss.length) groups.push({ v: v, songs: miss });
+      var mis = findMisplacedSongs(v);
+      if (mis.length) fixes.push({ v: v, items: mis });
+    });
+    if (!groups.length && !fixes.length){ showAlert('表に足りない曲・並べ直す曲はありません。'); return; }
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box', style:{maxWidth:'520px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('p', {class:'del-ask', text:'新曲の追加・定数の反映'}));
+    box.appendChild(el('p', {class:'note', text:'チェックした曲を、同じレベルの欄の譜面定数順の位置へ入れます。'}));
+    var listWrap = el('div', {class:'missing-list'});
+    var checks = [];
+    groups.forEach(function(g){
+      listWrap.appendChild(el('div', {class:'missing-ver', text: g.v.versionName}));
+      g.songs.forEach(function(s){
+        var lab = el('label', {class:'missing-row'});
+        var cb = el('input', {type:'checkbox'}); cb.checked = true;
+        checks.push({ cb: cb, v: g.v, s: s });
+        lab.appendChild(cb);
+        lab.appendChild(el('span', {class:'missing-lv', text: s.level}));
+        lab.appendChild(el('span', {class:'missing-name', text: s.name + '（' + s.type + '）' + (s.konst >= 0 ? '' : '　定数未確定')}));
+        listWrap.appendChild(lab);
+      });
+    });
+    var fixChecks = [];
+    if (fixes.length){
+      listWrap.appendChild(el('div', {class:'missing-ver missing-fix-head', text:'定数が確定した曲（定数順の位置へ動かす）'}));
+      fixes.forEach(function(g){
+        listWrap.appendChild(el('div', {class:'missing-ver', text: g.v.versionName}));
+        g.items.forEach(function(it){
+          var lab = el('label', {class:'missing-row'});
+          var cb = el('input', {type:'checkbox'}); cb.checked = true;
+          fixChecks.push({ cb: cb, v: g.v, it: it });
+          lab.appendChild(cb);
+          lab.appendChild(el('span', {class:'missing-lv', text: it.lv.label}));
+          lab.appendChild(el('span', {class:'missing-name', text: it.song.name + '（' + it.type + '）　定数 ' + it.konst.toFixed(1) + (it.moved ? '' : '　位置はそのまま')}));
+          listWrap.appendChild(lab);
+        });
+      });
+    }
+    box.appendChild(listWrap);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', text:'反映する', onclick: function(){
+      var touched = {}, n = 0, f = 0;
+      fixChecks.forEach(function(c){
+        if (!c.cb.checked) return;
+        moveSongToConstantPos(c.it.lv, c.it.song, c.it.konst);
+        touched[c.v.id] = c.v; f++;
+      });
+      checks.forEach(function(c){
+        if (!c.cb.checked) return;
+        insertSongByConstant(c.v, c.s);
+        touched[c.v.id] = c.v; n++;
+      });
+      closeModal(backdrop);
+      Object.keys(touched).forEach(function(id){ touched[id].updatedAt = Date.now(); syncWriteVersion(touched[id]); });
+      persistVersions();
+      renderApp();
+      var msg = [];
+      if (n) msg.push(n + '曲を追加しました。');
+      if (f) msg.push(f + '曲を定数順に並べ直しました。');
+      showAlert(msg.length ? msg.join('') : '変更はありません。');
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+
+  function addLowerLevelsToAll(){
+    if (!canEdit()) return;
+    if (!SONG_DATA_FULL){ showAlert('楽曲データ（songs.json）の読み込みが終わってから、もう一度押してください。'); return; }
+    showConfirm('全バージョンの表に、13・12+・12・11+・11・10+ の欄と楽曲を追加します（舞・覇者と実績フレーム表は対象外。すでにある欄はそのまま）。よろしいですか？', function(){
+      var tables = 0, songs = 0;
+      allVersions.forEach(function(v){
+        var r = addLowerLevelsTo(v);
+        if (r.levels){
+          v.updatedAt = Date.now();
+          syncWriteVersion(v);
+          tables++; songs += r.songs;
+        }
+      });
+      persistVersions();
+      renderApp();
+      showAlert(tables ? (tables + '個の表に、合わせて' + songs + '曲を追加しました。') : '追加する欄はありませんでした（すべての表に追加済みです）。');
+    });
+  }
+
   /* 登録が空のときだけ、真〜現の表を作って並べる */
   function seedVersionsIfEmpty(){
     if (seededOnce) return false;
@@ -1773,7 +2853,7 @@
     if (SYNC_EXPECTED && !firstSnapshotDone) return false;  /* 公開データが届く前に初期表を作らない */
     if (allVersions && allVersions.length) return false;  /* 既にあるなら触らない */
     seededOnce = true;
-    allVersions = versionOptions().map(buildSeedVersion);
+    allVersions = withDefaultJewel(versionOptions().map(buildSeedVersion).map(function(v){ if (needsAutoType(v)) autoFillChartTypes(v); var c = specVersionColor(v); if (c) v.themeColor = c; (v.levels || []).forEach(function(l){ var lc = v.docType !== 'jewel' && specLevelColor(l.label); if (lc) l.color = lc; }); return v; }));
     persistVersions();
     return true;
   }
@@ -1822,7 +2902,7 @@
   var allVersions = SYNC_EXPECTED ? loadSyncCache() : loadVersions();
   var allPlateTiers = loadPlateTiers();
 
-  var section = 'plates';  // 'plates' | 'plateTiers' | 'reviews'
+  var section = 'home';   // 'home' | 'plates' | 'plateTiers' | 'guide' | 'reviews'
   var view = 'list';       // 'list' | 'detail' | 'edit'
   var currentId = null;
   var draft = null;
@@ -2223,7 +3303,10 @@
   /* ---- セクション切り替え ---- */
   function goSection(name){
     section = name;
+    if (name === 'plates' && view !== 'edit'){ view = 'list'; currentId = null; }
+    if (name === 'plateTiers' && plateTierView !== 'edit'){ plateTierView = 'list'; plateTierCurrentId = null; }
     renderApp();
+    scrollToTopNow();
   }
 
   /* ---- プレート難易度メーカー ナビゲーション ---- */
@@ -2463,6 +3546,10 @@
     opts = opts || {};
     var interactive = !!opts.interactive;   /* 詳細画面のみ：タップで赤斜線 */
     if (v && v.docType === 'jewel') return buildJewelPreviewNode(v);
+    /* 閲覧者の画面（一覧・詳細）では、選んでいるプレート（全・極・将…）の赤線とプレートだけを出す */
+    var viewerMode = !!(opts.interactive || opts.viewerHidden);
+    var plateMode = viewerMode ? getPlateMode(v) : '';
+    var markKey = plateMarkKey(v.id, plateMode);
 
     var card = el('div', {id:'previewCard'});
 
@@ -2482,26 +3569,26 @@
         if (seps.indexOf(rangeText[i]) >= 0){ sepIdx = i; break; }
       }
       if (sepIdx === -1){
-        container.appendChild(el('span', {style:{color:startColor}, text: rangeText}));
+        container.appendChild(el('span', {class:'pv-range-start', style:{color:startColor}, text: rangeText}));
         return;
       }
-      container.appendChild(el('span', {style:{color:startColor}, text: rangeText.slice(0, sepIdx)}));
+      container.appendChild(el('span', {class:'pv-range-start', style:{color:startColor}, text: rangeText.slice(0, sepIdx)}));
       container.appendChild(el('span', {text: rangeText[sepIdx]}));
-      container.appendChild(el('span', {style:{color:endColor}, text: rangeText.slice(sepIdx + 1)}));
+      container.appendChild(el('span', {class:'pv-range-end', style:{color:endColor}, text: rangeText.slice(sepIdx + 1)}));
     }
 
     if (showPrice){
     var line1 = el('div', {class:'pv-info-line'});
     line1.appendChild(el('span', {class:'label', text:'下埋め料金'}));
     appendColoredRange(line1, v.priceRange, v.rangeStartColor || '#6fdc6f', v.rangeEndColor || '#ff5c5c');
-    var bracket1 = el('span', {style:{color: v.bracketColor || '#f2f4f8'}, text: '＜' + v.price1 + '　' + v.price2 + '＞'});
+    var bracket1 = el('span', {class:'pv-bracket', style:{color: v.bracketColor || '#f2f4f8'}, text: '＜' + v.price1 + '　' + v.price2 + '＞'});
     line1.appendChild(bracket1);
     card.appendChild(line1);
 
     var line2 = el('div', {class:'pv-info-line'});
     line2.appendChild(el('span', {class:'label', text:'下埋め時間'}));
     appendColoredRange(line2, v.priceRange, v.rangeStartColor || '#6fdc6f', v.rangeEndColor || '#ff5c5c');
-    var bracket2 = el('span', {style:{color: v.bracketColor || '#f2f4f8'}, text: '＜' + v.timeText + '＞'});
+    var bracket2 = el('span', {class:'pv-bracket', style:{color: v.bracketColor || '#f2f4f8'}, text: '＜' + v.timeText + '＞'});
     line2.appendChild(bracket2);
     if (v.timeExclusionNote){
       line2.appendChild(el('span', {class:'pv-exclusion', text: '（' + v.timeExclusionNote + '）'}));
@@ -2519,19 +3606,20 @@
 
     v.levels.forEach(function(level){
       if (level.hidden) return;
-      if (opts.viewerHidden && isPvLevelHidden(v.id, level.id)) return;
+      if (viewerMode && !(level.songs || []).some(function(s){ return !s.hidden; })) return;
+      if (opts.viewerHidden && isPvLevelHidden(v, level)) return;
       var block = el('div', {class:'pv-level'});
       /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
-      var lvOff = interactive && isPvLevelHidden(v.id, level.id);
+      var lvOff = interactive && isPvLevelHidden(v, level);
       if (interactive){
         var lvHead = el('div', {class:'pv-level-head'});
         /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
-        lvHead.appendChild(el('div', {class:'pv-level-label', style:{color: level.color}, text: level.label}));
-        var lvBtn = makeOnOffButton('このレベル', !lvOff, function(){
-          togglePvLevel(v.id, level.id);
+        lvHead.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
+        var lvBtn = makeOnOffButton('', !lvOff, function(){
+          togglePvLevel(v, level);
           var holder = card.parentNode;
           if (holder) holder.replaceChild(buildPreviewNode(v, opts), card);
-          return !isPvLevelHidden(v.id, level.id);
+          return !isPvLevelHidden(v, level);
         });
         lvBtn.classList.add('pv-level-toggle');
         lvHead.appendChild(lvBtn);
@@ -2543,7 +3631,7 @@
           return;
         }
       } else {
-        block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color}, text: level.label}));
+        block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
       }
       var visibleSongs = level.songs.filter(function(s){ return !s.hidden; });
       if (visibleSongs.length === 0){
@@ -2556,7 +3644,7 @@
           var srcS = song.img || resolveSongImage(song.name);
           if (srcS){
             t.appendChild(makeSongImg(song.name, srcS, getCachedSongImage(song.name), function(){
-              t.className = 'pv-thumb no-img';
+              t.classList.add('no-img');
               t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
             }));
           } else {
@@ -2564,25 +3652,26 @@
             t.appendChild(el('div', {class:'placeholder-text', text: song.name || '画像未設定'}));
           }
 
-          if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
-            t.appendChild(makeChartTypeMark(song.chartType));
+          var ctype = chartTypeFor(v, song, level.label);
+          if (ctype && CHART_TYPE_SOURCES[ctype]){
+            t.appendChild(makeChartTypeMark(ctype));
           }
 
           /* 斜線：作成者が設定したもの or 閲覧者が自分でつけたもの（表示ONのときのみ） */
           function syncSlash(){
             var existing = t.querySelector('.slash-overlay');
-            var on = song.slashed || (showSongMarks && isSongMarked(v.id, song.id));
+            var on = song.slashed || (!!plateMode && isSongMarked(markKey, song.id));
             if (on && !existing) t.appendChild(el('div', {class:'slash-overlay'}));
             if (!on && existing) existing.parentNode.removeChild(existing);
           }
           syncSlash();
 
           /* 詳細画面かつ赤線ONのときだけ、タップで付け外しできる */
-          if (interactive && showSongMarks && !song.slashed){
+          if (interactive && plateMode && !song.slashed){
             t.classList.add('is-markable');
             t.title = 'タップで斜線をつける／外す';
             t.addEventListener('click', function(){
-              toggleSongMark(v.id, song.id);
+              toggleSongMark(markKey, song.id);
               syncSlash();
             });
           }
@@ -2629,12 +3718,22 @@
       var badgeWrap = el('div', {class:'pv-badges'});
       var rowTop = el('div', {class:'pv-badge-row'});
       var rowBottom = el('div', {class:'pv-badge-row'});
-      sortBadgesByCategory(v.badges).forEach(function(badge){
+      var shownBadges = plateMode
+        ? v.badges.filter(function(b){ return plateCatOf(b.name) === plateMode; })
+        : ((viewerMode && hideBadgesForListMode(v)) ? [] : v.badges);
+      sortBadgesByCategory(shownBadges).forEach(function(badge){
         var c = badgeCat(badge.name);
         var target = (c === '極' || c === '将' || c === '神') ? rowTop : rowBottom;
         /* 1行は3つまで。あふれた分は下の行へ */
         if (target === rowTop && rowTop.children.length >= 3) target = rowBottom;
-        target.appendChild(makeBadgeNode(badge));
+        var bNode = makeBadgeNode(badge);
+        /* 詳細画面では、プレートを押すとそのプレートの進捗に切り替わる */
+        if (interactive && opts.onPlateTap && c){
+          bNode.classList.add('is-tappable');
+          bNode.title = 'タップで' + badge.name + 'の進捗に切り替え';
+          bNode.addEventListener('click', function(){ opts.onPlateTap(c); });
+        }
+        target.appendChild(bNode);
       });
       if (rowTop.children.length) badgeWrap.appendChild(rowTop);
       if (rowBottom.children.length) badgeWrap.appendChild(rowBottom);
@@ -2663,19 +3762,19 @@
       wrote = true;
 
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
-      var off = isSyncLevelHidden(v.id, level.id);
+      var off = isSyncLevelHidden(v, level);
 
       var head = el('div', {class:'sync-level-head' + (off ? ' sync-level-off' : '')});
       /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
       head.appendChild(el('div', {class:'sync-level', text: level.label || '',
-        style:{color: level.color || '#ffffff'}}));
+        style:{color: level.color || '#ffffff', '--lvc': level.color || '#ffffff'}}));
       /* 印は必ずボタン自身に付ける（レベルの数字に付いてしまうと保存時に消えない） */
-      var lvToggle = makeOnOffButton('このレベル', !off, function(){
-        toggleSyncLevel(v.id, level.id);
+      var lvToggle = makeOnOffButton('', !off, function(){
+        toggleSyncLevel(v, level);
         var holder = card.parentNode;
         var fresh = buildSyncRecordNode(v);
         if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
-        return !isSyncLevelHidden(v.id, level.id);
+        return !isSyncLevelHidden(v, level);
       });
       lvToggle.classList.add('sync-level-toggle');
       head.appendChild(lvToggle);
@@ -2698,8 +3797,9 @@
           thumb.classList.add('no-img');
           thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
         }
-        if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
-          thumb.appendChild(makeChartTypeMark(song.chartType));
+        var ctype2 = chartTypeFor(v, song, level.label);
+        if (ctype2 && CHART_TYPE_SOURCES[ctype2]){
+          thumb.appendChild(makeChartTypeMark(ctype2));
         }
         row.appendChild(thumb);
 
@@ -2727,9 +3827,41 @@
   }
 
   /* ========================= export PNG ========================= */
-  function exportPNG(v, statusEl, btn){
+  /* 「画像として保存」の 黒／白 ボタン。押した色の表を保存する */
+  /* 黒／白は「どちらの色で保存するか」の選択。選んだ方に枠が付き、端末に覚えておく。
+     「画像として保存」を押すと、選んでいる色の表を保存する */
+  var EXPORT_BASE_KEY = 'mmplate_export_base_v1';
+  function getExportBase(){
+    try{ return localStorage.getItem(EXPORT_BASE_KEY) === 'white' ? 'white' : 'dark'; }catch(e){ return 'dark'; }
+  }
+  function setExportBase(b){
+    try{ localStorage.setItem(EXPORT_BASE_KEY, b); }catch(e){}
+    /* 同じ画面にある他の保存ボタンの枠もそろえる */
+    Array.prototype.forEach.call(document.querySelectorAll('.save-base'), function(x){
+      var on = x.__base === b;
+      x.classList.toggle('is-selected', on);
+      x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function makeSaveGroup(onSave){
+    var g = el('div', {class:'save-group', role:'group', 'aria-label':'画像として保存（PNG）'});
+    var saveBtn = el('button', {type:'button', class:'save-group-label', text:'画像として保存'});
+    saveBtn.addEventListener('click', function(){ onSave(getExportBase(), saveBtn); });
+    g.appendChild(saveBtn);
+    var cur = getExportBase();
+    [['dark', '黒'], ['white', '白']].forEach(function(o){
+      var b = el('button', {type:'button', class:'save-base save-base-' + o[0] + (cur === o[0] ? ' is-selected' : ''), text: o[1],
+        title: o[1] + 'の表で保存する', 'aria-label': o[1] + 'の表で保存する', 'aria-pressed': cur === o[0] ? 'true' : 'false'});
+      b.__base = o[0];
+      b.addEventListener('click', function(){ setExportBase(o[0]); });
+      g.appendChild(b);
+    });
+    return g;
+  }
+  function exportPNG(v, statusEl, btn, base){
     var node = document.getElementById('previewCard');
-    var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + '.png';
+    var pmode = (v && v.id && v.docType !== 'jewel') ? getPlateMode(v) : '';
+    var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + (pmode ? '_' + plateNameForMode(v, pmode) : '') + '.png';
     /* 横幅は「1つのレベルに並ぶ曲の最大数（最大12）」に合わせ、右側に余計な余白を作らない */
     if (node){
       var maxSongs = 1;
@@ -2738,12 +3870,39 @@
       node.style.setProperty('--pv-cols', String(Math.min(12, maxSongs)));
     }
     /* 12曲で折り返す幅を確保してから描き込む */
-    captureNodePNG(node, name, statusEl, btn, 'pv-export');
+    captureNodePNG(node, name, statusEl, btn, 'pv-export', base);
   }
 
   /* 指定した要素をPNGにして保存する。
      exportClass を付けているあいだだけ、保存用のレイアウトに切り替わる。 */
-  function captureNodePNG(node, name, statusEl, btn, exportClass){
+  /* 画像保存の部品（html2canvas）は、ページを開くときには読まず、詳細を開いたときに裏で読む */
+  var HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  /* 詳細で開いている表は、保存にすぐ使えるよう画像を先に全部読んでおく（一覧は見える所だけ） */
+  function eagerImages(node){
+    if (node && node.querySelectorAll) Array.prototype.forEach.call(node.querySelectorAll('img'), function(im){ im.loading = 'eager'; });
+    return node;
+  }
+  var h2cPromise = null;
+  function ensureHtml2Canvas(){
+    if (window.html2canvas) return Promise.resolve();
+    if (!h2cPromise){
+      h2cPromise = new Promise(function(resolve, reject){
+        var s = document.createElement('script');
+        s.src = HTML2CANVAS_SRC;
+        try{ s.fetchPriority = 'high'; }catch(e){}
+        s.onload = function(){ window.html2canvas ? resolve() : reject(new Error('画像保存の部品を読み込めませんでした')); };
+        s.onerror = function(){ h2cPromise = null; reject(new Error('画像保存の部品を読み込めませんでした。電波の良い所でもう一度お試しください。')); };
+        document.head.appendChild(s);
+      });
+    }
+    return h2cPromise;
+  }
+  function prefetchHtml2Canvas(){
+    if (window.html2canvas) return;
+    var go = function(){ ensureHtml2Canvas().catch(function(){}); };
+    setTimeout(go, 0);
+  }
+  function captureNodePNG(node, name, statusEl, btn, exportClass, base){
     if (!node) return;
     btn.disabled = true;
     statusEl.textContent = '画像を生成中…';
@@ -2762,6 +3921,7 @@
       else dstFields[fi].value = srcFields[fi].value;
     }
     if (exportClass) shot.classList.add(exportClass);
+    if (base === 'white') shot.classList.add('export-white');
     shot.style.width = 'max-content';
     holder.appendChild(shot);
     /* 元の表と同じ場所（同じ親の中）に置くので、見た目の指定もそのまま効く */
@@ -2771,8 +3931,22 @@
       if (holder.parentNode) holder.parentNode.removeChild(holder);
     }
 
-    Promise.resolve().then(function(){
-      return window.html2canvas(shot, { scale: 2, backgroundColor: '#1e1e1e' });
+    /* 画面では「見えるところだけ読む」設定の画像も、保存用の写しではすぐ読む */
+    Array.prototype.forEach.call(shot.querySelectorAll('img'), function(im){ im.loading = 'eager'; });
+    /* 保存する表と関係ない部分（一覧・他の表など）は写さない。写す量が減って速くなる */
+    function skipForShot(elm){
+      if (!elm || elm.nodeType !== 1) return false;
+      if (elm === shot || elm.contains(shot) || shot.contains(elm)) return false;
+      var tag = elm.tagName;
+      if (tag === 'HEAD' || tag === 'STYLE' || tag === 'LINK' || tag === 'META' || tag === 'TITLE') return false;
+      if (elm.closest && elm.closest('head')) return false;
+      return true;
+    }
+
+    ensureHtml2Canvas().then(function(){
+      /* 保存画像はテーマに関係なく、押したボタンの色（黒＝今までどおり／白）の表 */
+      return window.html2canvas(shot, { scale: 2, backgroundColor: base === 'white' ? '#ffffff' : '#1e1e1e',
+        ignoreElements: skipForShot, logging: false });
     }).then(function(canvas){
       restoreLayout();
       function finish(msg){
@@ -2831,32 +4005,96 @@
   /* v を渡したとき（バージョン詳細）だけ「赤線削除」ボタンも付ける */
   function makeMarkToggleBar(v){
     var bar = el('div', {class:'mark-toggle-bar'});
-    var btn = el('button', {
-      class: 'btn btn-sm' + (showSongMarks ? ' mark-on' : ' btn-hidden-on'),
-      text: showSongMarks ? '赤線ON' : '赤線OFF',
-      title: '楽曲につけた赤い斜線の表示を切り替えます'
-    });
-    btn.addEventListener('click', function(){
-      setShowSongMarks(!showSongMarks);
-      renderApp();
-    });
-    bar.appendChild(btn);
-    if (v){
-      bar.appendChild(el('button', {
-        class: 'btn btn-sm mark-clear',
-        text: '赤線削除',
-        title: 'この表につけた赤線をすべて消します',
-        onclick: function(){
-          var name = v.versionName || 'この表';
-          showDeleteConfirm(name + 'の赤線を全て削除しますか？', function(){
-            delete songMarks[v.id];
-            persistSongMarks();
-            renderApp();
-          }, { yesText: '削除', oneLine: true });
-        }
-      }));
+    if (!v){
+      /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外） */
+      ['13+', '13', '12+'].forEach(function(lb){
+        bar.appendChild(makeOnOffButton(lb + '↓', isCutShown(lb), function(){
+          var next = !isCutShown(lb);
+          setShownFrom(lb, next);
+          renderApp();
+          return next;
+        }));
+      });
+      /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
+      var lseg = el('div', {class:'plate-mode-seg list-mode-seg', role:'group', 'aria-label':'表示するプレート'});
+      var cur = commonListMode();
+      ['極', '将', '神', '舞舞'].forEach(function(m){
+        var b = el('button', {type:'button', text: PLATE_MODE_LABEL[m], class: cur === m ? 'is-active' : '',
+          onclick: function(){ setAllPlateModes(commonListMode() === m ? '' : m); renderApp(); }});
+        b.setAttribute('aria-pressed', cur === m ? 'true' : 'false');
+        lseg.appendChild(b);
+      });
+      /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
+      if (cur){
+        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
+          onclick: function(){
+            var m = commonListMode();
+            if (!m) return;
+            showDeleteConfirm(PLATE_MODE_LABEL[m] + 'の赤線を全て削除しますか？', function(){
+              allVersions.forEach(function(x){
+                if (x.docType === 'jewel') return;
+                if (getPlateMode(x) === m) delete songMarks[plateMarkKey(x.id, m)];
+              });
+              persistSongMarks();
+              renderApp();
+            }, { yesText: '削除', oneLine: true });
+          }}));
+      }
+      bar.appendChild(makeHelpButton('help-btn-list'));
+      var modeRow = el('div', {class:'mode-row'});
+      var HINT_KEY = 'mmplate_hint_mode_closed_v1';
+      var hintClosed = false;
+      try{ hintClosed = localStorage.getItem(HINT_KEY) === '1'; }catch(e){}
+      if (!hintClosed){
+        var hint = el('div', {class:'mode-hint'});
+        hint.appendChild(el('span', {class:'mode-hint-text', text:'もう1度押すと赤線が消えます'}));
+        hint.appendChild(el('button', {class:'mode-hint-close', type:'button', 'aria-label':'閉じる', text:'×',
+          onclick: function(){
+            try{ localStorage.setItem(HINT_KEY, '1'); }catch(e){}
+            if (hint.parentNode) hint.parentNode.removeChild(hint);
+          }}));
+        modeRow.appendChild(lseg);
+        modeRow.appendChild(hint);
+      } else {
+        modeRow.appendChild(lseg);
+      }
+      bar.appendChild(modeRow);
     }
     return bar;
+  }
+
+  /* 「？」：赤線がつかないときの説明 */
+  function makeHelpButton(extraClass){
+    return el('button', {type:'button', class:'help-btn' + (extraClass ? ' ' + extraClass : ''), text:'?',
+      'aria-label':'使い方（赤線がつかないとき）', title:'使い方', onclick: showModeHelp});
+  }
+  function showModeHelp(){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box help-box', role:'dialog', 'aria-modal':'true'});
+    function close(){ closeModal(backdrop); document.removeEventListener('keydown', onKey); }
+    function onKey(e){ if (e.key === 'Escape') close(); }
+    box.appendChild(el('button', {class:'notice-close', type:'button', 'aria-label':'閉じる', text:'×', onclick: close}));
+    var q = el('div', {class:'help-q'});
+    q.appendChild(el('span', {class:'help-mark help-mark-q', text:'Q'}));
+    q.appendChild(el('span', {text:'タップしても赤線がつかない'}));
+    box.appendChild(q);
+    var a = el('div', {class:'help-a'});
+    a.appendChild(el('span', {class:'help-mark help-mark-a', text:'A'}));
+    var body = el('div', {class:'help-a-body'});
+    var p1 = el('p');
+    p1.appendChild(document.createTextNode('ご自身で登録する際は'));
+    var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
+    ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
+    p1.appendChild(chips);
+    p1.appendChild(document.createTextNode('いずれかを押した上で赤線をつけて下さい。'));
+    body.appendChild(p1);
+    body.appendChild(el('p', {text:'プレートごとに進捗を管理できます。'}));
+    a.appendChild(body);
+    box.appendChild(a);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(backdrop);
   }
 
   function renderListView(root){
@@ -2866,6 +4104,9 @@
       var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績プレート表を追加', onclick: goEditNew}));
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
+      bar.appendChild(el('button', {class:'btn', text:'＋ 13〜10+の欄を全バージョンに追加', onclick: addLowerLevelsToAll}));
+      bar.appendChild(el('button', {class:'btn', text:'＋ 新曲の追加・定数の反映', onclick: openAddMissingSongs}));
+      if (IS_TEST_ENV) bar.appendChild(el('button', {class:'btn', text:'本番の表をコピー', onclick: copyProdToTest}));
       root.appendChild(bar);
     }
 
@@ -2885,7 +4126,7 @@
     sortedVersions().forEach(function(v, idx){
       var isJewel = (v.docType === 'jewel');
       var card = el('div', {class:'version-card', onclick: function(){ goDetail(v.id); }});
-      card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : (specVersionColor(v) || v.themeColor)}}));
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
 
       /* 実績プレート表のみ、完成品を縮小プレビューとして表示（Jewel表は出さない）。
@@ -2944,27 +4185,67 @@
   /* ========================= view: detail ========================= */
   function renderDetailView(root, v){
     if (!v){ goList(); return; }
+    prefetchHtml2Canvas();
 
-    var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 一覧に戻る', onclick: goList}));
-    bar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
+    var isJewelDoc = (v.docType === 'jewel');
     var statusEl = el('span', {class:'save-toast', role:'status'});
-    var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
-    pngBtn.addEventListener('click', function(){ exportPNG(v, statusEl, pngBtn); });
-    bar.appendChild(pngBtn);
+    var pngBtn = makeSaveGroup(function(base, b){ exportPNG(v, statusEl, b, base); });
     if (canEdit()){
+      var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goEditExisting(v.id); }}));
       bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goDuplicate(v.id); }}));
       bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deleteVersion(v.id); }}));
+      root.appendChild(bar);
     }
-    root.appendChild(bar);
+    /* 実績フレーム表は極〜舞のボタンが無いので、画像保存だけの行にする */
+    if (isJewelDoc){
+      var jbar = el('div', {class:'detail-actions'});
+      jbar.appendChild(pngBtn);
+      root.appendChild(jbar);
+    }
     root.appendChild(statusEl);
-
-    var isJewelDoc = (v.docType === 'jewel');
-    if (!isJewelDoc) root.appendChild(makeMarkToggleBar(v));
-
     var pvHolder = el('div', {class:'preview-wide'});
-    pvHolder.appendChild(buildPreviewNode(v, { interactive: !isJewelDoc }));
+    var pvOpts = { interactive: !isJewelDoc, onPlateTap: function(c){ selectPlateMode(c); } };
+    function redrawPreview(){
+      pvHolder.textContent = '';
+      pvHolder.appendChild(eagerImages(buildPreviewNode(v, pvOpts)));
+      if (!isJewelDoc) pvHolder.appendChild(makeHelpButton('help-btn-card'));
+    }
+    var modeBtns = [];
+    function paintModes(){
+      var cur = getPlateMode(v);
+      modeBtns.forEach(function(b){ b.classList.toggle('is-active', b.__mode === cur); b.setAttribute('aria-pressed', b.__mode === cur ? 'true' : 'false'); });
+      var clr = (markBar || root).querySelector('.mark-clear');
+      if (clr) clr.hidden = !cur;
+    }
+    function selectPlateMode(m){
+      if (listMode && m !== listMode) setListMode('');
+      setPlateMode(v.id, m);
+      paintModes();
+      redrawPreview();
+    }
+    if (!isJewelDoc){
+      var markBar = makeMarkToggleBar(v);
+      markBar.classList.add('detail-actions');
+      markBar.insertBefore(pngBtn, markBar.firstChild);
+      var modes = selectablePlateModes(v);
+      if (modes.length){
+        /* 極・将・神・舞（・覇）。それぞれ別々に赤線を記録できる。選んでいるものをもう一度押すと解除 */
+        var seg = el('div', {class:'plate-mode-seg', role:'group', 'aria-label':'進捗を記録するプレート'});
+        modes.forEach(function(m){
+          var b = el('button', {type:'button', text: PLATE_MODE_LABEL[m],
+            title: plateNameForMode(v, m) + 'の進捗',
+            onclick: function(){ selectPlateMode(getPlateMode(v) === m ? '' : m); }});
+          b.__mode = m;
+          modeBtns.push(b);
+          seg.appendChild(b);
+        });
+        markBar.appendChild(seg);
+        paintModes();
+      }
+      root.appendChild(markBar);
+    }
+    redrawPreview();
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
 
@@ -2972,7 +4253,10 @@
     if (!isJewelDoc){
       var syncBar = el('div', {class:'view-topbar', style:{marginTop:'26px', marginBottom:'10px'}});
       var syncStatus = el('span', {class:'save-toast', role:'status'});
-      var syncBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
+      var syncBtn = makeSaveGroup(function(base, b){
+        var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
+        captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, b, 'sync-export', base);
+      });
       syncBar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
       syncBar.appendChild(syncStatus);
       syncBar.appendChild(syncBtn);
@@ -2983,10 +4267,6 @@
       syncHolder.appendChild(syncNode);
       root.appendChild(syncHolder);
 
-      syncBtn.addEventListener('click', function(){
-        var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
-        captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, syncBtn, 'sync-export');
-      });
 
       root.appendChild(el('div', {class:'pv-caption',
         text:'書いた名前はこの端末の中にだけ残ります。'}));
@@ -3257,8 +4537,9 @@
           } else {
             songFallbackA();
           }
-          if (song.chartType && CHART_TYPE_SOURCES[song.chartType]){
-            thumb.appendChild(makeChartTypeMark(song.chartType));
+          var ctype3 = chartTypeFor(draft, song, level.label);
+          if (ctype3 && CHART_TYPE_SOURCES[ctype3]){
+            thumb.appendChild(makeChartTypeMark(ctype3));
           }
           thumb.appendChild(el('button', {text:'×', title:'削除', onclick: function(){
             level.songs = level.songs.filter(function(s){ return s.id !== song.id; });
@@ -3418,7 +4699,11 @@
 
   function buildPlateTierPreviewNode(t){
     var card = el('div', {id:'previewCard', style:{position:'relative'}});
-    card.appendChild(el('div', {class:'pv-title', text: t.title}));
+    var tTitle = el('div', {class:'pv-title ptier-title'});
+    tTitle.appendChild(el('span', {text: t.title}));
+    /* 保存画像にだけ出す、大きな左右差マーク */
+    tTitle.appendChild(el('span', {class:'lr-big', text: t.showLeftRight ? '左右差あり' : '左右差なし'}));
+    card.appendChild(tTitle);
 
     /* 左右差のマークを左端に、その右へ製作者を並べる */
     var metaRow = el('div', {class:'ptier-meta-row'});
@@ -3445,7 +4730,7 @@
 
       var section = el('div', {class:'ptier-band'});
       var head = el('div', {class:'ptier-band-head'});
-      head.appendChild(el('div', {class:'ptier-band-label', style:{color: rank.color}, text: rank.label}));
+      head.appendChild(el('div', {class:'ptier-band-label', style:{color: rank.color, '--lvc': rank.color}, text: rank.label}));
       section.appendChild(head);
 
       [['jiriki','地力'], ['kojinsa','個人差']].forEach(function(pair){
@@ -3515,7 +4800,6 @@
         '左右差 ' + (t.showLeftRight ? 'あり' : 'なし') + '　更新 ' + fmtDate(t.updatedAt)}));
       var actions = el('div', {class:'vc-actions'});
       actions.appendChild(el('button', {class:'btn btn-sm', text:'編集', onclick: function(e){ e.stopPropagation(); goPlateTierEditExisting(t.id); }}));
-      actions.appendChild(el('button', {class:'btn btn-sm', text:'複製', onclick: function(e){ e.stopPropagation(); goPlateTierDuplicate(t.id); }}));
       actions.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(e){ e.stopPropagation(); deletePlateTier(t.id); }}));
       card.appendChild(actions);
       grid.appendChild(card);
@@ -3524,20 +4808,18 @@
   }
 
   function renderPlateTierDetailView(root, t){
+    prefetchHtml2Canvas();
     if (!t){ goPlateTierList(); return; }
     var bar = el('div', {class:'view-topbar'});
-    bar.appendChild(el('button', {class:'btn btn-ghost', text:'← 一覧に戻る', onclick: goPlateTierList}));
-    bar.appendChild(el('div', {style:{flex:'1'}}));
     var statusEl = el('span', {class:'save-toast', role:'status'});
-    var pngBtn = el('button', {class:'btn', text:'画像として保存（PNG）'});
-    pngBtn.addEventListener('click', function(){ exportPNG({versionName: t.title}, statusEl, pngBtn); });
+    var pngBtn = makeSaveGroup(function(base, b){ exportPNG({versionName: t.title}, statusEl, b, base); });
     bar.appendChild(pngBtn);
+    bar.appendChild(el('div', {style:{flex:'1'}}));
     bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
-    bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goPlateTierDuplicate(t.id); }}));
     bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deletePlateTier(t.id); }}));
     root.appendChild(bar);
     root.appendChild(statusEl);
-    root.appendChild(buildPlateTierPreviewNode(t));
+    root.appendChild(eagerImages(buildPlateTierPreviewNode(t)));
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(t.updatedAt)}));
   }
 
@@ -3816,7 +5098,7 @@
     }
     card2.appendChild(starRow);
 
-    var msgArea = el('textarea', {placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel-2)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
+    var msgArea = el('textarea', {placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
     card2.appendChild(msgArea);
 
     var sendBtn = el('button', {class:'btn btn-primary', style:{marginTop:'10px'}, text:'送信する'});
@@ -3908,10 +5190,10 @@
   function renderSyncBar(root){
     /* ホームの同期設定バーは非表示（同期未使用のため）。
        再表示したくなった場合は renderApp() 内の呼び出しを戻す。 */
-    if (syncState.connected && !syncState.isAdmin){
+    if (false && syncState.connected && !syncState.isAdmin && section !== 'home'){
       if (!reviewBannerDismissed){
         var banner = el('div', {class:'readonly-banner'});
-        banner.appendChild(el('span', {class:'readonly-banner-text', text:'ツールへの感想・要望は「レビュー」から送れます。'}));
+        banner.appendChild(el('span', {class:'readonly-banner-text', text:'ツールへの感想・要望は、メニューの「レビュー・要望」から送れます。'}));
         banner.appendChild(el('button', {class:'readonly-banner-close', text:'×', title:'閉じる', onclick: function(){
           reviewBannerDismissed = true;
           if (banner.parentNode) banner.parentNode.removeChild(banner);
@@ -3965,35 +5247,7 @@
       para(['（独断と偏見で軽く決めた左右差なので違和感があった場合はレビュー等へお願いします🙏）'], 'guide-p guide-p-soft')
     ]));
 
-    /* ---------- 1. 実績プレートとは ---------- */
-    wrap.appendChild(section('実績プレートとは？', [
-      para(['1つのバージョンで、', w('Re:MASTER', 'gk-remas'), 'を除く難易度 ']
-        .concat(range('緑', 'gk-green', '紫', 'gk-purple'))
-        .concat([' の譜面を、決められた条件ですべて埋めると獲得できるネームプレートです。（一部例外あり）']))
-    ]));
-
-    /* ---------- 1-2. 実績フレーム（Jewelフレーム）とは ---------- */
-    function frameRows(){
-      var tgt = function(){ return range('緑', 'gk-green', '紫', 'gk-purple').concat([' 全譜面']); };
-      return [
-        { name:'CLEARフレーム', target: tgt(), cond:[w('CLEAR（80%以上）', 'gk-clear')] },
-        { name:'AP Jewel',      target: tgt(), cond:[w('ALL PERFECT', 'gk-ap')] },
-        { name:'FDX Jewel',     target: tgt(), cond:[w('FULLSYNC DX', 'gk-fdx')] }
-      ];
-    }
-    var frameExample = el('div', {class:'guide-example-box'});
-    frameExample.appendChild(el('div', {class:'ge-label', text:'例'}));
-    frameExample.appendChild(para(['Diamond AP Jewel の獲得には、でらっくす と でらっくすPLUS の ']
-      .concat(range('緑', 'gk-green', '紫', 'gk-purple'))
-      .concat([' 全APが必要です。']), 'guide-p guide-p-tight'));
-    frameExample.appendChild(para(['＝ ', w('熊神', 'ge-strong'), ' と ', w('華神', 'ge-strong'), ' の両方の獲得が必要'], 'guide-p guide-p-tight ge-result'));
-
-    wrap.appendChild(section('実績フレーム（Jewelフレーム）とは？', [
-      para(['メインタイトルが同じである新筐体以降の2つのバージョンにおいて、両方のバージョンで以下の条件を達成すると獲得できるフレームです。']),
-      condTable(frameRows()).__withClass('guide-cond-frame'),
-      frameExample
-    ]));
-
+    /* ---------- 1. 実績プレート（どんなプレートか＋獲得条件） ---------- */
     /* ---------- 2. 獲得条件 ---------- */
     function condTable(rows){
       var t = el('div', {class:'guide-cond'});
@@ -4030,8 +5284,11 @@
              .concat([' 全', w('2353譜面', 'gk-purple gk-nw')]);
     }
 
-    wrap.appendChild(section('獲得条件', [
-      el('div', {class:'guide-sub', text:'各バージョンのプレート'}),
+    wrap.appendChild(section('実績プレート', [
+      para(['1つのバージョンで、', w('Re:MASTER', 'gk-remas'), 'を除く難易度 ']
+        .concat(range('緑', 'gk-green', '紫', 'gk-purple'))
+        .concat([' の譜面を、決められた条件ですべて埋めると獲得できるネームプレートです。（一部例外あり）'])),
+      el('div', {class:'guide-sub guide-sub-gap', text:'獲得条件：各バージョンのプレート'}),
       condTable([
         { name:'◯極',   target: perVersion(), cond:[w('FULL COMBO', 'gk-fc')] },
         { name:'◯将',   target: perVersion(), cond:[w('SSS', 'gk-sss')] },
@@ -4042,7 +5299,7 @@
                  w('FULL COMBO+', 'gk-fc'), ' を出した場合、低い難易度をプレイしている人にのみ ',
                  w('FULLSYNC DX', 'gk-fdx'), ' が付く'] }
       ]),
-      el('div', {class:'guide-sub', text:'maimai 〜 FiNALE 全体のプレート'}),
+      el('div', {class:'guide-sub', text:'獲得条件：maimai 〜 FiNALE 全体のプレート'}),
       condTable([
         { name:'舞◯', target: oldAll(), cond:['極・将・神・舞舞 それぞれの条件を達成'] },
         { name:'覇者', target: oldAll(), cond:[w('CLEAR (80%)', 'gk-clear')] }
@@ -4051,6 +5308,28 @@
         el('div', {class:'guide-cap-line', text:'「◯極」などの ◯ にはバージョンの漢字が入ります（例：超極）'}),
         el('div', {class:'guide-cap-line', text:'「舞◯」の ◯ には 極・将・神・舞舞 が入ります（例：舞極）'})
       ])
+    ]));
+
+    /* ---------- 1-2. 実績フレーム（Jewelフレーム）とは ---------- */
+    function frameRows(){
+      var tgt = function(){ return range('緑', 'gk-green', '紫', 'gk-purple').concat([' 全譜面']); };
+      return [
+        { name:'CLEARフレーム', target: tgt(), cond:[w('CLEAR（80%以上）', 'gk-clear')] },
+        { name:'AP Jewel',      target: tgt(), cond:[w('ALL PERFECT', 'gk-ap')] },
+        { name:'FDX Jewel',     target: tgt(), cond:[w('FULLSYNC DX', 'gk-fdx')] }
+      ];
+    }
+    var frameExample = el('div', {class:'guide-example-box'});
+    frameExample.appendChild(el('div', {class:'ge-label', text:'例'}));
+    frameExample.appendChild(para(['Diamond AP Jewel の獲得には、でらっくす と でらっくすPLUS の ']
+      .concat(range('緑', 'gk-green', '紫', 'gk-purple'))
+      .concat([' 全APが必要です。']), 'guide-p guide-p-tight'));
+    frameExample.appendChild(para(['＝ ', w('熊神', 'ge-strong'), ' と ', w('華神', 'ge-strong'), ' の両方の獲得が必要'], 'guide-p guide-p-tight ge-result'));
+
+    wrap.appendChild(section('実績フレーム', [
+      para(['メインタイトルが同じである新筐体以降の2つのバージョンにおいて、両方のバージョンで以下の条件を達成すると獲得できるフレーム（Jewelフレーム）です。']),
+      condTable(frameRows()).__withClass('guide-cond-frame'),
+      frameExample
     ]));
 
     /* ---------- 3. 下埋め時間の算出方法 ---------- */
@@ -4212,9 +5491,11 @@
 
     renderSyncBar(root);
     renderViewModeBar(root);
-    renderSectionNav(root);
+    renderPageBack(root);
 
-    if (section === 'plates'){
+    if (section === 'home'){
+      renderHome(root);
+    } else if (section === 'plates'){
       if (view === 'list') renderListView(root);
       else if (view === 'detail') renderDetailView(root, findVersion(currentId));
       else if (view === 'edit') renderEditView(root);
@@ -4224,19 +5505,904 @@
       else renderPlateTierDetailView(root, findPlateTier(plateTierCurrentId));
     } else if (section === 'guide'){
       renderGuideSection(root);
+    } else if (section === 'import'){
+      renderImportSection(root);
     } else {
       renderReviewsSection(root);
     }
+    maybeImportBackup();
+    maybeApplyImport();
+    mountStickyTools(root);
+    syncRoute();
+    setTimeout(maybeReapplyStoredImport, 0);
+    setTimeout(maybeAutoFillChartTypes, 0);
   }
 
-  function goHome(){ section = 'plates'; goList(); }
+
+  /* ========================= 更新のお知らせ =========================
+     その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
+     内容を変えて再び出したいときは NOTICE_ID を変える。 */
+  /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
+  var APP_VERSION = '1.2';
+  var CHANGELOG = [
+    { ver:'1.2', date:'2026/10/XX', items:[
+      ['新しいデザイン', '多数の新機能追加のためUIを一新しました。\nご迷惑をおかけします🙏'],
+      ['maimai NET から取り込み', 'ブックマークを使いmaimaiネットの情報を取り込めます。'],
+      ['13〜10+ を追加', 'プレート表上部のボタンで表示するかをどうか選べます。\n非表示にしても記録は残ります。'],
+      ['進捗をプレートごとに管理', '極、将、神、舞舞、覇者の進捗状況をそれぞれで管理できるようになりました。', 'modeNote'],
+      ['新曲に対応', 'k4sen ＆ Diverse System の新曲とLEGEND楽曲を追加しました。'],
+      ['ホームとメニュー', 'ホームや右上のメニューから各ページへ移動できます。']
+    ]},
+    { ver:'1.0', date:'2026/09/29', items:[
+      ['maiプレートリリース', 'maiプレートを公開しました。']
+    ]}
+  ];
+  var NOTICE_ID = 'v' + APP_VERSION;
+  var NOTICE_KEY = 'mmplate_notice_seen_v1';
+  function maybeShowUpdateNotice(force){
+    if (!force){
+      if (!storageOK) return;
+      try{
+        if (localStorage.getItem(NOTICE_KEY) === NOTICE_ID) return;
+        localStorage.setItem(NOTICE_KEY, NOTICE_ID);
+      }catch(e){ return; }
+    }
+
+    var backdrop = el('div', {class:'modal-backdrop notice-backdrop'});
+    var box = el('div', {class:'modal-box notice-box', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'noticeTitle'});
+    function close(){ closeModal(backdrop); document.removeEventListener('keydown', onKey); }
+    function onKey(e){ if (e.key === 'Escape') close(); }
+    /* 見出しと × は上に固定し、中身だけをスクロールさせる */
+    var headBar = el('div', {class:'notice-head'});
+    headBar.appendChild(el('h3', {class:'notice-title', id:'noticeTitle', text:'アップデート'}));
+    headBar.appendChild(el('button', {class:'notice-close', type:'button', 'aria-label':'閉じる', text:'×', onclick: close}));
+    box.appendChild(headBar);
+    var body = el('div', {class:'notice-scroll'});
+    box.appendChild(body);
+    function itemList(items){
+      var list = el('ul', {class:'notice-list'});
+      items.forEach(function(it){
+        var li = el('li');
+        li.appendChild(el('div', {class:'notice-item-title', text: it[0]}));
+        li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
+        if (it[2] === 'modeNote'){
+          /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
+          var note = el('div', {class:'notice-emph'});
+          note.appendChild(document.createTextNode('ご自身で登録する際は'));
+          var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
+          ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
+          note.appendChild(chips);
+          note.appendChild(document.createTextNode('いずれかを押した上で赤線をつけて下さい。'));
+          li.appendChild(note);
+        }
+        list.appendChild(li);
+      });
+      return list;
+    }
+    function verBlock(c, parent){
+      var head = el('div', {class:'notice-ver'});
+      head.appendChild(el('span', {class:'notice-ver-no', text:'Ver' + c.ver}));
+      head.appendChild(el('span', {class:'notice-ver-date', text: c.date || ''}));
+      parent.appendChild(head);
+      parent.appendChild(itemList(c.items));
+    }
+    /* 最新だけ開いて出し、それより前は「▼以前の更新」を押すと見られる */
+    verBlock(CHANGELOG[0], body);
+    if (CHANGELOG.length > 1){
+      var past = el('details', {class:'notice-past'});
+      past.appendChild(el('summary', {text:'▼以前の更新'}));
+      CHANGELOG.slice(1).forEach(function(c){ verBlock(c, past); });
+      body.appendChild(past);
+    }
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(backdrop);
+  }
+
+  /* ========================= 赤線のバックアップ（URL） =========================
+     チェックあり／なしを1曲1ビットにまとめ、Base64url の文字にして URL の # 以降に入れる。
+       形式： #b=1.<表><プレート><確認用2文字><ビット列>.<表>...
+       ・表       … 各バージョンの漢字1文字（真・超…現、舞・覇者）を下の順番で1文字に置き換えたもの（後ろに足すだけで並びは変えない）
+       ・プレート … 0=全 1=極 2=将 3=神 4=舞舞 5=覇者
+       ・ビット列 … その表の全楽曲を「曲名＋ST/DX」の順に並べ、6曲ずつ1文字にしたもの
+       ・確認用   … 楽曲の並びから作った短い目印。表の楽曲が変わっていたら、その表だけ復元しない
+     シンクのお相手の名前やレベルのON/OFFは含めない。 */
+  var BK_PRE_CODES = ['真','超','檄','橙','暁','桃','櫻','紫','菫','白','雪','輝','熊','華','爽','煌','宙','星','祭','祝','双','宴','鏡','彩','丸','廻','現','舞・覇者'];
+  var BK_B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  var BK_MODES = ['', '極', '将', '神', '舞舞', '覇者'];
+  function docPre(v){
+    var pre = '';
+    (v.badges || []).some(function(b){ var p = plateInfo(b.name); if (p){ pre = p.pre; return true; } return false; });
+    if (!pre){
+      var m = /〈(.)ver/.exec(v.versionName || '');
+      if (m) pre = m[1];
+      else if (isMaiHashaDoc(v)) pre = '舞・覇者';
+    }
+    return pre;
+  }
+  function docBackupCode(v){
+    var i = BK_PRE_CODES.indexOf(docPre(v));
+    return i >= 0 ? BK_B64.charAt(i) : '';
+  }
+  function backupSlots(v){
+    var list = [];
+    (v.levels || []).forEach(function(l, li){
+      (l.songs || []).forEach(function(s, si){
+        var t = s.srcType || String(s.chartType || '').toUpperCase();
+        list.push({ id: s.id, key: (s.name || '') + '\u0001' + t, li: li, si: si });
+      });
+    });
+    list.sort(function(a, b){
+      if (a.key !== b.key) return a.key < b.key ? -1 : 1;
+      if (a.li !== b.li) return a.li - b.li;
+      return a.si - b.si;
+    });
+    return list;
+  }
+  function slotsHash(slots){
+    var hsh = 0x811c9dc5;
+    var s = slots.map(function(x){ return x.key; }).join('\u0002');
+    for (var i = 0; i < s.length; i++){
+      hsh ^= s.charCodeAt(i);
+      hsh = Math.imul(hsh, 0x01000193) >>> 0;
+    }
+    return BK_B64.charAt(hsh & 63) + BK_B64.charAt((hsh >>> 6) & 63);
+  }
+  function backupDocsByCode(){
+    var by = {};
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel') return;
+      var c = docBackupCode(v);
+      if (c && !by[c]) by[c] = v;
+    });
+    return by;
+  }
+  function buildBackupString(){
+    var segs = [], count = 0, by = backupDocsByCode();
+    Object.keys(by).forEach(function(code){
+      var v = by[code], slots = null;
+      BK_MODES.forEach(function(m, mi){
+        var marks = songMarks[plateMarkKey(v.id, m)];
+        if (!marks) return;
+        slots = slots || backupSlots(v);
+        var chars = [], any = false;
+        for (var i = 0; i < slots.length; i += 6){
+          var val = 0;
+          for (var k = 0; k < 6 && i + k < slots.length; k++){
+            if (marks[slots[i + k].id]){ val |= (1 << k); any = true; count++; }
+          }
+          chars.push(BK_B64.charAt(val));
+        }
+        if (!any) return;
+        while (chars.length && chars[chars.length - 1] === 'A') chars.pop();
+        segs.push(code + BK_B64.charAt(mi) + slotsHash(slots) + chars.join(''));
+      });
+    });
+    return { str: segs.length ? '1.' + segs.join('.') : '', count: count };
+  }
+  function backupUrl(str){
+    return location.origin + location.pathname + '#b=' + str;
+  }
+  /* 戻り値：{ ok, restored, failed:[表の名前] } */
+  function applyBackupString(str){
+    var parts = String(str || '').split('.');
+    if (parts[0] !== '1' || parts.length < 2) return { ok: false };
+    var by = backupDocsByCode();
+    var incoming = {}, failedIds = {}, failedNames = [], restored = 0, valid = 0;
+    for (var p = 1; p < parts.length; p++){
+      var seg = parts[p];
+      if (seg.length < 4) continue;
+      var v = by[seg.charAt(0)];
+      var mi = BK_B64.indexOf(seg.charAt(1));
+      if (!v || mi < 0 || mi >= BK_MODES.length) continue;
+      var slots = backupSlots(v);
+      if (slotsHash(slots) !== seg.substr(2, 2)){
+        if (!failedIds[v.id]){ failedIds[v.id] = true; failedNames.push(v.versionName || '（名前のない表）'); }
+        continue;
+      }
+      var m = {};
+      for (var c = 4; c < seg.length; c++){
+        var val = BK_B64.indexOf(seg.charAt(c));
+        if (val < 0) return { ok: false };
+        for (var k = 0; k < 6; k++){
+          if (val & (1 << k)){
+            var s = slots[(c - 4) * 6 + k];
+            if (s){ m[s.id] = true; restored++; }
+          }
+        }
+      }
+      incoming[plateMarkKey(v.id, BK_MODES[mi])] = m;
+      valid++;
+    }
+    if (!valid && !failedNames.length) return { ok: false };
+    /* バックアップの内容に置き換える。
+       ただし、楽曲が変わって復元できなかった表と、バックアップの対象外の表は今の赤線を残す */
+    var codedIds = {};
+    Object.keys(by).forEach(function(c){ codedIds[by[c].id] = true; });
+    var next = {};
+    Object.keys(songMarks).forEach(function(key){
+      var vid = key.split('::')[0];
+      if (failedIds[vid] || !codedIds[vid]) next[key] = songMarks[key];
+    });
+    Object.keys(incoming).forEach(function(key){ next[key] = incoming[key]; });
+    songMarks = next;
+    persistSongMarks();
+    return { ok: true, restored: restored, failed: failedNames };
+  }
+
+  function readBackupFromHash(){
+    var m = /(?:^#|&)b=(1\.[A-Za-z0-9_.\-]+)/.exec(location.hash || '');
+    return m ? m[1] : '';
+  }
+  var pendingBackup = readBackupFromHash();
+  function clearBackupHash(){
+    var want = (typeof routeFromState === 'function') ? (routeFromState() || '') : '';
+    try{ history.replaceState(null, '', location.pathname + location.search + want); }catch(e){}
+  }
+  window.addEventListener('hashchange', function(){
+    var b = readBackupFromHash();
+    if (b){ pendingBackup = b; maybeImportBackup(); }
+  });
+  function maybeImportBackup(){
+    if (!pendingBackup) return;
+    if (SYNC_EXPECTED && !firstSnapshotDone) return;   /* 公開データが届いてから */
+    if (!allVersions.length) return;
+    var str = pendingBackup;
+    pendingBackup = '';
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    box.appendChild(el('p', {class:'del-ask', text:'バックアップのURLから赤線を復元しますか？'}));
+    box.appendChild(el('p', {class:'note', text:'この端末の赤線は、バックアップの内容に置き換わります。'}));
+    var actions = el('div', {class:'modal-actions del-actions'});
+    actions.appendChild(el('button', {class:'btn del-no', text:'いいえ', onclick: function(){
+      closeModal(backdrop); clearBackupHash();
+    }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', text:'復元する', onclick: function(){
+      closeModal(backdrop); clearBackupHash();
+      var r = applyBackupString(str);
+      renderApp();
+      if (!r.ok){ showAlert('このバックアップのURLは読み込めませんでした。URLが途中で切れていないか確認してください。'); return; }
+      var msg = '赤線を復元しました（' + r.restored + 'か所）。';
+      if (r.failed.length){
+        msg += '\n\n次の表は、バックアップを作ったあとに楽曲が追加・変更されたため復元できませんでした（今の赤線のままです）：\n' + r.failed.join('\n');
+      }
+      showAlert(msg);
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+
+  function openBackupModal(){
+    var r = buildBackupString();
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    box.appendChild(el('p', {class:'del-ask', text:'赤線のバックアップ'}));
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
+    if (!r.str){
+      box.appendChild(el('p', {text:'まだ赤線がありません。曲に赤線を付けてから、もう一度開いてください。'}));
+    } else {
+      var url = backupUrl(r.str);
+      box.appendChild(el('p', {text:'このURLを保存しておき、別の端末やブラウザで開くと、赤線（' + r.count + 'か所）を復元できます。'}));
+      var input = el('input', {type:'text', class:'backup-url', readonly:true, 'aria-label':'バックアップのURL'});
+      input.value = url;
+      input.addEventListener('focus', function(){ input.select(); });
+      box.appendChild(input);
+      box.appendChild(el('p', {class:'note backup-note', text:'シンクのお相手の名前・レベルのON/OFFは含まれません。バックアップを作ったあとに楽曲が追加された表は、復元できないことがあります。'}));
+      var copyBtn = el('button', {class:'btn btn-primary', text:'URLをコピー'});
+      copyBtn.addEventListener('click', function(){
+        function done(){ copyBtn.textContent = 'コピーしました'; setTimeout(function(){ copyBtn.textContent = 'URLをコピー'; }, 2000); }
+        function fallback(){
+          try{ input.focus(); input.select(); document.execCommand('copy'); done(); }
+          catch(e){ copyBtn.textContent = '長押しでコピーしてください'; }
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(done, fallback);
+        } else fallback();
+      });
+      actions.appendChild(copyBtn);
+    }
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
+
+
+  /* ========================= maimai でらっくす NET から進捗を取り込む =========================
+     ブックマークレット（ブックマークに保存して使う小さなプログラム）を maimai NET の画面で開くと、
+     MASTER と Re:MASTER の記録を読み取り、このサイトへ送ってくる。
+     受け取った記録で、極・将・神・舞（・覇）の赤線を付け直す（「全」は変えない）。
+       極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
+     通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
+  var MAINET_ORIGIN = 'https://maimaidx.jp';
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nPromise.all([get(3),get(4)]).then(function(a){var rec=a[0].concat(a[1]);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){box.textContent='読み取りに失敗しました：'+e.message;});})();";
+  function bookmarkletCode(){
+    var target = location.origin + location.pathname;
+    return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
+  }
+  function normSongName(n){ return String(n || '').normalize('NFKC').replace(/\s+/g, ' ').trim(); }
+  var pendingImport = null, lastImportAt = 0;
+  window.addEventListener('message', function(e){
+    if (e.origin !== MAINET_ORIGIN) return;
+    var d = e.data;
+    if (!d || d.type !== 'maiplate-import') return;
+    try{ e.source.postMessage('maiplate-ack', e.origin); }catch(err){}
+    if (d.at && d.at === lastImportAt) return;     /* 同じものを何度も受け取らない */
+    lastImportAt = d.at || Date.now();
+    pendingImport = d;
+    maybeApplyImport();
+  });
+  function tableSongType(v, s, mai){
+    var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
+    if (t) return t;
+    if (mai) return '';   /* 舞・覇者は昔の曲のRe:MASTER。種類が書かれていなければ両方で探す */
+    var vers = docSongVersions(v), hit = '';
+    SONG_MASTER_LIST.forEach(function(m){
+      if (!hit && m.name === s.name && vers.some(function(x){ return songInVer(m, x); })) hit = m.type;
+    });
+    return hit;
+  }
+  function buildImportPlan(records){
+    var idx = {};
+    (records || []).forEach(function(r){
+      if (!Array.isArray(r) || r.length < 6) return;
+      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
+    });
+    var COND = {
+      '極':   function(x){ return /^(fc|fcp|ap|app)$/.test(x.fc); },
+      '将':   function(x){ return x.ach >= 100; },
+      '神':   function(x){ return /^(ap|app)$/.test(x.fc); },
+      '舞舞': function(x){ return /^(fdx|fdxp|fsd|fsdp)$/.test(x.sync); },
+      '覇者': function(x){ return x.ach >= 80; }
+    };
+    var plan = [], matched = 0, total = 0;
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel') return;
+      var modes = availablePlateModes(v);
+      if (!modes.length) return;
+      var mai = isMaiHashaDoc(v), diff = mai ? 4 : 3;
+      var maps = {};
+      modes.forEach(function(m){ maps[m] = {}; });
+      (v.levels || []).forEach(function(l){
+        (l.songs || []).forEach(function(s){
+          if (!s.name) return;
+          total++;
+          var t = tableSongType(v, s, mai);
+          var rec = null;
+          if (t) rec = idx[normSongName(s.name) + '|' + t + '|' + diff];
+          else rec = idx[normSongName(s.name) + '|ST|' + diff] || idx[normSongName(s.name) + '|DX|' + diff];
+          if (!rec) return;
+          matched++;
+          modes.forEach(function(m){ if (COND[m] && COND[m](rec)) maps[m][s.id] = true; });
+        });
+      });
+      plan.push({ v: v, maps: maps });
+    });
+    return { plan: plan, matched: matched, total: total, records: Object.keys(idx).length };
+  }
+  /* 取り込んだ記録はこの端末に保存しておく。
+     表に曲や表が増えたときは、保存した記録から達成済みの曲へ赤線を足す（消すことはしない） */
+  var NET_RECORDS_KEY = 'mmplate_net_records_v1';
+  var netRecordsMemo = null, netSigCheckedFor = null;
+  function loadNetRecords(){
+    if (netRecordsMemo) return netRecordsMemo;
+    if (!storageOK) return null;
+    try{ var raw = localStorage.getItem(NET_RECORDS_KEY); netRecordsMemo = raw ? JSON.parse(raw) : null; }catch(e){ netRecordsMemo = null; }
+    return netRecordsMemo;
+  }
+  function tablesSignature(){
+    var parts = [];
+    allVersions.forEach(function(v){
+      if (v.docType === 'jewel') return;
+      var ids = [];
+      (v.levels || []).forEach(function(l){ (l.songs || []).forEach(function(s){ ids.push(s.id); }); });
+      parts.push(v.id + ':' + availablePlateModes(v).join('') + ':' + ids.join(','));
+    });
+    return fnvHashStr(parts.join('|'));
+  }
+  function fnvHashStr(s){
+    var x = 0x811c9dc5;
+    for (var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = (x + ((x << 1) + (x << 4) + (x << 7) + (x << 8) + (x << 24))) >>> 0; }
+    return x.toString(36);
+  }
+  function saveNetRecords(records){
+    var o = { at: Date.now(), records: records, sig: tablesSignature() };
+    netRecordsMemo = o; netSigCheckedFor = allVersions;
+    if (!storageOK) return;
+    try{ localStorage.setItem(NET_RECORDS_KEY, JSON.stringify(o)); }catch(e){}
+  }
+  function maybeReapplyStoredImport(){
+    if (netSigCheckedFor === allVersions) return;
+    if (SYNC_EXPECTED && !firstSnapshotDone) return;
+    if (!allVersions.length || !SONG_DATA_FULL) return;
+    netSigCheckedFor = allVersions;
+    var o = loadNetRecords();
+    if (!o || !Array.isArray(o.records)) return;
+    var sig = tablesSignature();
+    if (sig === o.sig) return;
+    var p = buildImportPlan(o.records);
+    p.plan.forEach(function(it){
+      Object.keys(it.maps).forEach(function(m){
+        var add = it.maps[m], key = plateMarkKey(it.v.id, m);
+        var ids = Object.keys(add);
+        if (!ids.length) return;
+        var cur = songMarks[key] || (songMarks[key] = {});
+        ids.forEach(function(id){ cur[id] = true; });
+      });
+    });
+    persistSongMarks();
+    o.sig = sig;
+    try{ localStorage.setItem(NET_RECORDS_KEY, JSON.stringify(o)); }catch(e){}
+    renderApp();
+  }
+  function maybeApplyImport(){
+    if (!pendingImport) return;
+    if (SYNC_EXPECTED && !firstSnapshotDone) return;
+    if (!allVersions.length || !SONG_DATA_FULL) return;
+    var d = pendingImport;
+    pendingImport = null;
+    if (d.error || !Array.isArray(d.records)){ showAlert(d.error || '記録を受け取れませんでした。'); return; }
+    var p = buildImportPlan(d.records.slice(0, 20000));
+    saveNetRecords(d.records.slice(0, 20000));
+    /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
+    p.plan.forEach(function(it){
+      Object.keys(it.maps).forEach(function(m){
+        var map = it.maps[m], key = plateMarkKey(it.v.id, m);
+        if (Object.keys(map).length) songMarks[key] = map; else delete songMarks[key];
+      });
+    });
+    persistSongMarks();
+    renderApp();
+    showAlert('取り込みました。');
+  }
+
+  function renderImportSection(root){
+    var wrap = el('div', {class:'simple-page'});
+    wrap.appendChild(el('h2', {class:'page-title', text:'maimai NET から取り込む'}));
+    var steps = el('ol', {class:'steps'});
+    [
+      ['コピー', '下のボタンで取り込み用のコードをコピー'],
+      ['ブックマーク', 'ブックマークを1つ作り、URLをコピーしたコードに書き換える'],
+      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く']
+    ].forEach(function(s, i){
+      var li = el('li', {class:'step'});
+      li.appendChild(el('span', {class:'step-num', text: String(i + 1)}));
+      var tx = el('span', {class:'step-text'});
+      tx.appendChild(el('strong', {text: s[0]}));
+      tx.appendChild(el('span', {text: s[1]}));
+      li.appendChild(tx);
+      steps.appendChild(li);
+    });
+    wrap.appendChild(steps);
+
+    var code = bookmarkletCode();
+    var actions = el('div', {class:'page-actions'});
+    var copyBtn = el('button', {class:'btn btn-primary btn-lg', type:'button', text:'コードをコピー'});
+    copyBtn.addEventListener('click', function(){
+      function done(){ copyBtn.textContent = 'コピーしました'; setTimeout(function(){ copyBtn.textContent = 'コードをコピー'; }, 2000); }
+      function fallback(){
+        var ta = el('textarea', {style:{position:'fixed', left:'-9999px'}});
+        ta.value = code; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(); }catch(e){ copyBtn.textContent = 'コピーできませんでした'; }
+        document.body.removeChild(ta);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, fallback);
+      else fallback();
+    });
+    actions.appendChild(copyBtn);
+    wrap.appendChild(actions);
+
+    var dl = el('div', {class:'page-notes'});
+    [
+      'maimai でらっくす NET の画面を読み取る非公式の機能です。',
+      'NET側の変更で使えなくなることがあります。'
+    ].forEach(function(t){ dl.appendChild(el('p', {class:'page-note-line', text: t})); });
+    wrap.appendChild(dl);
+    root.appendChild(wrap);
+  }
+
+  /* ========================= ホーム／メニュー =========================
+     ホームから各ページへ飛ぶ。右上の「メニュー」からも同じ所へ行ける。 */
+  function svgIcon(paths){
+    return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>';
+  }
+  var ICONS = {
+    home:    svgIcon('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>'),
+    plates:  svgIcon('<rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/><path d="M4.6 9.4 9.4 4.6" stroke="#e0463f" stroke-width="2.2"/><path d="M14.6 9.4 19.4 4.6" stroke="#e0463f" stroke-width="2.2"/>'),
+    tiers:   svgIcon('<rect x="2.5" y="3" width="5" height="5" rx="1" fill="#ff7f7f" stroke="none"/><rect x="2.5" y="9.5" width="5" height="5" rx="1" fill="#ffbf7f" stroke="none"/><rect x="2.5" y="16" width="5" height="5" rx="1" fill="#ffdf7f" stroke="none"/><rect x="9.5" y="3.6" width="5" height="3.8" rx="1"/><rect x="16" y="3.6" width="5" height="3.8" rx="1"/><rect x="9.5" y="10.1" width="5" height="3.8" rx="1"/><rect x="9.5" y="16.6" width="5" height="3.8" rx="1"/><rect x="16" y="16.6" width="5" height="3.8" rx="1"/>'),
+    guide:   svgIcon('<path d="M12 6.6C10.2 5.3 7.6 4.7 3.5 4.9v13.4c4.1-.2 6.7.4 8.5 1.7 1.8-1.3 4.4-1.9 8.5-1.7V4.9c-4.1-.2-6.7.4-8.5 1.7z"/><path d="M12 6.6V20"/>'),
+    table:   svgIcon('<rect x="3.5" y="2" width="17" height="20" rx="2.5"/><rect x="6.5" y="5" width="5" height="5" rx="1"/><rect x="12.5" y="5" width="5" height="5" rx="1"/><rect x="6.5" y="11.5" width="5" height="5" rx="1"/><rect x="12.5" y="11.5" width="5" height="5" rx="1"/><path d="M6.5 19h11"/>'),
+    mark:    svgIcon('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M7 17 17 7" stroke="#e0463f" stroke-width="2.6"/>'),
+    sync:    svgIcon('<circle cx="8.5" cy="8.5" r="3"/><circle cx="16" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/><path d="M13.6 14.7c.7-.2 1.5-.3 2.4-.3 2.4 0 4.4 1.6 5 4.6"/>'),
+    backup:  svgIcon('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4L11.4 6.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0L5 12.6a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>'),
+    notice:  svgIcon('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'),
+    import:  svgIcon('<path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>'),
+    review:  svgIcon('<path d="M12 3.8l2.5 5.1 5.6.8-4.05 3.95.96 5.6L12 16.6l-5.01 2.65.96-5.6L3.9 9.7l5.6-.8z"/>')
+  };
+  function iconNode(name, cls){
+    var s = el('span', {class: cls || 'ui-icon'});
+    s.innerHTML = ICONS[name] || '';   /* 中身は上で固定した図形だけ */
+    return s;
+  }
+  var MENU_ITEMS = [
+    { key:'home',       icon:'home',   label:'ホーム' },
+    { key:'plates',     icon:'plates', label:'実績プレート表' },
+    { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー' },
+    { key:'import',     icon:'import', label:'maimai NET 取り込み' },
+    { key:'guide',      icon:'guide',  label:'表の解説' },
+    { key:'notice',     icon:'notice', label:'更新情報' },
+    { key:'reviews',    icon:'review', label:'レビュー' }
+  ];
+  function runMenuItem(key){
+    if (key === 'backup'){ openBackupModal(); return; }
+    if (key === 'notice'){ maybeShowUpdateNotice(true); return; }
+    goSection(key);
+  }
+
+  var menuBackdrop = null;
+  function closeSiteMenu(){
+    if (!menuBackdrop) return;
+    closeModal(menuBackdrop);
+    menuBackdrop = null;
+    document.removeEventListener('keydown', onMenuKey);
+    var b = document.getElementById('headerMenuBtn');
+    if (b) b.setAttribute('aria-expanded', 'false');
+  }
+  function onMenuKey(e){ if (e.key === 'Escape') closeSiteMenu(); }
+  function openSiteMenu(){
+    if (menuBackdrop) return;
+    var backdrop = el('div', {class:'menu-backdrop'});
+    var panel = el('nav', {class:'menu-panel', role:'dialog', 'aria-modal':'true', 'aria-label':'メニュー'});
+    var head = el('div', {class:'menu-head'});
+    head.appendChild(el('div', {class:'menu-title', text:'メニュー'}));
+    head.appendChild(el('button', {class:'menu-close', type:'button', 'aria-label':'メニューを閉じる', text:'×', onclick: closeSiteMenu}));
+    panel.appendChild(head);
+    var list = el('div', {class:'menu-list'});
+    MENU_ITEMS.forEach(function(it){
+      var cur = (it.key === section);
+      var b = el('button', {class:'menu-item' + (cur ? ' is-current' : ''), type:'button',
+        onclick: function(){ closeSiteMenu(); runMenuItem(it.key); }});
+      if (cur) b.setAttribute('aria-current', 'page');
+      b.appendChild(iconNode(it.icon, 'menu-item-icon'));
+      var txt = el('span', {class:'menu-item-text'});
+      txt.appendChild(el('span', {class:'menu-item-label', text: it.label}));
+      b.appendChild(txt);
+      list.appendChild(b);
+    });
+    panel.appendChild(list);
+    backdrop.appendChild(panel);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeSiteMenu(); });
+    document.addEventListener('keydown', onMenuKey);
+    document.body.appendChild(backdrop);
+    menuBackdrop = backdrop;
+    var mb = document.getElementById('headerMenuBtn');
+    if (mb) mb.setAttribute('aria-expanded', 'true');
+    var first = panel.querySelector('.menu-item');
+    if (first) try{ first.focus({ preventScroll: true }); }catch(e){}
+  }
+
+  /* ---- ホーム画面 ---- */
+  var HOME_FEATURES = [
+    ['table',  '実績プレート、実績フレーム表を確認'],
+    ['mark',   '取り込みやタップで赤線をつけ進捗管理'],
+    ['import', 'maimai NET から取り込み'],
+    ['sync',   'シンクのお相手を記録'],
+    ['tiers',  'プレート難易度表作成']
+  ];
+  var THEME_KEY = 'mmplate_theme_v1';
+  var THEME_COLOR_KEY = 'mmplate_theme_color_v1';
+  var THEME_VARS_KEY = 'mmplate_theme_vars_v1';
+  /* カスタムで選べる色：maiプレートのロゴの輪の色（ノーマル／ダークの水色を除いた7色） */
+  var CUSTOM_COLORS = [
+    ['#ff4fd8', 'ピンク'], ['#ff7a7a', '赤'], ['#ffb84f', 'オレンジ'], ['#ffe14f', '黄色'],
+    ['#7ee787', '黄緑'], ['#8ab4f8', '青'], ['#b48cff', '紫']
+  ];
+  function getTheme(){
+    var a = document.documentElement.getAttribute('data-theme');
+    return a === 'dark' ? 'dark' : (a === 'custom' ? 'custom' : 'normal');
+  }
+  function getThemeColor(){
+    try{ return localStorage.getItem(THEME_COLOR_KEY) || CUSTOM_COLORS[0][0]; }catch(e){ return CUSTOM_COLORS[0][0]; }
+  }
+  /* 色の計算（HSL） */
+  function hexToRgbArr(hex){
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [0, 0, 0];
+  }
+  function rgbToHsl(r, g, b){
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, h = 0, s = 0;
+    if (max !== min){
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    return [h, s, l];
+  }
+  function hslToHex(h, s, l){
+    function f(p, q, t){ if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; }
+    var r, g, b;
+    if (s === 0){ r = g = b = l; }
+    else { var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; r = f(p, q, h + 1/3); g = f(p, q, h); b = f(p, q, h - 1/3); }
+    return '#' + [r, g, b].map(function(x){ var v = Math.round(x * 255).toString(16); return v.length < 2 ? '0' + v : v; }).join('');
+  }
+  function relLum(hex){
+    var c = hexToRgbArr(hex).map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrastWithWhite(hex){ return 1.05 / (relLum(hex) + 0.05); }
+  /* 選んだ色から、ボタン・縁・背景・表の土台などの色を作る（明るい土台に、濃いめの操作色） */
+  function buildCustomVars(hex){
+    var hsl = rgbToHsl.apply(null, hexToRgbArr(hex)), H = hsl[0], S = Math.min(hsl[1], 0.9);
+    var L = 0.52, accent = hslToHex(H, S, L);
+    while (contrastWithWhite(accent) < 4.6 && L > 0.15){ L -= 0.01; accent = hslToHex(H, S, L); }
+    var rgb = hexToRgbArr(accent).join(',');
+    return {
+      '--bg': hslToHex(H, 0.5, 0.965), '--panel': '#ffffff', '--panel-2': hslToHex(H, 0.45, 0.95), '--panel-3': hslToHex(H, 0.4, 0.91),
+      '--border': hslToHex(H, 0.35, 0.88), '--border-ctl': hslToHex(H, 0.3, 0.78), '--border-strong': hslToHex(H, 0.25, 0.6),
+      '--text': hslToHex(H, 0.3, 0.13), '--text-dim': hslToHex(H, 0.12, 0.38), '--text-faint': hslToHex(H, 0.1, 0.58),
+      '--accent': accent, '--accent-ink': '#ffffff', '--accent-soft': 'rgba(' + rgb + ',.11)', '--accent-line': 'rgba(' + rgb + ',.34)',
+      '--canvas': hslToHex(H, 0.6, 0.945)
+    };
+  }
+  function clearCustomVars(){
+    var keys = Object.keys(buildCustomVars('#888888'));
+    keys.forEach(function(k){ document.documentElement.style.removeProperty(k); });
+  }
+  function setTheme(t, color){
+    var root = document.documentElement;
+    clearCustomVars();
+    var metaColor = '#f3f8fb';
+    if (t === 'dark'){ root.setAttribute('data-theme', 'dark'); metaColor = '#131417'; }
+    else if (t === 'custom'){
+      color = color || getThemeColor();
+      var vars = buildCustomVars(color);
+      root.setAttribute('data-theme', 'custom');
+      Object.keys(vars).forEach(function(k){ root.style.setProperty(k, vars[k]); });
+      metaColor = vars['--bg'];
+      try{ localStorage.setItem(THEME_COLOR_KEY, color); localStorage.setItem(THEME_VARS_KEY, JSON.stringify(vars)); }catch(e){}
+    }
+    else root.removeAttribute('data-theme');
+    try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', metaColor);
+  }
+  function renderHome(root){
+    var wrap = el('div', {class:'home'});
+
+    var hero = el('section', {class:'home-hero'});
+    var mark = document.getElementById('homeLogo');
+    var bigMark = el('div', {class:'home-hero-mark'});
+    if (mark && mark.firstElementChild) bigMark.appendChild(mark.firstElementChild.cloneNode(true));
+    hero.appendChild(bigMark);
+    var seg = el('div', {class:'theme-seg', role:'group', 'aria-label':'表示モード'});
+    [['normal', 'ノーマル'], ['dark', 'ダーク'], ['custom', 'カスタム']].forEach(function(o){
+      var b = el('button', {type:'button', text: o[1], onclick: function(){ setTheme(o[0]); paintTheme(); }});
+      b.__t = o[0];
+      seg.appendChild(b);
+    });
+    /* カスタムのときだけ、ロゴの7色から選べる */
+    var colors = el('div', {class:'theme-colors', role:'group', 'aria-label':'テーマカラー'});
+    CUSTOM_COLORS.forEach(function(c){
+      var b = el('button', {type:'button', class:'theme-color', title: c[1], 'aria-label': c[1], style:{background: c[0]},
+        onclick: function(){ setTheme('custom', c[0]); paintTheme(); }});
+      b.__c = c[0];
+      colors.appendChild(b);
+    });
+    function paintTheme(){
+      var cur = getTheme(), col = getThemeColor();
+      Array.prototype.forEach.call(seg.children, function(b){ b.classList.toggle('is-active', b.__t === cur); b.setAttribute('aria-pressed', b.__t === cur ? 'true' : 'false'); });
+      colors.hidden = (cur !== 'custom');
+      Array.prototype.forEach.call(colors.children, function(b){ var on = (cur === 'custom' && b.__c === col); b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    }
+    paintTheme();
+    hero.appendChild(seg);
+    hero.appendChild(colors);
+    wrap.appendChild(hero);
+
+    wrap.appendChild(el('h3', {class:'home-h', text:'メニュー'}));
+    var grid = el('div', {class:'home-cards'});
+    MENU_ITEMS.forEach(function(it){
+      if (it.key === 'home') return;
+      var c = el('button', {class:'home-card', type:'button', onclick: function(){ runMenuItem(it.key); }});
+      c.appendChild(iconNode(it.icon, 'home-card-icon'));
+      c.appendChild(el('span', {class:'home-card-label', text: it.label}));
+      grid.appendChild(c);
+    });
+    wrap.appendChild(grid);
+
+    var feat = el('section', {class:'home-features'});
+    feat.appendChild(el('h3', {class:'home-h', text:'このツールでできること'}));
+    var fl = el('div', {class:'home-feature-list'});
+    HOME_FEATURES.forEach(function(f){
+      var row = el('div', {class:'home-feature'});
+      row.appendChild(iconNode(f[0], 'home-feature-icon'));
+      var tx = el('div', {class:'home-feature-text'});
+      tx.appendChild(el('div', {class:'home-feature-title', text: f[1]}));
+      row.appendChild(tx);
+      fl.appendChild(row);
+    });
+    feat.appendChild(fl);
+    wrap.appendChild(feat);
+
+    root.appendChild(wrap);
+  }
+
+  /* ---- ブラウザの「戻る」に対応（#/plates などで今いる画面を表す） ---- */
+  var routeReady = false;
+  function isBackupHash(hs){ return /(?:^#|&)b=/.test(hs || ''); }
+  function routeFromState(){
+    if (section === 'home') return '';
+    if (section === 'plates'){
+      if (view === 'edit') return null;
+      if (view === 'detail' && currentId) return '#/plates/' + encodeURIComponent(currentId);
+      return '#/plates';
+    }
+    if (section === 'plateTiers'){
+      if (plateTierView === 'edit') return null;
+      if (plateTierView === 'detail' && plateTierCurrentId) return '#/tiers/' + encodeURIComponent(plateTierCurrentId);
+      return '#/tiers';
+    }
+    if (section === 'guide') return '#/guide';
+    if (section === 'import') return '#/import';
+    if (section === 'reviews') return '#/review';
+    return null;
+  }
+  function currentRouteHash(){
+    var hs = location.hash || '';
+    if (hs === '#' || hs === '#/') return '';
+    return hs;
+  }
+  /* 左上の戻るボタン：ホーム以外で出す（編集中は出さない） */
+  function updateHeaderBack(){}
+  /* 内容のいちばん上に出す戻るボタン。行き先の名前を出す（詳細→一覧、それ以外→ホーム） */
+  function backTargetLabel(){
+    if (section === 'plates' && view === 'detail') return '実績プレート表';
+    if (section === 'plateTiers' && plateTierView === 'detail') return 'プレート難易度メーカー';
+    return 'ホーム';
+  }
+  /* ---- スクロールしても使える操作バー ----
+     一覧・詳細の上の操作（戻る・13+↓など・？・極将神舞）が画面の外に出たら、
+     同じ操作を画面の上に小さく出す。押すと元のボタンを押したのと同じになる */
+  var stickyObserver = null;
+  function mountStickyTools(root){
+    if (stickyObserver){ stickyObserver.disconnect(); stickyObserver = null; }
+    if (section !== 'plates' || (view !== 'list' && view !== 'detail')) return;
+    var bar = root.querySelector('.mark-toggle-bar');
+    if (!bar || !('IntersectionObserver' in window)) return;
+    var back = root.querySelector('#pageBackBtn');
+    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn'));
+    var help = root.querySelector('.help-btn');
+    var seg = bar.querySelector('.plate-mode-seg');
+
+    var dock = el('div', {class:'sticky-tools', 'aria-hidden':'true'});
+    var inner = el('div', {class:'sticky-inner'});
+    dock.appendChild(inner);
+    function mirror(orig, after){
+      var c = orig.cloneNode(true);
+      c.removeAttribute('id');
+      c.addEventListener('click', function(e){ e.preventDefault(); orig.click(); if (after) after(); });
+      return c;
+    }
+    function build(){
+      inner.textContent = '';
+      if (back && back.isConnected) inner.appendChild(mirror(back));
+      toggles.forEach(function(t){ if (t.isConnected) inner.appendChild(mirror(t, build)); });
+      inner.appendChild(el('div', {class:'sticky-spacer'}));
+      if (help) inner.appendChild(mirror(help));
+      if (seg && seg.isConnected){
+        var s = seg.cloneNode(false);
+        s.classList.remove('list-mode-seg');
+        Array.prototype.forEach.call(seg.children, function(b){ s.appendChild(mirror(b, build)); });
+        inner.appendChild(s);
+      }
+    }
+    build();
+    root.appendChild(dock);
+    var firstCall = true;
+    dock.classList.add('no-anim');
+    stickyObserver = new IntersectionObserver(function(entries){
+      if (!firstCall) dock.classList.remove('no-anim');
+      firstCall = false;
+      entries.forEach(function(en){
+        var show = !en.isIntersecting && en.boundingClientRect.top < 0;
+        if (show) build();
+        dock.classList.toggle('is-shown', show);
+        dock.setAttribute('aria-hidden', show ? 'false' : 'true');
+      });
+    });
+    stickyObserver.observe(bar);
+  }
+  function renderPageBack(root){
+    if (section === 'home') return;
+    if ((section === 'plates' && view === 'edit') || (section === 'plateTiers' && plateTierView === 'edit')) return;
+    var b = el('button', {class:'page-back', type:'button', id:'pageBackBtn', onclick: goBackOneStep});
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+    b.appendChild(el('span', {class:'page-back-label', text: backTargetLabel()}));
+    b.setAttribute('aria-label', backTargetLabel() + 'へ戻る');
+    root.appendChild(b);
+  }
+  function goBackOneStep(){
+    closeSiteMenu();
+    /* 履歴をさかのぼるのではなく、1つ上の階層へ（詳細→一覧→ホーム。それ以外のページ→ホーム） */
+    var parent = '';
+    if (section === 'plates' && view === 'detail') parent = '#/plates';
+    else if (section === 'plateTiers' && plateTierView === 'detail') parent = '#/tiers';
+    var wasDetail = (section === 'plates' && view === 'detail');
+    applyRoute(parent);
+    renderApp();
+    if (!(wasDetail && section === 'plates' && view === 'list')) scrollToTopNow();
+  }
+  function syncRoute(){
+    updateHeaderBack();
+    if (!routeReady) return;
+    var want = routeFromState();
+    if (want === null) return;
+    var cur = currentRouteHash();
+    if (isBackupHash(cur)) return;           /* 復元の確認中は触らない */
+    if (cur === want) return;
+    try{ history.pushState({ mm: 1 }, '', location.pathname + location.search + want); }catch(e){}
+  }
+  function applyRoute(hs){
+    hs = hs || '';
+    var m;
+    if ((m = /^#\/plates\/(.+)$/.exec(hs))){
+      section = 'plates'; view = 'detail'; currentId = decodeURIComponent(m[1]); listAnchorId = currentId;
+    } else if (hs === '#/plates'){
+      section = 'plates'; if (view !== 'edit'){ view = 'list'; currentId = null; }
+    } else if ((m = /^#\/tiers\/(.+)$/.exec(hs))){
+      section = 'plateTiers'; plateTierView = 'detail'; plateTierCurrentId = decodeURIComponent(m[1]);
+    } else if (hs === '#/tiers'){
+      section = 'plateTiers'; plateTierView = 'list'; plateTierCurrentId = null;
+    } else if (hs === '#/guide'){
+      section = 'guide';
+    } else if (hs === '#/import'){
+      section = 'import';
+    } else if (hs === '#/review'){
+      section = 'reviews';
+    } else {
+      section = 'home';
+    }
+  }
+  window.addEventListener('popstate', function(){
+    var hs = currentRouteHash();
+    if (isBackupHash(hs)) return;
+    closeSiteMenu();
+    var wasDetail = (section === 'plates' && view === 'detail');
+    applyRoute(hs);
+    renderApp();
+    if (!(wasDetail && section === 'plates' && view === 'list')) scrollToTopNow();
+  });
+
+  function goHome(){ closeSiteMenu(); goSection('home'); }
   var homeLink = document.getElementById('homeLink');
   if (homeLink) homeLink.addEventListener('click', goHome);
   var homeLogo = document.getElementById('homeLogo');
-  var headerReviewLink = document.getElementById('headerReviewLink');
-  if (headerReviewLink) headerReviewLink.addEventListener('click', function(){ goSection('reviews'); });
+  if (IS_TEST_ENV){
+    var teb = document.getElementById('testEnvBadge');
+    if (teb) teb.hidden = false;
+    document.title = '[テスト] ' + document.title;
+  }
+  var headerMenuBtn = document.getElementById('headerMenuBtn');
+  if (headerMenuBtn){
+    headerMenuBtn.setAttribute('aria-expanded', 'false');
+    headerMenuBtn.addEventListener('click', function(){ menuBackdrop ? closeSiteMenu() : openSiteMenu(); });
+  }
   if (homeLogo) homeLogo.addEventListener('click', goHome);
 
+  (function(){
+    /* ロゴの「maiプレート」の右に、小さくバージョンを出す（画面下には出さない） */
+    var hl = document.getElementById('homeLink');
+    if (hl) hl.appendChild(el('span', {class:'brand-ver', text:'Ver' + APP_VERSION}));
+  })();
   var footerSyncLink = document.getElementById('footerSyncLink');
   if (footerSyncLink) footerSyncLink.addEventListener('click', openSyncSettingsModal);
 
@@ -4262,8 +6428,12 @@
     });
   })();
 
+  if (!isBackupHash(location.hash)) applyRoute(currentRouteHash());
+  routeReady = true;
   loadSongsJson();
   renderApp();
+  /* バックアップのURLから開いたときは、復元の確認を先に出す（お知らせは次に開いたとき） */
+  if (!pendingBackup && section !== 'import') setTimeout(function(){ maybeShowUpdateNotice(false); }, 600);
 
   /* 画面の向きや幅が変わったら、一覧のプレビューの高さを合わせ直す（高さだけの変化は無視） */
   (function refitOnResize(){
