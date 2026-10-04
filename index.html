@@ -923,7 +923,7 @@
   .btn-ghost{background:var(--panel);}
   .plate-mode-seg, .theme-seg, .menu-btn{background:var(--panel);}
   /* ---- 画像として保存：どのテーマでも今までどおりの黒い表で書き出す ---- */
-  html #previewCard.pv-export, html .sync-card.sync-export{
+  html #previewCard.pv-export, html .sync-card.sync-export, html .count-card.count-export, html .fill-card.fill-export{
     --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
     --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
     --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
@@ -955,7 +955,8 @@
   .save-base-white{background:#ffffff;color:#17252f;}
   .save-base:disabled{opacity:.5;cursor:default;}
   /* ---- 白で保存するときの表 ---- */
-  html #previewCard.pv-export.export-white, html .sync-card.sync-export.export-white{
+  html #previewCard.pv-export.export-white, html .sync-card.sync-export.export-white,
+  html .count-card.count-export.export-white, html .fill-card.fill-export.export-white{
     --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
     --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
     --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c;
@@ -1019,6 +1020,34 @@
   @media (max-width:520px){ .fill-stats{grid-template-columns:1fr;} .fill-stat-value{font-size:18px;} }
   .fill-note{margin:6px 0 16px;}
   .fill-price-line{display:flex;align-items:baseline;gap:8px;}
+  /* ---- 下埋め・回数と日付：画像保存 ---- */
+  .export-only-title, .export-only-note, .count-print{display:none;}
+  .fill-export .export-only-title, .count-export .export-only-title{display:block;font-family:var(--font-display);font-weight:800;
+    font-size:26px;margin:0 0 12px;color:var(--text);}
+  .fill-export .export-only-note{display:block;font-size:12px;color:var(--text-dim);margin-top:12px;}
+  .fill-card.fill-export{width:820px;background:var(--canvas);border-color:var(--border);box-shadow:none;padding:26px;}
+  .fill-export .fill-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .fill-export .fill-stat{background:var(--panel-2);}
+  .count-export .count-input, .count-export .count-date{display:none;}
+  .count-export .count-print{display:inline-block;font-weight:800;color:var(--text);}
+  .count-export .count-print-n{font-size:18px;min-width:1.4em;text-align:right;}
+  .count-export .count-print-d{font-size:13px;color:var(--text-dim);min-height:1.2em;}
+  .count-export .count-list{grid-template-columns:repeat(4, 200px);gap:10px 22px;}
+  .count-export .count-thumb{width:64px;height:64px;}
+  .count-cut-row{margin:-4px 0 12px;}
+  /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
+  .sync-card-preview{max-height:240px;position:relative;}
+  .sync-card-preview::after{content:"";position:absolute;left:0;right:0;bottom:0;height:36px;pointer-events:none;
+    background:linear-gradient(transparent, var(--panel));}
+  .sync-preview{border:none;border-radius:0;padding:14px;}
+  .sync-preview .sync-title{display:none;}
+  .sync-preview .sync-level-toggle, .sync-preview .sync-level-off{display:none;}
+  .sync-preview .sync-level-head{margin-top:6px;}
+  .sync-preview .sync-name-input{display:none;}
+  .sync-preview .sync-name-print{display:block;}
+  .count-export .count-n.no-n .count-unit{visibility:hidden;}   /* 保存画像：回数が空の曲は「回」も出さない */
+  .count-card > .export-only-title + .count-level{margin-top:0;}
+  .count-export > .export-only-title + .count-level{margin-top:0;}
   .fill-price-who{font-size:12px;font-weight:800;color:var(--text-dim);min-width:2em;}
   /* 取り込み中の表示（画面の上） */
   .import-progress{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;width:min(92vw,380px);
@@ -3652,6 +3681,7 @@
     if (name === 'plateTiers' && plateTierView !== 'edit'){ plateTierView = 'list'; plateTierCurrentId = null; }
     if (name === 'fill'){ fillView = 'list'; fillId = null; }
     if (name === 'count'){ countView = 'list'; countId = null; }
+    if (name === 'sync'){ syncView = 'list'; syncId = null; }
     renderApp();
     scrollToTopNow();
   }
@@ -4114,9 +4144,11 @@
      保存ボタンが今どの要素を見ればよいかをここで共有する */
   var syncNodeRef = { node: null };
 
-  function buildSyncRecordNode(v){
-    var card = el('div', {id:'syncCard', class:'sync-card'});
-    syncNodeRef.node = card;
+  /* opts.preview：一覧の縮小表示用（入力欄やボタンを出さず、書いた名前だけ） */
+  function buildSyncRecordNode(v, opts){
+    opts = opts || {};
+    var card = el('div', opts.preview ? {class:'sync-card sync-preview'} : {id:'syncCard', class:'sync-card'});
+    if (!opts.preview) syncNodeRef.node = card;
     card.appendChild(el('div', {class:'sync-title', text:'シンクのお相手記録'}));
 
     var wrote = false;
@@ -4657,28 +4689,7 @@
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
 
-    /* プレート表とは別枠の「シンクのお相手記録」。Jewel表には出さない */
-    if (!isJewelDoc){
-      var syncBar = el('div', {class:'view-topbar', style:{marginTop:'26px', marginBottom:'10px'}});
-      var syncStatus = el('span', {class:'save-toast', role:'status'});
-      var syncBtn = makeSaveGroup(function(base, b){
-        var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
-        captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, b, 'sync-export', base);
-      });
-      syncBar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
-      syncBar.appendChild(syncStatus);
-      syncBar.appendChild(syncBtn);
-      root.appendChild(syncBar);
-
-      var syncHolder = el('div', {class:'preview-wide'});
-      var syncNode = buildSyncRecordNode(v);
-      syncHolder.appendChild(syncNode);
-      root.appendChild(syncHolder);
-
-
-      root.appendChild(el('div', {class:'pv-caption',
-        text:'書いた名前はこの端末の中にだけ残ります。'}));
-    }
+    /* シンクのお相手記録は、ホームの「シンクのお相手記録」に移した（書いた名前はそのまま使う） */
   }
 
   /* ========================= view: edit ========================= */
@@ -5923,6 +5934,8 @@
       renderFillSection(root);
     } else if (section === 'count'){
       renderCountSection(root);
+    } else if (section === 'sync'){
+      renderSyncSection(root);
     } else {
       renderReviewsSection(root);
     }
@@ -6608,12 +6621,15 @@
       else { renderFillDetail(root, v); return; }
     }
     root.appendChild(el('h2', {class:'page-title', text:'下埋め進捗'}));
-    root.appendChild(el('p', {class:'page-lead', text:'バージョンを選ぶと、プレートごとの下埋めの残りが見られます。'}));
     if (!docs.length){
       root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
       return;
     }
-    renderSimpleVersionList(root, docs.concat([MAI_FILL_DOC()]), goFill, fillAnchor);
+    /* 舞・覇者（真〜輝の合計）は輝（FiNALE）の表のすぐ後ろに。輝が無ければ最後 */
+    var withMai = docs.slice(), at = -1;
+    withMai.forEach(function(v, i){ if (docSongVersions(v).indexOf('maimai FiNALE') >= 0) at = i; });
+    withMai.splice(at >= 0 ? at + 1 : withMai.length, 0, MAI_FILL_DOC());
+    renderSimpleVersionList(root, withMai, goFill, fillAnchor);
     fillAnchor = null;
   }
 
@@ -6623,8 +6639,17 @@
     var mode = modes.indexOf(fillMode) >= 0 ? fillMode : modes[0];
     root.appendChild(el('h2', {class:'page-title fill-title', text: v.versionName}));
     var bar = el('div', {class:'detail-actions fill-actions'});
+    var fillStatus = el('span', {class:'save-toast', role:'status'});
+    var fillCardRef = null;
+    bar.appendChild(makeSaveGroup(function(base, b){
+      if (!fillCardRef){ return; }
+      var nm = String(v.versionName || '下埋め').replace(/[\\/:*?"<>|]/g, '') + '_' + fillPlateName() + '_下埋め.png';
+      captureNodePNG(fillCardRef, nm, fillStatus, b, 'fill-export', base);
+    }));
     bar.appendChild(makeModeSeg(modes, mode, function(m){ setFillMode(m); renderApp(); }, '下埋めを見るプレート'));
+    bar.appendChild(fillStatus);
     root.appendChild(bar);
+    function fillPlateName(){ return isMai ? MAI_PLATE_NAME[mode] : (plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode)); }
 
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     var rec = netRecordIndex();
@@ -6640,7 +6665,10 @@
     var pct = r.total ? Math.floor(r.done / r.total * 100) : 0;
 
     var card = el('div', {class:'fill-card'});
-    var plateName = isMai ? MAI_PLATE_NAME[mode] : (plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode));
+    fillCardRef = card;
+    var plateName = fillPlateName();
+    /* 保存画像にだけ出すバージョン名 */
+    card.appendChild(el('div', {class:'export-only-title', text: v.versionName}));
     card.appendChild(el('div', {class:'fill-plate', text: plateName + 'の下埋め'}));
     /* 帯：赤（EXPERT）・黄（ADVANCED）・緑（BASIC）の残り → 白（達成済み） */
     var row = el('div', {class:'fill-bar-row'});
@@ -6696,8 +6724,79 @@
     });
     stats.appendChild(ps);
     card.appendChild(stats);
+    card.appendChild(el('div', {class:'export-only-note', text:'取り込んだ日: ' + fmtDate(rec.at)}));
     root.appendChild(card);
     root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+  }
+
+  /* ========================= シンクのお相手記録（ホームから） =========================
+     書いた名前は今までと同じ場所（この端末の mmplate_sync_partners_v1）に保存している。
+     画面の場所を移しただけなので、今まで書いた名前はそのまま出る */
+  var syncView = 'list', syncId = null, syncAnchor = null;
+  function goSync(id){ if (id) syncAnchor = id; section = 'sync'; syncView = id ? 'detail' : 'list'; syncId = id || null; renderApp(); scrollToTopNow(); }
+  function syncDocs(){ return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }); }
+  function renderSyncSection(root){
+    var docs = syncDocs();
+    if (syncView === 'detail'){
+      var v = findVersion(syncId);
+      if (v && docs.indexOf(v) >= 0){ renderSyncDetail(root, v); return; }
+      syncView = 'list'; syncId = null;
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'シンクのお相手記録'}));
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    var grid = el('div', {class:'versions-grid'});
+    var anchor = null;
+    docs.forEach(function(v){
+      var card = el('div', {class:'version-card', role:'button', tabindex:'0', onclick: function(){ goSync(v.id); }});
+      card.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goSync(v.id); } });
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
+      /* 書いた名前の縮小プレビュー */
+      try{
+        var wrap = el('div', {class:'card-preview sync-card-preview'});
+        var inner = el('div', {class:'card-preview-inner'});
+        inner.appendChild(buildSyncRecordNode(v, { preview: true }));
+        wrap.appendChild(inner);
+        card.appendChild(wrap);
+      }catch(err){
+        card.appendChild(el('div', {class:'note', text:'このバージョンのプレビューを表示できませんでした'}));
+      }
+      if (v.id === syncAnchor) anchor = card;
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+    /* 縮小した中身の高さに合わせて枠の高さを決める（長いものは途中まで） */
+    function fitSync(){
+      Array.prototype.forEach.call(grid.querySelectorAll('.sync-card-preview'), function(w){
+        var inner = w.querySelector('.card-preview-inner');
+        if (!inner) return;
+        var h = inner.getBoundingClientRect().height;
+        if (h > 0) w.style.height = Math.min(240, Math.ceil(h)) + 'px';
+      });
+    }
+    setTimeout(fitSync, 0); setTimeout(fitSync, 300);
+    if (anchor) setTimeout(function(){ if (anchor.isConnected){ try{ anchor.scrollIntoView({ block: 'center' }); }catch(e){} } }, 30);
+    syncAnchor = null;
+  }
+  function renderSyncDetail(root, v){
+    prefetchHtml2Canvas();
+    root.appendChild(el('h2', {class:'page-title', text: v.versionName}));
+    var bar = el('div', {class:'detail-actions'});
+    var syncStatus = el('span', {class:'save-toast', role:'status'});
+    bar.appendChild(makeSaveGroup(function(base, b){
+      var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
+      captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, b, 'sync-export', base);
+    }));
+    bar.appendChild(syncStatus);
+    root.appendChild(bar);
+    var syncHolder = el('div', {class:'preview-wide'});
+    var syncNode = buildSyncRecordNode(v);
+    syncHolder.appendChild(syncNode);
+    root.appendChild(syncHolder);
+    root.appendChild(el('div', {class:'pv-caption', text:'書いた名前はこの端末の中にだけ残ります。'}));
   }
 
   /* ========================= 回数と日付の記録 =========================
@@ -6737,7 +6836,6 @@
       else { renderCountDetail(root, v); return; }
     }
     root.appendChild(el('h2', {class:'page-title', text:'回数と日付の記録'}));
-    root.appendChild(el('p', {class:'page-lead', text:'達成するまでに何回プレイしたかと、達成した日を曲ごとに残せます（この端末に保存）。'}));
     var bar = el('div', {class:'detail-actions'});
     bar.appendChild(makeModeSeg(['極', '将', '神', '舞舞'], countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
     root.appendChild(bar);
@@ -6756,10 +6854,23 @@
     var modes = countModesFor(v);
     var mode = modes.indexOf(countMode) >= 0 ? countMode : modes[0];
     var bar = el('div', {class:'detail-actions'});
-    bar.appendChild(makeModeSeg(modes, mode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
-    root.appendChild(bar);
-
+    var cStatus = el('span', {class:'save-toast', role:'status'});
     var card = el('div', {class:'count-card'});
+    bar.appendChild(makeSaveGroup(function(base, b){
+      var pn = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
+      var nm = String(v.versionName || '記録').replace(/[\\/:*?"<>|]/g, '') + '_' + pn + '_回数と日付.png';
+      captureNodePNG(card, nm, cStatus, b, 'count-export', base);
+    }));
+    bar.appendChild(makeModeSeg(modes, mode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    bar.appendChild(cStatus);
+    root.appendChild(bar);
+    /* 13+↓ などのON/OFF（実績プレート表と共通） */
+    var cutRow = el('div', {class:'mark-toggle-bar count-cut-row'});
+    cutRow.appendChild(makeCutPicker());
+    root.appendChild(cutRow);
+
+    var plateLabel = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
+    card.appendChild(el('div', {class:'export-only-title', text: v.versionName + '　' + plateLabel + '　回数と日付'}));
     var wrote = false;
     (v.levels || []).forEach(function(level){
       if (level.hidden || isPvLevelHidden(v, level)) return;
@@ -6791,23 +6902,32 @@
         var nRow = el('label', {class:'count-n'});
         var inp = el('input', {type:'number', inputmode:'numeric', min:'1', class:'count-input', 'aria-label': (song.name || '') + 'の回数'});
         inp.value = rec.n || '';
+        /* 保存画像には入力欄ではなく文字で写す */
+        var nPrint = el('span', {class:'count-print count-print-n', text: rec.n || ''});
         inp.addEventListener('input', function(){
           var x = String(inp.value || '').replace(/[^0-9]/g, '').slice(0, 5);
           setCountRec(v.id, mode, song.id, { n: x });
+          nPrint.textContent = x;
+          nRow.classList.toggle('no-n', !x);
         });
+        if (!rec.n) nRow.classList.add('no-n');
         nRow.appendChild(inp);
+        nRow.appendChild(nPrint);
         nRow.appendChild(el('span', {class:'count-unit', text:'回'}));
         fields.appendChild(nRow);
         var dBtn = el('button', {type:'button', class:'count-date' + (rec.d ? '' : ' is-empty'), text: rec.d ? fmtYmd(rec.d) : '日付'});
+        var dPrint = el('span', {class:'count-print count-print-d', text: rec.d ? fmtYmd(rec.d) : ''});
         dBtn.addEventListener('click', function(){
           var cur = (getCountRec(v.id, mode, song.id) || {}).d || '';
           openDateWheel(cur, function(val){
             setCountRec(v.id, mode, song.id, { d: val });
             dBtn.textContent = val ? fmtYmd(val) : '日付';
             dBtn.classList.toggle('is-empty', !val);
+            dPrint.textContent = val ? fmtYmd(val) : '';
           });
         });
         fields.appendChild(dBtn);
+        fields.appendChild(dPrint);
         item.appendChild(fields);
         list.appendChild(item);
       });
@@ -6934,6 +7054,7 @@
     { key:'plates',     icon:'plates', label:'実績プレート表' },
     { key:'fill',       icon:'fill',   label:'下埋め進捗' },
     { key:'count',      icon:'count',  label:'回数と日付の記録' },
+    { key:'sync',       icon:'sync',   label:'シンクのお相手記録' },
     { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー' },
     { key:'import',     icon:'import', label:'maimai NET 取り込み' },
     { key:'guide',      icon:'guide',  label:'表の解説' },
@@ -7156,6 +7277,7 @@
     }
     if (section === 'fill') return (fillView === 'detail' && fillId) ? '#/fill/' + encodeURIComponent(fillId) : '#/fill';
     if (section === 'count') return (countView === 'detail' && countId) ? '#/count/' + encodeURIComponent(countId) : '#/count';
+    if (section === 'sync') return (syncView === 'detail' && syncId) ? '#/sync/' + encodeURIComponent(syncId) : '#/sync';
     if (section === 'guide') return '#/guide';
     if (section === 'import') return '#/import';
     if (section === 'reviews') return '#/review';
@@ -7174,6 +7296,7 @@
     if (section === 'plateTiers' && plateTierView === 'detail') return 'プレート難易度メーカー';
     if (section === 'fill' && fillView === 'detail') return '下埋め進捗';
     if (section === 'count' && countView === 'detail') return '回数と日付の記録';
+    if (section === 'sync' && syncView === 'detail') return 'シンクのお相手記録';
     return 'ホーム';
   }
   /* ---- スクロールしても使える操作バー ----
@@ -7254,6 +7377,7 @@
     else if (section === 'plateTiers' && plateTierView === 'detail') parent = '#/tiers';
     else if (section === 'fill' && fillView === 'detail'){ parent = '#/fill'; fillAnchor = fillId; }
     else if (section === 'count' && countView === 'detail'){ parent = '#/count'; countAnchor = countId; }
+    else if (section === 'sync' && syncView === 'detail'){ parent = '#/sync'; syncAnchor = syncId; }
     var wasDetail = (section === 'plates' && view === 'detail');
     applyRoute(parent);
     if (!(wasDetail && section === 'plates' && view === 'list')) scrollToTopNow();
@@ -7288,6 +7412,10 @@
       section = 'count'; countView = 'detail'; countId = decodeURIComponent(m[1]);
     } else if (hs === '#/count'){
       section = 'count'; countView = 'list'; countId = null;
+    } else if ((m = /^#\/sync\/(.+)$/.exec(hs))){
+      section = 'sync'; syncView = 'detail'; syncId = decodeURIComponent(m[1]);
+    } else if (hs === '#/sync'){
+      section = 'sync'; syncView = 'list'; syncId = null;
     } else if (hs === '#/guide'){
       section = 'guide';
     } else if (hs === '#/import'){
