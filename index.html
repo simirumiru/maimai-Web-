@@ -1018,6 +1018,20 @@
   .fill-stat-sub{font-size:10.5px;color:var(--text-faint);line-height:1.4;margin-top:2px;}
   @media (max-width:520px){ .fill-stats{grid-template-columns:1fr;} .fill-stat-value{font-size:18px;} }
   .fill-note{margin:6px 0 16px;}
+  .fill-price-line{display:flex;align-items:baseline;gap:8px;}
+  .fill-price-who{font-size:12px;font-weight:800;color:var(--text-dim);min-width:2em;}
+  /* 取り込み中の表示（画面の上） */
+  .import-progress{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;width:min(92vw,380px);
+    background:#1d2a35;color:#fff;border-radius:14px;padding:10px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
+  .import-progress-text{font-size:13.5px;font-weight:800;margin-bottom:8px;}
+  .import-progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
+  .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .3s ease;}
+  /* 極・将・神・舞を「赤線削除」の横に（説明の吹き出しはその下） */
+  .mark-sub-row{align-items:flex-start;}
+  .mark-sub-row .mode-row{margin-left:0;align-items:flex-start;flex-basis:auto;}
+  .mark-sub-row .mode-row .mode-hint::before{right:auto;left:36px;}
+  /* タップの反応をよくする（素早く続けて押しても、ダブルタップの拡大と勘違いされないように） */
+  html{touch-action:manipulation;}
   .fill-import-btn{margin-top:8px;}
   /* ---- 回数と日付の記録 ---- */
   .count-card{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:clamp(14px,3vw,24px);}
@@ -4426,6 +4440,7 @@
           }}));
         bar.appendChild(subRow);
       }
+      var subRowRef = subRow;
       var modeRow = el('div', {class:'mode-row'});
       var HINT_KEY = 'mmplate_hint_mode_closed_v1';
       var hintClosed = false;
@@ -4443,7 +4458,8 @@
       } else {
         modeRow.appendChild(lseg);
       }
-      bar.appendChild(modeRow);
+      /* 極・将・神・舞は「赤線削除」の横に */
+      subRowRef.appendChild(modeRow);
     }
     return bar;
   }
@@ -6222,7 +6238,7 @@
        極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
      通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
   var MAINET_ORIGIN = 'https://maimaidx.jp';
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nPromise.all([get(0),get(1),get(2),get(3),get(4)]).then(function(a){var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){box.textContent='読み取りに失敗しました：'+e.message;});})();";
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nvar dn=0,tot=5,fin=false;var pt=setInterval(function(){if(fin){clearInterval(pt);return;}try{w.postMessage({type:'maiplate-progress',done:dn,total:tot},O);}catch(e){}},400);\nfunction g2(d){return get(d).then(function(r){dn++;box.textContent='maiプレート：記録を読み取り中… '+Math.round(dn/tot*100)+'%';return r;});}\nPromise.all([g2(0),g2(1),g2(2),g2(3),g2(4)]).then(function(a){fin=true;var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){fin=true;box.textContent='読み取りに失敗しました：'+e.message;try{w.postMessage({type:'maiplate-progress',error:1},O);}catch(x){}});})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -6232,13 +6248,41 @@
   window.addEventListener('message', function(e){
     if (e.origin !== MAINET_ORIGIN) return;
     var d = e.data;
+    if (d && d.type === 'maiplate-progress'){ showImportProgress(d); return; }
     if (!d || d.type !== 'maiplate-import') return;
+    showImportProgress({ done: 1, total: 1, applying: true });
     try{ e.source.postMessage('maiplate-ack', e.origin); }catch(err){}
     if (d.at && d.at === lastImportAt) return;     /* 同じものを何度も受け取らない */
     lastImportAt = d.at || Date.now();
     pendingImport = d;
     maybeApplyImport();
   });
+  /* 取り込み中：画面の上に「maimai NET から読み込み中… n%」を出す */
+  var importProgEl = null, importProgTimer = null;
+  function showImportProgress(d){
+    if (d && d.error){ hideImportProgress(); return; }
+    var total = Math.max(1, +(d && d.total) || 1), done = Math.min(total, Math.max(0, +(d && d.done) || 0));
+    var pct = Math.round(done / total * 100);
+    if (!importProgEl){
+      importProgEl = el('div', {class:'import-progress', role:'status', 'aria-live':'polite'});
+      importProgEl.appendChild(el('div', {class:'import-progress-text'}));
+      var track = el('div', {class:'import-progress-track'});
+      track.appendChild(el('div', {class:'import-progress-fill'}));
+      importProgEl.appendChild(track);
+      document.body.appendChild(importProgEl);
+    }
+    importProgEl.querySelector('.import-progress-text').textContent =
+      (d && d.applying) ? 'maiプレートに反映中…' : ('maimai NET から読み込み中… ' + pct + '%');
+    importProgEl.querySelector('.import-progress-fill').style.width = ((d && d.applying) ? 100 : pct) + '%';
+    /* しばらく何も届かなければ消す（途中で止まったときに出たままにしない） */
+    clearTimeout(importProgTimer);
+    importProgTimer = setTimeout(hideImportProgress, 60000);
+  }
+  function hideImportProgress(){
+    clearTimeout(importProgTimer);
+    if (importProgEl && importProgEl.parentNode) importProgEl.parentNode.removeChild(importProgEl);
+    importProgEl = null;
+  }
   function tableSongType(v, s, mai){
     var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
     if (t) return t;
@@ -6348,6 +6392,7 @@
     if (!allVersions.length || !SONG_DATA_FULL) return;
     var d = pendingImport;
     pendingImport = null;
+    hideImportProgress();
     if (d.error || !Array.isArray(d.records)){ showAlert(d.error || '記録を受け取れませんでした。'); return; }
     var p = buildImportPlan(d.records.slice(0, 20000));
     saveNetRecords(d.records.slice(0, 20000));
@@ -6491,18 +6536,23 @@
     return h > 0 ? (h + '時間' + (m % 60) + '分') : ((m % 60) + '分');
   }
 
-  function goFill(id){ section = 'fill'; fillView = id ? 'detail' : 'list'; fillId = id || null; renderApp(); scrollToTopNow(); }
+  var fillAnchor = null;
+  function goFill(id){ if (id) fillAnchor = id; section = 'fill'; fillView = id ? 'detail' : 'list'; fillId = id || null; renderApp(); scrollToTopNow(); }
 
   /* 一覧：プレート表のプレビューなし版 */
-  function renderSimpleVersionList(root, docs, onOpen){
+  /* anchorId：さっき開いていたバージョン。一覧に戻ったら、その位置まで戻す */
+  function renderSimpleVersionList(root, docs, onOpen, anchorId){
     var grid = el('div', {class:'versions-grid simple-grid'});
+    var anchor = null;
     docs.forEach(function(v){
       var card = el('button', {type:'button', class:'version-card simple-card', onclick: function(){ onOpen(v.id); }});
-      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: v.swatch || specVersionColor(v) || v.themeColor}}));
       card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
+      if (v.id === anchorId) anchor = card;
       grid.appendChild(card);
     });
     root.appendChild(grid);
+    if (anchor) setTimeout(function(){ if (anchor.isConnected){ try{ anchor.scrollIntoView({ block: 'center' }); anchor.focus({ preventScroll: true }); }catch(e){} } }, 30);
   }
   function makeModeSeg(modes, cur, onPick, label){
     var seg = el('div', {class:'plate-mode-seg', role:'group', 'aria-label': label || 'プレート'});
@@ -6525,8 +6575,33 @@
     root.appendChild(box);
   }
 
+  /* 舞・覇者：真〜輝（maimai〜FiNALE）の表をまとめて数える */
+  var MAI_FILL_ID = '__mai_hasha__';
+  var OLD_SONG_VERS = ['maimai', 'maimai PLUS', 'maimai GreeN', 'maimai GreeN PLUS', 'maimai ORANGE', 'maimai ORANGE PLUS',
+    'maimai PiNK', 'maimai PiNK PLUS', 'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'maimai MiLK PLUS', 'maimai FiNALE'];
+  function MAI_FILL_DOC(){ return { id: MAI_FILL_ID, versionName: '舞・覇者（真〜輝の合計）', swatch: 'linear-gradient(90deg,#c9a227,#f2d46b)' }; }
+  function maiFillDocs(){
+    return fillDocs().filter(function(v){ return docSongVersions(v).some(function(x){ return OLD_SONG_VERS.indexOf(x) >= 0; }); });
+  }
+  var MAI_FILL_MODES = ['極', '将', '神', '舞舞', '覇者'];
+  var MAI_PLATE_NAME = { '極':'舞極', '将':'舞将', '神':'舞神', '舞舞':'舞舞舞', '覇者':'覇者' };
+  function computeFillMany(docs, mode, rec){
+    var byDiff = {}, order = [];
+    docs.forEach(function(v){
+      computeFill(v, mode, rec).rows.forEach(function(r){
+        if (!byDiff[r.diff]){ byDiff[r.diff] = { diff: r.diff, total: 0, left: 0 }; order.push(r.diff); }
+        byDiff[r.diff].total += r.total; byDiff[r.diff].left += r.left;
+      });
+    });
+    var rows = order.sort(function(a, b){ return b - a; }).map(function(d){ return byDiff[d]; });
+    var total = 0, left = 0;
+    rows.forEach(function(r){ total += r.total; left += r.left; });
+    return { rows: rows, total: total, left: left, done: total - left };
+  }
+
   function renderFillSection(root){
     var docs = fillDocs();
+    if (fillView === 'detail' && fillId === MAI_FILL_ID){ renderFillDetail(root, MAI_FILL_DOC()); return; }
     if (fillView === 'detail'){
       var v = findVersion(fillId);
       if (!v || docs.indexOf(v) < 0){ fillView = 'list'; fillId = null; }
@@ -6538,13 +6613,17 @@
       root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
       return;
     }
-    renderSimpleVersionList(root, docs, goFill);
+    renderSimpleVersionList(root, docs.concat([MAI_FILL_DOC()]), goFill, fillAnchor);
+    fillAnchor = null;
   }
 
   function renderFillDetail(root, v){
+    var isMai = (v.id === MAI_FILL_ID);
+    var modes = isMai ? MAI_FILL_MODES : FILL_MODES;
+    var mode = modes.indexOf(fillMode) >= 0 ? fillMode : modes[0];
     root.appendChild(el('h2', {class:'page-title fill-title', text: v.versionName}));
     var bar = el('div', {class:'detail-actions fill-actions'});
-    bar.appendChild(makeModeSeg(FILL_MODES, fillMode, function(m){ setFillMode(m); renderApp(); }, '下埋めを見るプレート'));
+    bar.appendChild(makeModeSeg(modes, mode, function(m){ setFillMode(m); renderApp(); }, '下埋めを見るプレート'));
     root.appendChild(bar);
 
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
@@ -6557,11 +6636,12 @@
       needImportNote(root, '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
       return;
     }
-    var r = computeFill(v, fillMode, rec);
+    var r = isMai ? computeFillMany(maiFillDocs(), mode, rec) : computeFill(v, mode, rec);
     var pct = r.total ? Math.floor(r.done / r.total * 100) : 0;
 
     var card = el('div', {class:'fill-card'});
-    card.appendChild(el('div', {class:'fill-plate', text: plateNameForMode(v, fillMode) === fillMode ? (PLATE_MODE_LABEL[fillMode] + 'の下埋め') : (plateNameForMode(v, fillMode) + 'の下埋め')}));
+    var plateName = isMai ? MAI_PLATE_NAME[mode] : (plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode));
+    card.appendChild(el('div', {class:'fill-plate', text: plateName + 'の下埋め'}));
     /* 帯：赤（EXPERT）・黄（ADVANCED）・緑（BASIC）の残り → 白（達成済み） */
     var row = el('div', {class:'fill-bar-row'});
     var barEl = el('div', {class:'fill-bar', role:'img', 'aria-label': '進捗' + pct + '%'});
@@ -6604,8 +6684,17 @@
       stats.appendChild(s);
     }
     stat('残り', r.left + '譜面');
-    stat('残り', fmtHourMin(r.left * SEC_PER_CHART), '1譜面 3分24秒で計算');
-    stat('残り', yen(Math.ceil(r.left / 3) * 100), '1人プレイ（2人なら ' + yen(roundUpToHundred(Math.round(r.left * 100 / 4))) + '）');
+    stat('残り', fmtHourMin(r.left * SEC_PER_CHART));
+    /* 料金は1人・2人とも大きく */
+    var ps = el('div', {class:'fill-stat fill-stat-price'});
+    ps.appendChild(el('div', {class:'fill-stat-label', text:'残り'}));
+    [['1人', Math.ceil(r.left / 3) * 100], ['2人', roundUpToHundred(Math.round(r.left * 100 / 4))]].forEach(function(x){
+      var line = el('div', {class:'fill-price-line'});
+      line.appendChild(el('span', {class:'fill-price-who', text: x[0]}));
+      line.appendChild(el('span', {class:'fill-stat-value', text: yen(x[1])}));
+      ps.appendChild(line);
+    });
+    stats.appendChild(ps);
     card.appendChild(stats);
     root.appendChild(card);
     root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
@@ -6637,7 +6726,8 @@
   }
   function countDocs(){ return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }); }
   function countModesFor(v){ return selectablePlateModes(v); }
-  function goCount(id){ section = 'count'; countView = id ? 'detail' : 'list'; countId = id || null; renderApp(); scrollToTopNow(); }
+  var countAnchor = null;
+  function goCount(id){ if (id) countAnchor = id; section = 'count'; countView = id ? 'detail' : 'list'; countId = id || null; renderApp(); scrollToTopNow(); }
 
   function renderCountSection(root){
     var docs = countDocs();
@@ -6649,13 +6739,14 @@
     root.appendChild(el('h2', {class:'page-title', text:'回数と日付の記録'}));
     root.appendChild(el('p', {class:'page-lead', text:'達成するまでに何回プレイしたかと、達成した日を曲ごとに残せます（この端末に保存）。'}));
     var bar = el('div', {class:'detail-actions'});
-    bar.appendChild(makeModeSeg(COUNT_MODES, countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    bar.appendChild(makeModeSeg(['極', '将', '神', '舞舞'], countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
     root.appendChild(bar);
     if (!docs.length){
       root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
       return;
     }
-    renderSimpleVersionList(root, docs, goCount);
+    renderSimpleVersionList(root, docs, goCount, countAnchor);
+    countAnchor = null;
   }
 
   function fmtYmd(s){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? (+m[1]) + '/' + (+m[2]) + '/' + (+m[3]) : ''; }
@@ -6828,7 +6919,7 @@
     notice:  svgIcon('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'),
     import:  svgIcon('<path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>'),
     save:    svgIcon('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.5l-4.8-4.8L8 19"/>'),
-    fill:    svgIcon('<rect x="3" y="9" width="18" height="6" rx="3"/><path d="M6 12h7" stroke-width="3.2"/><path d="M7 5h10M7 19h10"/>'),
+    fill:    svgIcon('<rect x="2.9" y="7.9" width="5.4" height="8.2" fill="#e0463f" stroke="none"/><rect x="8.3" y="7.9" width="4.6" height="8.2" fill="#f2b705" stroke="none"/><rect x="12.9" y="7.9" width="3.8" height="8.2" fill="#3fbf5f" stroke="none"/><rect x="2" y="7" width="20" height="10" rx="2.4" stroke-width="1.8"/>'),
     count:   svgIcon('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8 14h3M8 17h6"/>'),
     pin:     svgIcon('<path d="M9 3.5h6l-1 5 3 3v1.5H7V11.5l3-3z"/><path d="M12 13v7.5"/>'),
     review:  svgIcon('<path d="M12 3.8l2.5 5.1 5.6.8-4.05 3.95.96 5.6L12 16.6l-5.01 2.65.96-5.6L3.9 9.7l5.6-.8z"/>')
@@ -7161,12 +7252,12 @@
     var parent = '';
     if (section === 'plates' && view === 'detail') parent = '#/plates';
     else if (section === 'plateTiers' && plateTierView === 'detail') parent = '#/tiers';
-    else if (section === 'fill' && fillView === 'detail') parent = '#/fill';
-    else if (section === 'count' && countView === 'detail') parent = '#/count';
+    else if (section === 'fill' && fillView === 'detail'){ parent = '#/fill'; fillAnchor = fillId; }
+    else if (section === 'count' && countView === 'detail'){ parent = '#/count'; countAnchor = countId; }
     var wasDetail = (section === 'plates' && view === 'detail');
     applyRoute(parent);
-    renderApp();
     if (!(wasDetail && section === 'plates' && view === 'list')) scrollToTopNow();
+    renderApp();
   }
   function syncRoute(){
     updateHeaderBack();
