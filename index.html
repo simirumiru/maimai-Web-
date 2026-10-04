@@ -1154,7 +1154,10 @@
           remasKonst: (typeof s.rc === 'number' ? s.rc : -1),
           ver: s.ver || '',
           /* 2つのバージョンにまたがる譜面（どちらが先か分からない曲）はここに2つ目が入る */
-          ver2: s.ver2 || ''
+          ver2: s.ver2 || '',
+          /* ジャンル（1:POPS 2:ニコボカ 3:東方 4:ゲーバラ 5:オリジナル 6:ゲキチュウ）と追加日（yyyymmdd） */
+          genre: (typeof s.g === 'number' ? s.g : 9),
+          added: (typeof s.d === 'number' ? s.d : 99999999)
         };
       });
       SONG_DATA_FULL = true;
@@ -1190,9 +1193,9 @@
      短く付け直した名前でも読めるように、上から順に試す。
      最後の1つは別サイトの画像なので、表示はできてもPNG保存には写らない。 */
   var CHART_TYPE_SOURCES = {
-    dx: ['marks/music_dx.png', 'marks/DX.png', 'marks/dx.png',
+    dx: ['marks/music_dx.webp', 'marks/music_dx.png', 'marks/DX.png', 'marks/dx.png',
          'https://maimaidx.jp/maimai-mobile/img/music_dx.png'],
-    st: ['marks/music_standard.png', 'marks/ST.png', 'marks/st.png',
+    st: ['marks/music_standard.webp', 'marks/music_standard.png', 'marks/ST.png', 'marks/st.png',
          'https://maimaidx.jp/maimai-mobile/img/music_standard.png']
   };
   function makeChartTypeMark(kind){
@@ -1236,7 +1239,9 @@
     'B.M.S.': 'B_M_S_',
     '\u2200': '\u2200.jpg',
     'TRUST': 'TRUST.webp',
-    'Trust': 'Trust\uff08TANO_C\uff09'
+    'Trust': 'Trust\uff08TANO_C\uff09',
+    /* 曲名が全角スペースだけの曲。ファイル名は作者名（x0o0x_）にしている */
+    '\u3000': 'x0o0x_'
   };
 
   /* 1つの曲名に対して、ありうるファイル名を優先度順に並べて返す。
@@ -1251,14 +1256,24 @@
     add(toFileName(name).replace(/\./g, '_'));                /* ピリオドも「_」に */
     add(toFileName(name).replace(/\./g, '_').replace(/\u3000/g, ' '));
     add(String(name));                                       /* 置換なしの生の曲名 */
+    /* Mac で作ったファイル名は濁点などが分かれた形（NFD）になっていることがあるので、その形も試す */
+    if (String.prototype.normalize){
+      list.slice().forEach(function(f){ add(f.normalize('NFD')); });
+    }
     return list;
   }
+  /* まず軽い WebP（曲名.webp）を探し、無ければ今までの PNG／指定の拡張子を読む。
+     PNG を消さずに残しておけば、WebP がまだ無い曲もそのまま出る */
   function songImageUrls(name){
-    return songFileCandidates(name).map(function(f){
-      /* 拡張子まで書いてあるもの（.jpg / .webp など）はそのまま使う */
-      var hasExt = /\.(png|jpe?g|webp)$/i.test(f);
-      return SONG_IMAGE_DIR + encodeURIComponent(f) + (hasExt ? '' : IMAGE_EXT);
+    var out = [];
+    function add(u){ if (out.indexOf(u) < 0) out.push(u); }
+    songFileCandidates(name).forEach(function(f){
+      var m = /\.(png|jpe?g|webp)$/i.exec(f);
+      var stem = m ? f.slice(0, -m[0].length) : f;
+      add(SONG_IMAGE_DIR + encodeURIComponent(stem) + '.webp');
+      add(SONG_IMAGE_DIR + encodeURIComponent(f) + (m ? '' : IMAGE_EXT));
     });
+    return out;
   }
   function getBundledSongImage(name){
     var u = songImageUrls(name);
@@ -1274,6 +1289,12 @@
   function makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, candidates){
     var queue = (candidates || []).slice();
     if (queue.length && queue[0] === primarySrc) queue.shift();
+    /* プレート・Jewel の画像は、軽い .webp を先に試し、無ければ今までの .png を読む */
+    if (primarySrc && /(^|\/)(plates|jewels)\/[^?#]+\.png$/i.test(String(primarySrc))){
+      var webpSrc = String(primarySrc).replace(/\.png$/i, '.webp');
+      queue.unshift(primarySrc);
+      primarySrc = webpSrc;
+    }
     var img = el('img', {src: primarySrc, alt:'', loading:'lazy', decoding:'async'});
     var triedFallback = false;
     img.addEventListener('error', function(){
@@ -1290,7 +1311,16 @@
   }
   /* 楽曲ジャケット専用（綴り違いを自動で試す） */
   function makeSongImg(name, primarySrc, fallbackDataUrl, onAllFailed){
-    return makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, songImageUrls(name));
+    var cands = songImageUrls(name);
+    /* 表に画像の場所が直接書いてある曲（曲名とファイル名が違う曲など）は、
+       その名前の .webp を最初に試し、無ければ書いてある .png／.jpg を読む */
+    var m = primarySrc && /(^|\/)songs\/.+\.(png|jpe?g)$/i.exec(String(primarySrc).split(/[?#]/)[0]);
+    if (m){
+      var webp = String(primarySrc).replace(/\.(png|jpe?g)(?=([?#].*)?$)/i, '.webp');
+      cands = [webp, primarySrc].concat(cands.filter(function(u){ return u !== webp && u !== primarySrc; }));
+      primarySrc = webp;
+    }
+    return makeResolvedImg(primarySrc, fallbackDataUrl, onAllFailed, cands);
   }
 
   /* ---- 曲数からの自動計算（下埋め時間・料金） ---- */
@@ -1789,7 +1819,8 @@
      テストで表を公開・編集しても本番の表は変わらない。 */
   var IS_TEST_ENV = (function(){
     var h = location.hostname;
-    if (h === 'maiplate.vercel.app') return false;
+    /* 本番のアドレス（maimaiplate は maiplate へ転送される旧アドレス。念のため本番として扱う） */
+    if (h === 'maiplate.vercel.app' || h === 'maimaiplate.vercel.app') return false;
     if (h === 'localhost' || h === '127.0.0.1' || h === '') return true;
     return /\.vercel\.app$/.test(h);
   })();
@@ -2248,6 +2279,75 @@
 
 
   /* テスト環境だけ：本番の表（plates）を丸ごと test_plates に写す（本番は読むだけで変えない） */
+  /* 並び順を整える
+     ・13以下：定数→ジャンル→追加日の決まりで並べ直す
+     ・テスト環境のみ：13+〜15 を本番の表と同じ並びにする（本番に無い曲は欄の最後へ） */
+  var TOP_ORDER_LABELS = ['15', '14+', '14', '13+'];
+  function arrangeSongOrder(){
+    if (!canEdit()) return;
+    if (!SONG_DATA_FULL){ showAlert('楽曲データ（songs.json）の読み込みが終わってから、もう一度押してください。'); return; }
+    var msg = IS_TEST_ENV
+      ? '13+〜15 を本番の表と同じ並びにし、13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（曲の赤線は消えません）'
+      : '13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（13+〜15 はそのまま。曲の赤線は消えません）';
+    showConfirm(msg, function(){
+      var getProd = (IS_TEST_ENV && syncState.db)
+        ? syncState.db.collection('plates').get().then(function(snap){ return snap.docs.map(function(d){ return d.data(); }); })
+        : Promise.resolve(null);
+      getProd.then(function(prod){
+        var topLv = 0, lowLv = 0, touched = [];
+        allVersions.forEach(function(v){
+          if (v.docType === 'jewel' || isMaiHashaDoc(v)) return;
+          var t = 0;
+          if (prod){
+            var pv = prod.filter(function(p){ return p && p.id === v.id; })[0] ||
+                     prod.filter(function(p){ return p && p.versionName === v.versionName; })[0];
+            if (pv) t = copyTopOrder(v, pv);
+          }
+          var l = sortLowerLevels(v);
+          topLv += t; lowLv += l;
+          if (t || l){ v.updatedAt = Date.now(); touched.push(v); }
+        });
+        touched.forEach(function(v){ syncWriteVersion(v); });
+        persistVersions();
+        renderApp();
+        showAlert('並び順を整えました。\n' + (prod ? '本番に合わせた欄（13+〜15）：' + topLv + '\n' : '') + '並べ直した欄（13以下）：' + lowLv);
+      }).catch(function(e){
+        showAlert('本番の表を読めませんでした: ' + e.message);
+      });
+    });
+  }
+  function songOrderKey(s){
+    var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
+    return s.name + '|' + t;
+  }
+  function copyTopOrder(v, pv){
+    var changed = 0;
+    TOP_ORDER_LABELS.forEach(function(label){
+      var lv = (v.levels || []).filter(function(l){ return l.label === label; })[0];
+      var plv = (pv.levels || []).filter(function(l){ return l.label === label; })[0];
+      if (!lv || !plv || !(lv.songs || []).length) return;
+      var rank = {};
+      (plv.songs || []).forEach(function(s, i){
+        if (!s || !s.name) return;
+        var k = songOrderKey(s);
+        if (!(k in rank)) rank[k] = i;
+        if (!((s.name + '|*') in rank)) rank[s.name + '|*'] = i;
+      });
+      function pos(s){
+        var k = songOrderKey(s);
+        if (k in rank) return rank[k];
+        if ((s.name + '|*') in rank) return rank[s.name + '|*'];
+        return 1e6;
+      }
+      var before = lv.songs.map(function(s){ return s.id; }).join(',');
+      lv.songs = lv.songs.map(function(s, i){ return { s: s, p: pos(s), i: i }; })
+        .sort(function(a, b){ return (a.p - b.p) || (a.i - b.i); })
+        .map(function(x){ return x.s; });
+      if (lv.songs.map(function(s){ return s.id; }).join(',') !== before) changed++;
+    });
+    return changed;
+  }
+
   function copyProdToTest(){
     if (!IS_TEST_ENV || !canEdit() || !syncState.db) return;
     showConfirm('本番の表をテスト環境にコピーしますか？（テスト環境の表は上書きされます。本番は変わりません）', function(){
@@ -2533,6 +2633,7 @@
       var songs = pool.filter(function(s){
         return (isExempt ? s.remas : s.level) === L.label;
       }).sort(function(a, b){
+        if (!isExempt && isLowerLabel(L.label)) return lowerCmp(a, b);
         return a.name.localeCompare(b.name, 'ja');
       }).map(function(s){
         return { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '' };
@@ -2578,6 +2679,38 @@
     if (!ver) ver = String(v.versionName || '').split('〈')[0].trim();
     return plateVersionToSongVersions(ver);
   }
+  /* 13以下の並べ方：定数の高い順 → 同じなら POPS→ニコボカ→東方→ゲーバラ→オリジナル→ゲキチュウ
+     → それでも同じなら追加日が早い順（13+〜15 は製作者が並べた順のまま） */
+  function isLowerLabel(label){ return LOWER_LEVEL_DEFS.some(function(d){ return d.label === label; }); }
+  function lowerCmp(a, b){
+    var ka = a && a.konst >= 0 ? a.konst : -1, kb = b && b.konst >= 0 ? b.konst : -1;
+    if (kb !== ka) return kb - ka;
+    var ga = a ? a.genre : 99, gb = b ? b.genre : 99;
+    if (ga !== gb) return ga - gb;
+    var da = a ? a.added : 99999999, db = b ? b.added : 99999999;
+    if (da !== db) return da - db;
+    var na = a ? a.name : '', nb = b ? b.name : '';
+    return na < nb ? -1 : (na > nb ? 1 : 0);
+  }
+  /* 表の13以下の欄を、上の決まりで並べ直す（曲の id はそのまま＝赤線は消えない）。並びが変わった欄の数を返す */
+  function sortLowerLevels(v){
+    var changed = 0;
+    if (!SONG_DATA_FULL || !v || v.docType === 'jewel' || isMaiHashaDoc(v)) return 0;
+    (v.levels || []).forEach(function(lv){
+      if (!isLowerLabel(lv.label) || !(lv.songs || []).length) return;
+      var before = lv.songs.map(function(s){ return s.id; }).join(',');
+      var withM = lv.songs.map(function(s, i){ return { s: s, m: masterOfTableSong(s, lv.label), i: i }; });
+      withM.sort(function(x, y){
+        if (!x.m && !y.m) return x.i - y.i;
+        if (!x.m) return 1;
+        if (!y.m) return -1;
+        return lowerCmp(x.m, y.m) || (x.i - y.i);
+      });
+      lv.songs = withM.map(function(x){ return x.s; });
+      if (lv.songs.map(function(s){ return s.id; }).join(',') !== before) changed++;
+    });
+    return changed;
+  }
   function addLowerLevelsTo(v){
     var result = { levels: 0, songs: 0 };
     if (!SONG_DATA_FULL || !v || v.docType === 'jewel' || isMaiHashaDoc(v)) return result;
@@ -2605,11 +2738,7 @@
       var pool = SONG_MASTER_LIST.filter(function(s){
         return s.level === def.label && !used[s.name + '|' + s.type] && !isExcludedSong(v, s.name) &&
                vers.some(function(x){ return songInVer(s, x); });
-      }).sort(function(a, b){
-        var ka = a.konst >= 0 ? a.konst : -1, kb = b.konst >= 0 ? b.konst : -1;
-        if (kb !== ka) return kb - ka;
-        return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0);
-      });
+      }).sort(lowerCmp);
       if (!pool.length) return;   /* 曲が1つもない欄は作らない */
       var songs = pool.map(function(s){
         var both = types[s.name] && types[s.name].ST && types[s.name].DX;
@@ -2683,7 +2812,12 @@
       return m && m.konst >= 0 ? m.konst : -1;
     }
     var pos = lv.songs.length;
-    if (s.konst >= 0){
+    if (isLowerLabel(lv.label)){
+      for (var q = 0; q < lv.songs.length; q++){
+        var mq = masterOfTableSong(lv.songs[q], lv.label);
+        if (mq && lowerCmp(s, mq) < 0){ pos = q; break; }
+      }
+    } else if (s.konst >= 0){
       for (var k = 0; k < lv.songs.length; k++){
         var c = konstOf(lv.songs[k]);
         if (c >= 0 && c < s.konst){ pos = k; break; }
@@ -3692,8 +3826,11 @@
       function makeBadgeNode(badge){
         var b = el('div', {class:'pv-badge-img'});
         var srcB = badge.img || resolveBadgeImage(badge.name);
+        /* 実績プレートの画像がまだ無いもの（例：現）は、文字で出さずに枠ごと隠す。画像を置けば自動で出る */
+        var isPlate = !!badgeCat(badge.name);
         if (srcB){
           var bImg = makeResolvedImg(srcB, getCachedPlateBadge(badge.name), function(){
+            if (isPlate){ b.style.display = 'none'; b.classList.add('pv-badge-missing'); return; }
             b.classList.add('no-img');
             b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
           });
@@ -3701,6 +3838,9 @@
              画像が後から届いても高さが変わらず、画面がずれない。 */
           if (badgeCat(badge.name)){ bImg.setAttribute('width', '320'); bImg.setAttribute('height', '51'); }
           b.appendChild(bImg);
+        } else if (isPlate){
+          b.style.display = 'none';
+          b.classList.add('pv-badge-missing');
         } else {
           b.classList.add('no-img');
           b.appendChild(el('span', {class:'placeholder-text', text: badge.name || '画像未設定'}));
@@ -4106,6 +4246,7 @@
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
       bar.appendChild(el('button', {class:'btn', text:'＋ 13〜10+の欄を全バージョンに追加', onclick: addLowerLevelsToAll}));
       bar.appendChild(el('button', {class:'btn', text:'＋ 新曲の追加・定数の反映', onclick: openAddMissingSongs}));
+      bar.appendChild(el('button', {class:'btn', text: IS_TEST_ENV ? '並び順を整える（本番の13+〜15の順＋13以下）' : '13以下の並び順を整える', onclick: arrangeSongOrder}));
       if (IS_TEST_ENV) bar.appendChild(el('button', {class:'btn', text:'本番の表をコピー', onclick: copyProdToTest}));
       root.appendChild(bar);
     }
@@ -5243,7 +5384,10 @@
 
     /* ---------- 0-2. 楽曲の順番 ---------- */
     wrap.appendChild(section('楽曲の順番', [
-      para(['左から楽曲定数順に並んでいます。定数が同じ場合は製作者がAP基準でより難しいと思うものを左側に配置しています。'], 'guide-p guide-p-tight'),
+      para(['左から楽曲定数順に並んでいます。13+～14+は定数が同じ場合製作者がAP基準でより難しいと思うものを左側に配置しています。'], 'guide-p guide-p-tight'),
+      para(['13～12+も楽曲定数順には並んでいますが、定数が同じ場合は、', el('br'),
+            'POPS→ニコボカ→東方→ゲーバラ→オリジナル→ゲキチュウ', el('br'),
+            '以上の優先度で並んでいます。それでも同じ場合は追加日が早いものを左側に配置しています。'], 'guide-p guide-p-tight'),
       para(['（独断と偏見で軽く決めた左右差なので違和感があった場合はレビュー等へお願いします🙏）'], 'guide-p guide-p-soft')
     ]));
 
@@ -5447,7 +5591,8 @@
       if (!inner) return 0;
       var innerTop = inner.getBoundingClientRect().top;
       /* プレートの並びの最下端で切る（末尾の余白を含めない） */
-      var marks = inner.querySelectorAll('.pv-badge-img');
+      /* 画像が無くて隠したプレートは数えない（数えると高さが0になり、曲まで切れてしまう） */
+      var marks = inner.querySelectorAll('.pv-badge-img:not(.pv-badge-missing)');
       if (!marks.length) marks = inner.querySelectorAll('.pv-thumb, .pv-empty');
       if (!marks.length) return inner.getBoundingClientRect().height;
       /* 画面より上にスクロールしているカードは座標がマイナスになる。
@@ -5523,12 +5668,12 @@
      その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
      内容を変えて再び出したいときは NOTICE_ID を変える。 */
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
-  var APP_VERSION = '1.2';
+  var APP_VERSION = '2.0';
   var CHANGELOG = [
-    { ver:'1.2', date:'2026/10/XX', items:[
+    { ver:'2.0', date:'2026/10/04', items:[
       ['新しいデザイン', '多数の新機能追加のためUIを一新しました。\nご迷惑をおかけします🙏'],
       ['maimai NET から取り込み', 'ブックマークを使いmaimaiネットの情報を取り込めます。'],
-      ['13〜10+ を追加', 'プレート表上部のボタンで表示するかをどうか選べます。\n非表示にしても記録は残ります。'],
+      ['13〜10+ を追加', 'プレート表上部のボタンで表示するかをどうか選べます。\n非表示にしても記録は残ります。', 'loadNote'],
       ['進捗をプレートごとに管理', '極、将、神、舞舞、覇者の進捗状況をそれぞれで管理できるようになりました。', 'modeNote'],
       ['新曲に対応', 'k4sen ＆ Diverse System の新曲とLEGEND楽曲を追加しました。'],
       ['ホームとメニュー', 'ホームや右上のメニューから各ページへ移動できます。']
@@ -5565,6 +5710,9 @@
         var li = el('li');
         li.appendChild(el('div', {class:'notice-item-title', text: it[0]}));
         li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
+        if (it[2] === 'loadNote'){
+          li.appendChild(el('div', {class:'notice-emph', text:'初回のみ楽曲の表示に時間がかかります。ご了承ください。'}));
+        }
         if (it[2] === 'modeNote'){
           /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
           var note = el('div', {class:'notice-emph'});
