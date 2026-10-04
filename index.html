@@ -981,6 +981,15 @@
   .help-btn:hover{border-color:var(--accent);color:var(--accent);}
   .help-btn-list{margin-left:auto;}
   .mark-toggle-bar .help-btn-list + .mode-row{margin-left:0;flex-basis:100%;}
+  /* 13+↓などの下の段（赤線楽曲の非表示・赤線削除） */
+  .mark-sub-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-basis:100%;}
+  .mark-toggle-bar .mark-sub-row + .mode-row{margin-left:0;flex-basis:100%;}
+  .hide-marked-btn[hidden], .mark-sub-row[hidden]{display:none;}
+  /* 取り込みページの注意書き */
+  .import-caution{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
+    border-radius:12px;padding:11px 14px;margin:-8px 0 22px;font-size:13px;line-height:1.7;color:var(--text);}
+  .import-caution-mark{flex:none;color:var(--warn);font-size:16px;line-height:1.45;font-weight:800;}
+  .import-caution p{margin:0;}
   .preview-wide{position:relative;}
   .help-btn-card{position:absolute;top:10px;right:10px;z-index:2;}
   .help-box{position:relative;max-width:420px;padding:24px 22px 22px;}
@@ -2032,6 +2041,24 @@
     showSongMarks = !!on;
     if (!storageOK) return;
     try{ localStorage.setItem(SONG_MARKS_VISIBLE_KEY, showSongMarks ? '1' : '0'); }catch(e){}
+  }
+
+  /* 一覧で、赤線をつけた曲を隠すかどうか（この端末に保存。最初はOFF） */
+  var HIDE_MARKED_KEY = 'mmplate_hide_marked_v1';
+  var hideMarkedSongs = (function(){ try{ return localStorage.getItem(HIDE_MARKED_KEY) === '1'; }catch(e){ return false; } })();
+  function setHideMarkedSongs(on){
+    hideMarkedSongs = !!on;
+    try{ localStorage.setItem(HIDE_MARKED_KEY, hideMarkedSongs ? '1' : '0'); }catch(e){}
+  }
+  /* 「赤線楽曲の非表示 ON/OFF」ボタン。押したら onChange で表を描き直す */
+  function makeHideMarkedButton(onChange){
+    var b = makeOnOffButton('赤線楽曲の非表示', hideMarkedSongs, function(){
+      setHideMarkedSongs(!hideMarkedSongs);
+      if (onChange) onChange();
+      return hideMarkedSongs;
+    });
+    b.classList.add('hide-marked-btn');
+    return b;
   }
 
   /* ---- プレートごとの進捗（全・極・将・神・舞舞・覇者） ----
@@ -3684,6 +3711,13 @@
     var viewerMode = !!(opts.interactive || opts.viewerHidden);
     var plateMode = viewerMode ? getPlateMode(v) : '';
     var markKey = plateMarkKey(v.id, plateMode);
+    /* 「赤線楽曲の非表示」がONなら、一覧・詳細とも赤線のついた曲を出さない（画像保存にも写らない） */
+    var hideMarked = viewerMode && !!plateMode && hideMarkedSongs;
+    function songShown(s){
+      if (s.hidden) return false;
+      if (hideMarked && (s.slashed || isSongMarked(markKey, s.id))) return false;
+      return true;
+    }
 
     var card = el('div', {id:'previewCard'});
 
@@ -3740,7 +3774,7 @@
 
     v.levels.forEach(function(level){
       if (level.hidden) return;
-      if (viewerMode && !(level.songs || []).some(function(s){ return !s.hidden; })) return;
+      if (viewerMode && !(level.songs || []).some(songShown)) return;
       if (opts.viewerHidden && isPvLevelHidden(v, level)) return;
       var block = el('div', {class:'pv-level'});
       /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
@@ -3767,7 +3801,7 @@
       } else {
         block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
       }
-      var visibleSongs = level.songs.filter(function(s){ return !s.hidden; });
+      var visibleSongs = level.songs.filter(songShown);
       if (visibleSongs.length === 0){
         block.appendChild(el('div', {class:'pv-empty', text:'（画像未追加）'}));
       } else {
@@ -3806,6 +3840,11 @@
             t.title = 'タップで斜線をつける／外す';
             t.addEventListener('click', function(){
               toggleSongMark(markKey, song.id);
+              /* 非表示ONのときは、赤線をつけた曲をその場で表から外す */
+              if (hideMarked){
+                var holder = card.parentNode;
+                if (holder){ holder.replaceChild(buildPreviewNode(v, opts), card); return; }
+              }
               syncSlash();
             });
           }
@@ -4164,12 +4203,17 @@
         b.setAttribute('aria-pressed', cur === m ? 'true' : 'false');
         lseg.appendChild(b);
       });
-      /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
-      if (cur){
-        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
+      bar.appendChild(makeHelpButton('help-btn-list'));
+      /* 13+↓などの下の段に「赤線楽曲の非表示」「赤線削除」を常に出す */
+      {
+        var subRow = el('div', {class:'mark-sub-row'});
+        /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
+        subRow.appendChild(makeHideMarkedButton(function(){ renderApp(); }));
+        /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
+        subRow.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
           onclick: function(){
             var m = commonListMode();
-            if (!m) return;
+            if (!m){ showAlert('極・将・神・舞のどれかを選んでから押してください。'); return; }
             showDeleteConfirm(PLATE_MODE_LABEL[m] + 'の赤線を全て削除しますか？', function(){
               allVersions.forEach(function(x){
                 if (x.docType === 'jewel') return;
@@ -4179,8 +4223,8 @@
               renderApp();
             }, { yesText: '削除', oneLine: true });
           }}));
+        bar.appendChild(subRow);
       }
-      bar.appendChild(makeHelpButton('help-btn-list'));
       var modeRow = el('div', {class:'mode-row'});
       var HINT_KEY = 'mmplate_hint_mode_closed_v1';
       var hintClosed = false;
@@ -4353,6 +4397,7 @@
       if (!isJewelDoc) pvHolder.appendChild(makeHelpButton('help-btn-card'));
     }
     var modeBtns = [];
+    var hideBtn = null;
     function paintModes(){
       var cur = getPlateMode(v);
       modeBtns.forEach(function(b){ b.classList.toggle('is-active', b.__mode === cur); b.setAttribute('aria-pressed', b.__mode === cur ? 'true' : 'false'); });
@@ -4382,6 +4427,11 @@
           seg.appendChild(b);
         });
         markBar.appendChild(seg);
+        /* 赤線楽曲の非表示（常に表示。シンクのお相手記録には関係しない） */
+        hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
+        var hideRow = el('div', {class:'mark-sub-row'});
+        hideRow.appendChild(hideBtn);
+        markBar.appendChild(hideRow);
         paintModes();
       }
       root.appendChild(markBar);
@@ -6127,6 +6177,15 @@
     });
     wrap.appendChild(steps);
 
+    /* ③の下の注意書き */
+    var caution = el('div', {class:'import-caution', role:'note'});
+    caution.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var cBody = el('div');
+    cBody.appendChild(el('p', {text:'取り込んだ進捗は保存されますが、自動では更新されません。'}));
+    cBody.appendChild(el('p', {text:'スコアを更新したあとは、お手数ですがご自身でもう一度取り込んでください。'}));
+    caution.appendChild(cBody);
+    wrap.appendChild(caution);
+
     var code = bookmarkletCode();
     var actions = el('div', {class:'page-actions'});
     var copyBtn = el('button', {class:'btn btn-primary btn-lg', type:'button', text:'コードをコピー'});
@@ -6427,7 +6486,7 @@
     var bar = root.querySelector('.mark-toggle-bar');
     if (!bar || !('IntersectionObserver' in window)) return;
     var back = root.querySelector('#pageBackBtn');
-    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn'));
+    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn)'));
     var help = root.querySelector('.help-btn');
     var seg = bar.querySelector('.plate-mode-seg');
 
