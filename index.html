@@ -6044,6 +6044,12 @@
     });
     return hit;
   }
+  /* 取り込みで赤線をつけるプレート。
+     通常の表は、プレート画像が無くても極・将・神・舞すべて（例：真には将のプレートが無いが、将の赤線はつける）。
+     舞・覇者の表は今まで通り、表にあるプレートだけ */
+  function importModesFor(v){
+    return isMaiHashaDoc(v) ? availablePlateModes(v) : selectablePlateModes(v);
+  }
   function buildImportPlan(records){
     var idx = {};
     (records || []).forEach(function(r){
@@ -6060,7 +6066,7 @@
     var plan = [], matched = 0, total = 0;
     allVersions.forEach(function(v){
       if (v.docType === 'jewel') return;
-      var modes = availablePlateModes(v);
+      var modes = importModesFor(v);
       if (!modes.length) return;
       var mai = isMaiHashaDoc(v), diff = mai ? 4 : 3;
       var maps = {};
@@ -6098,7 +6104,7 @@
       if (v.docType === 'jewel') return;
       var ids = [];
       (v.levels || []).forEach(function(l){ (l.songs || []).forEach(function(s){ ids.push(s.id); }); });
-      parts.push(v.id + ':' + availablePlateModes(v).join('') + ':' + ids.join(','));
+      parts.push(v.id + ':' + importModesFor(v).join('') + ':' + ids.join(','));
     });
     return fnvHashStr(parts.join('|'));
   }
