@@ -314,7 +314,7 @@
   /* 保存する画像にはボタンを写さない */
   .sync-export .sync-level-toggle{display:none;}
   .sync-export .sync-level-off{display:none;}
-  .sync-list{display:grid;grid-template-columns:1fr;gap:6px;}
+  .sync-list{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:6px 14px;}   /* 画面でも2列（左→右、次の段へ） */
   .sync-row{display:flex;align-items:center;gap:10px;min-width:0;}
   .sync-thumb{position:relative;width:40px;height:40px;border-radius:6px;overflow:hidden;
     border:1px solid var(--border);flex:none;}
@@ -945,6 +945,9 @@
   .save-group-label{appearance:none;-webkit-appearance:none;border:none;background:var(--panel);cursor:pointer;
     display:inline-flex;align-items:center;padding:7px 12px 7px 14px;font:inherit;font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;}
   .save-group-label:hover{background:var(--accent-soft);}
+  .save-group-label{display:inline-flex;align-items:center;gap:6px;}
+  .save-icon{display:inline-flex;}
+  .save-icon svg{width:18px;height:18px;}
   .save-group-label:disabled{opacity:.5;cursor:default;}
   .save-base{appearance:none;-webkit-appearance:none;border:none;border-left:1px solid var(--border-ctl);cursor:pointer;
     font:inherit;font-size:12.5px;font-weight:800;min-width:40px;padding:7px 12px;}
@@ -974,6 +977,10 @@
   .pv-export .lr-big{display:inline-flex;align-items:center;font-size:.72em;font-weight:800;line-height:1;
     padding:.28em .6em;border-radius:999px;border:2px solid var(--border-ctl);background:var(--panel-3);color:var(--text);white-space:nowrap;}
   .pv-export .ptier-meta-row .lr-corner-badge{display:none;}
+  /* 難易度表の保存画像：左右2列＋真ん中の仕切り線 */
+  .pv-export .ptier-split{display:grid;grid-template-columns:560px 2px 560px;column-gap:28px;align-items:stretch;}
+  .pv-export .ptier-split-line{background:var(--border-strong);border-radius:1px;}
+  .pv-export .ptier-col{min-width:0;}
   /* ---- ？ボタン ---- */
   .help-btn{appearance:none;-webkit-appearance:none;width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;
     border:1.5px solid var(--border-ctl);background:var(--panel);color:var(--text-dim);font:inherit;font-size:16px;font-weight:800;line-height:1;
@@ -981,6 +988,85 @@
   .help-btn:hover{border-color:var(--accent);color:var(--accent);}
   .help-btn-list{margin-left:auto;}
   .mark-toggle-bar .help-btn-list + .mode-row{margin-left:0;flex-basis:100%;}
+  /* 13+↓などの下の段（赤線楽曲の非表示・赤線削除） */
+  .mark-sub-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-basis:100%;}
+  .mark-toggle-bar .mark-sub-row + .mode-row{margin-left:0;flex-basis:100%;}
+  .hide-marked-btn[hidden], .mark-sub-row[hidden]{display:none;}
+  /* ---- 下埋め進捗 ---- */
+  .simple-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+  .simple-card{text-align:left;font:inherit;color:var(--text);width:100%;}
+  .simple-card .vc-title{margin:0;font-size:14.5px;}
+  .fill-actions .plate-mode-seg, .detail-actions .plate-mode-seg{margin-left:0;}
+  .fill-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+  .fill-plate{font-weight:800;font-size:15px;margin-bottom:12px;}
+  .fill-bar-row{display:flex;align-items:center;gap:12px;}
+  .fill-bar{flex:1;min-width:0;display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--border-ctl);background:var(--panel);}
+  .fill-seg{flex-basis:0;min-width:2.4em;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;}
+  .fill-seg + .fill-seg{border-left:1px solid rgba(0,0,0,.12);}
+  .fill-seg-done{background:#ffffff;color:#17252f;}
+  .fill-pct{flex:none;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;}
+  .fill-pct-label{font-size:11px;color:var(--text-dim);font-weight:700;}
+  .fill-pct-num{font-size:22px;font-weight:800;}
+  .fill-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 16px;font-size:12px;color:var(--text-dim);}
+  .fill-legend-item{display:inline-flex;align-items:center;gap:5px;}
+  .fill-legend-item i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  i.fill-legend-done{background:#ffffff;border:1px solid var(--border-strong);}
+  .fill-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .fill-stat{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:0;}
+  .fill-stat-label{font-size:11.5px;color:var(--text-dim);font-weight:700;}
+  .fill-stat-value{font-size:20px;font-weight:800;line-height:1.3;word-break:break-word;}
+  .fill-stat-sub{font-size:10.5px;color:var(--text-faint);line-height:1.4;margin-top:2px;}
+  @media (max-width:520px){ .fill-stats{grid-template-columns:1fr;} .fill-stat-value{font-size:18px;} }
+  .fill-note{margin:6px 0 16px;}
+  .fill-import-btn{margin-top:8px;}
+  /* ---- 回数と日付の記録 ---- */
+  .count-card{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:clamp(14px,3vw,24px);}
+  .count-level{margin:14px 0 8px;}
+  .count-level:first-child{margin-top:0;}
+  .count-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px 12px;}
+  .count-item{display:flex;align-items:center;gap:8px;min-width:0;}
+  .count-thumb{width:60px;height:60px;}
+  .count-fields{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;}
+  .count-n{display:flex;align-items:center;gap:4px;}
+  .count-input{width:100%;max-width:64px;height:28px;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:7px;padding:2px 6px;font:inherit;font-size:14px;font-weight:700;color:var(--text);-moz-appearance:textfield;appearance:textfield;}
+  .count-input::-webkit-inner-spin-button, .count-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+  .count-unit{font-size:13px;font-weight:700;color:var(--text-dim);}
+  .count-date{appearance:none;-webkit-appearance:none;border:1px solid var(--border-strong);background:var(--panel);border-radius:7px;padding:2px 6px;height:28px;box-sizing:border-box;font:inherit;font-size:12.5px;font-weight:700;color:var(--text);text-align:left;cursor:pointer;width:100%;max-width:110px;}
+  .count-date.is-empty{color:var(--text-faint);}
+  @media (max-width:420px){ .count-list{grid-template-columns:repeat(2,minmax(0,1fr));} .count-thumb{width:52px;height:52px;} }
+  .wheel-box{max-width:340px;}
+  .wheels{position:relative;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;height:200px;margin:12px 0 18px;}
+  .wheel-band{position:absolute;left:0;right:0;top:80px;height:40px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-line);pointer-events:none;}
+  .wheel-col{position:relative;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;outline:none;
+    -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);}
+  .wheel-col::-webkit-scrollbar{display:none;}
+  .wheel-pad{height:40px;}
+  .wheel-item{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;font-size:17px;font-weight:700;cursor:pointer;}
+  /* 13+↓ ON/OFF | ▼ */
+  .cut-picker{display:inline-flex;align-items:stretch;flex:none;}
+  .cut-picker .cut-onoff{border-top-right-radius:0;border-bottom-right-radius:0;}
+  .cut-picker .cut-next{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-1px;padding:0 9px;font-size:10px;color:var(--accent);}
+  .sticky-inner .cut-picker .cut-next{padding:0 7px;}
+  /* 上に固定 */
+  .pin-btn{gap:4px;}
+  .pin-icon{display:inline-flex;}
+  .pin-icon svg{width:15px;height:15px;}
+  .pin-title{font-weight:800;font-size:16px;margin-bottom:4px;}
+  .pin-sub{font-size:12px;color:var(--text-dim);margin-bottom:12px;}
+  .pin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:52vh;overflow-y:auto;}
+  .pin-row{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+    background:var(--panel);border:1px solid var(--border-ctl);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;color:var(--text);}
+  .pin-row.is-on{border-color:var(--accent);background:var(--accent-soft);}
+  .pin-row.is-full{opacity:.45;}
+  .pin-num{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-ctl);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
+  .pin-row.is-on .pin-num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .pin-swatch{flex:none;width:6px;height:22px;border-radius:3px;}
+  .pin-name{flex:1;min-width:0;font-weight:600;}
+  /* 取り込みページの注意書き */
+  .import-caution{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
+    border-radius:12px;padding:11px 14px;margin:-8px 0 22px;font-size:13px;line-height:1.7;color:var(--text);}
+  .import-caution-mark{flex:none;color:var(--warn);font-size:16px;line-height:1.45;font-weight:800;}
+  .import-caution p{margin:0;}
   .preview-wide{position:relative;}
   .help-btn-card{position:absolute;top:10px;right:10px;z-index:2;}
   .help-box{position:relative;max-width:420px;padding:24px 22px 22px;}
@@ -2034,6 +2120,24 @@
     try{ localStorage.setItem(SONG_MARKS_VISIBLE_KEY, showSongMarks ? '1' : '0'); }catch(e){}
   }
 
+  /* 一覧で、赤線をつけた曲を隠すかどうか（この端末に保存。最初はOFF） */
+  var HIDE_MARKED_KEY = 'mmplate_hide_marked_v1';
+  var hideMarkedSongs = (function(){ try{ return localStorage.getItem(HIDE_MARKED_KEY) === '1'; }catch(e){ return false; } })();
+  function setHideMarkedSongs(on){
+    hideMarkedSongs = !!on;
+    try{ localStorage.setItem(HIDE_MARKED_KEY, hideMarkedSongs ? '1' : '0'); }catch(e){}
+  }
+  /* 「赤線楽曲の非表示 ON/OFF」ボタン。押したら onChange で表を描き直す */
+  function makeHideMarkedButton(onChange){
+    var b = makeOnOffButton('赤線楽曲の非表示', hideMarkedSongs, function(){
+      setHideMarkedSongs(!hideMarkedSongs);
+      if (onChange) onChange();
+      return hideMarkedSongs;
+    });
+    b.classList.add('hide-marked-btn');
+    return b;
+  }
+
   /* ---- プレートごとの進捗（全・極・将・神・舞舞・覇者） ----
      「全」は今までの赤線。それ以外は「表のID::プレート種別」で別々に保存する。 */
   var PLATE_MODE_ORDER = ['極', '将', '神', '舞舞', '覇者'];
@@ -2142,6 +2246,99 @@
     if (!storageOK) return;
     try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
   }
+  /* ---- 「13+↓ ON/OFF | ▼」 ---- */
+  var CUT_LABELS = ['13+', '13', '12+'];
+  var CUT_PICK_KEY = 'mmplate_cut_pick_v1';
+  var cutPick = (function(){
+    try{ var x = localStorage.getItem(CUT_PICK_KEY); return CUT_LABELS.indexOf(x) >= 0 ? x : '13+'; }catch(e){ return '13+'; }
+  })();
+  function makeCutPicker(){
+    var wrap = el('div', {class:'cut-picker', role:'group', 'aria-label':'下のレベルの表示'});
+    var lb = cutPick;
+    var onoff = makeOnOffButton(lb + '↓', isCutShown(lb), function(){
+      var next = !isCutShown(lb);
+      setShownFrom(lb, next);
+      renderApp();
+      return next;
+    });
+    onoff.classList.add('cut-onoff');
+    wrap.appendChild(onoff);
+    wrap.appendChild(el('button', {type:'button', class:'btn btn-sm cut-next', text:'▼',
+      title:'13+ → 13 → 12+ の順に切り替え', 'aria-label':'切り替えるレベルを変える（今は' + lb + '）',
+      onclick: function(){
+        cutPick = CUT_LABELS[(CUT_LABELS.indexOf(cutPick) + 1) % CUT_LABELS.length];
+        try{ localStorage.setItem(CUT_PICK_KEY, cutPick); }catch(e){}
+        renderApp();
+      }}));
+    return wrap;
+  }
+
+  /* ---- 一覧の上に出すバージョン（3つまで。この端末に保存） ---- */
+  var PINNED_KEY = 'mmplate_pinned_versions_v1';
+  var PIN_MAX = 3;
+  var pinnedIds = (function(){
+    try{ var a = JSON.parse(localStorage.getItem(PINNED_KEY) || '[]'); return Array.isArray(a) ? a.slice(0, PIN_MAX) : []; }catch(e){ return []; }
+  })();
+  function setPinnedIds(a){
+    pinnedIds = a.slice(0, PIN_MAX);
+    try{ localStorage.setItem(PINNED_KEY, JSON.stringify(pinnedIds)); }catch(e){}
+  }
+  /* 選んだバージョンを選んだ順に先頭へ、残りはいつもの順 */
+  function listOrderedVersions(){
+    var all = sortedVersions(), head = [];
+    pinnedIds.forEach(function(id){
+      var v = all.filter(function(x){ return x.id === id; })[0];
+      if (v) head.push(v);
+    });
+    return head.concat(all.filter(function(x){ return head.indexOf(x) < 0; }));
+  }
+  function makePinButton(){
+    var n = pinnedIds.filter(function(id){ return !!findVersion(id); }).length;
+    var b = el('button', {type:'button', class:'btn btn-sm pin-btn', title:'一覧の上に出すバージョンを3つまで選ぶ', onclick: openPinPicker});
+    b.appendChild(iconNode('pin', 'pin-icon'));
+    b.appendChild(el('span', {text: n ? ('上に固定（' + n + '）') : '上に固定'}));
+    return b;
+  }
+  function openPinPicker(){
+    var picked = pinnedIds.filter(function(id){ return !!findVersion(id); });
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box pin-box', role:'dialog', 'aria-modal':'true'});
+    box.appendChild(el('div', {class:'pin-title', text:'上に固定するバージョン'}));
+    box.appendChild(el('div', {class:'pin-sub', text:'3つまで選べます。選んだ順に一覧の上に並びます。'}));
+    var list = el('div', {class:'pin-list'});
+    function paint(){
+      list.textContent = '';
+      sortedVersions().forEach(function(v){
+        var idx = picked.indexOf(v.id);
+        var full = picked.length >= PIN_MAX && idx < 0;
+        var row = el('button', {type:'button', class:'pin-row' + (idx >= 0 ? ' is-on' : '') + (full ? ' is-full' : ''),
+          'aria-pressed': idx >= 0 ? 'true' : 'false',
+          onclick: function(){
+            if (idx >= 0) picked.splice(idx, 1);
+            else if (picked.length < PIN_MAX) picked.push(v.id);
+            paint();
+          }});
+        row.appendChild(el('span', {class:'pin-num', text: idx >= 0 ? String(idx + 1) : ''}));
+        row.appendChild(el('span', {class:'pin-swatch', style:{background: v.docType === 'jewel' ? JEWEL_BAR_GRADIENT : (specVersionColor(v) || v.themeColor)}}));
+        row.appendChild(el('span', {class:'pin-name', text: v.versionName || '（名前のない表）'}));
+        list.appendChild(row);
+      });
+    }
+    paint();
+    box.appendChild(list);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'選択を外す', style:{marginRight:'auto'},
+      onclick: function(){ picked = []; paint(); }}));
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      setPinnedIds(picked); closeModal(backdrop); renderApp();
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
   function plateMarkKey(versionId, mode){ return mode ? versionId + '::' + mode : versionId; }
   function plateNameForMode(v, mode){
     var b = (v.badges || []).filter(function(x){ return plateCatOf(x.name) === mode; })[0];
@@ -3036,7 +3233,7 @@
   var allVersions = SYNC_EXPECTED ? loadSyncCache() : loadVersions();
   var allPlateTiers = loadPlateTiers();
 
-  var section = 'home';   // 'home' | 'plates' | 'plateTiers' | 'guide' | 'reviews'
+  var section = 'home';   // 'home' | 'plates' | 'plateTiers' | 'fill' | 'count' | 'guide' | 'reviews'
   var view = 'list';       // 'list' | 'detail' | 'edit'
   var currentId = null;
   var draft = null;
@@ -3439,6 +3636,8 @@
     section = name;
     if (name === 'plates' && view !== 'edit'){ view = 'list'; currentId = null; }
     if (name === 'plateTiers' && plateTierView !== 'edit'){ plateTierView = 'list'; plateTierCurrentId = null; }
+    if (name === 'fill'){ fillView = 'list'; fillId = null; }
+    if (name === 'count'){ countView = 'list'; countId = null; }
     renderApp();
     scrollToTopNow();
   }
@@ -3684,6 +3883,13 @@
     var viewerMode = !!(opts.interactive || opts.viewerHidden);
     var plateMode = viewerMode ? getPlateMode(v) : '';
     var markKey = plateMarkKey(v.id, plateMode);
+    /* 「赤線楽曲の非表示」がONなら、一覧・詳細とも赤線のついた曲を出さない（画像保存にも写らない） */
+    var hideMarked = viewerMode && !!plateMode && hideMarkedSongs;
+    function songShown(s){
+      if (s.hidden) return false;
+      if (hideMarked && (s.slashed || isSongMarked(markKey, s.id))) return false;
+      return true;
+    }
 
     var card = el('div', {id:'previewCard'});
 
@@ -3740,7 +3946,7 @@
 
     v.levels.forEach(function(level){
       if (level.hidden) return;
-      if (viewerMode && !(level.songs || []).some(function(s){ return !s.hidden; })) return;
+      if (viewerMode && !(level.songs || []).some(songShown)) return;
       if (opts.viewerHidden && isPvLevelHidden(v, level)) return;
       var block = el('div', {class:'pv-level'});
       /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
@@ -3767,7 +3973,7 @@
       } else {
         block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
       }
-      var visibleSongs = level.songs.filter(function(s){ return !s.hidden; });
+      var visibleSongs = level.songs.filter(songShown);
       if (visibleSongs.length === 0){
         block.appendChild(el('div', {class:'pv-empty', text:'（画像未追加）'}));
       } else {
@@ -3806,6 +4012,11 @@
             t.title = 'タップで斜線をつける／外す';
             t.addEventListener('click', function(){
               toggleSongMark(markKey, song.id);
+              /* 非表示ONのときは、赤線をつけた曲をその場で表から外す */
+              if (hideMarked){
+                var holder = card.parentNode;
+                if (holder){ holder.replaceChild(buildPreviewNode(v, opts), card); return; }
+              }
               syncSlash();
             });
           }
@@ -3985,7 +4196,10 @@
   }
   function makeSaveGroup(onSave){
     var g = el('div', {class:'save-group', role:'group', 'aria-label':'画像として保存（PNG）'});
-    var saveBtn = el('button', {type:'button', class:'save-group-label', text:'画像として保存'});
+    /* 画像を保存するボタンだと一目で分かるよう、アイコン＋「画像保存」 */
+    var saveBtn = el('button', {type:'button', class:'save-group-label'});
+    saveBtn.appendChild(iconNode('save', 'save-icon'));
+    saveBtn.appendChild(el('span', {text:'画像保存'}));
     saveBtn.addEventListener('click', function(){ onSave(getExportBase(), saveBtn); });
     g.appendChild(saveBtn);
     var cur = getExportBase();
@@ -3998,7 +4212,7 @@
     });
     return g;
   }
-  function exportPNG(v, statusEl, btn, base){
+  function exportPNG(v, statusEl, btn, base, prepare){
     var node = document.getElementById('previewCard');
     var pmode = (v && v.id && v.docType !== 'jewel') ? getPlateMode(v) : '';
     var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + (pmode ? '_' + plateNameForMode(v, pmode) : '') + '.png';
@@ -4010,7 +4224,35 @@
       node.style.setProperty('--pv-cols', String(Math.min(12, maxSongs)));
     }
     /* 12曲で折り返す幅を確保してから描き込む */
-    captureNodePNG(node, name, statusEl, btn, 'pv-export', base);
+    captureNodePNG(node, name, statusEl, btn, 'pv-export', base, prepare);
+  }
+  /* プレート難易度表の保存画像：ランクの並びを半分で切って左右に並べ、真ん中に仕切り線を入れる。
+     ランクの途中では切らない。高さは「プレートの段数」でおおよそ見積もって、左右がなるべく同じ高さになる所で切る */
+  function splitTierShot(shot){
+    var bands = Array.prototype.slice.call(shot.querySelectorAll(':scope > .ptier-band'));
+    if (bands.length < 2) return;
+    var weights = bands.map(function(b){
+      var w = 1;
+      Array.prototype.forEach.call(b.querySelectorAll('.tier-group'), function(g){
+        var n = g.querySelectorAll('.ptier-cell').length;
+        w += 0.6 + (n ? Math.ceil(n / 3) * 1.4 : 0.6);
+      });
+      return w;
+    });
+    var total = weights.reduce(function(a, b){ return a + b; }, 0);
+    var acc = 0, cut = 1, best = Infinity;
+    for (var i = 0; i < bands.length - 1; i++){
+      acc += weights[i];
+      var diff = Math.abs(acc - total / 2);
+      if (diff < best){ best = diff; cut = i + 1; }
+    }
+    var wrap = el('div', {class:'ptier-split'});
+    var left = el('div', {class:'ptier-col'}), right = el('div', {class:'ptier-col'});
+    bands[0].parentNode.insertBefore(wrap, bands[0]);
+    bands.forEach(function(b, i){ (i < cut ? left : right).appendChild(b); });
+    wrap.appendChild(left);
+    wrap.appendChild(el('div', {class:'ptier-split-line'}));
+    wrap.appendChild(right);
   }
 
   /* 指定した要素をPNGにして保存する。
@@ -4042,7 +4284,7 @@
     var go = function(){ ensureHtml2Canvas().catch(function(){}); };
     setTimeout(go, 0);
   }
-  function captureNodePNG(node, name, statusEl, btn, exportClass, base){
+  function captureNodePNG(node, name, statusEl, btn, exportClass, base, prepare){
     if (!node) return;
     btn.disabled = true;
     statusEl.textContent = '画像を生成中…';
@@ -4062,6 +4304,8 @@
     }
     if (exportClass) shot.classList.add(exportClass);
     if (base === 'white') shot.classList.add('export-white');
+    /* 保存画像だけの並べ替え（難易度表の左右分けなど） */
+    if (prepare){ try{ prepare(shot); }catch(e){} }
     shot.style.width = 'max-content';
     holder.appendChild(shot);
     /* 元の表と同じ場所（同じ親の中）に置くので、見た目の指定もそのまま効く */
@@ -4146,15 +4390,11 @@
   function makeMarkToggleBar(v){
     var bar = el('div', {class:'mark-toggle-bar'});
     if (!v){
-      /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外） */
-      ['13+', '13', '12+'].forEach(function(lb){
-        bar.appendChild(makeOnOffButton(lb + '↓', isCutShown(lb), function(){
-          var next = !isCutShown(lb);
-          setShownFrom(lb, next);
-          renderApp();
-          return next;
-        }));
-      });
+      /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外）。
+         「13+↓ ON/OFF | ▼」の1つにまとめ、▼で 13+ → 13 → 12+ と切り替える */
+      bar.appendChild(makeCutPicker());
+      /* 一覧の上に出すバージョンを3つまで選ぶ */
+      bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
       var lseg = el('div', {class:'plate-mode-seg list-mode-seg', role:'group', 'aria-label':'表示するプレート'});
       var cur = commonListMode();
@@ -4164,12 +4404,17 @@
         b.setAttribute('aria-pressed', cur === m ? 'true' : 'false');
         lseg.appendChild(b);
       });
-      /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
-      if (cur){
-        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
+      bar.appendChild(makeHelpButton('help-btn-list'));
+      /* 13+↓などの下の段に「赤線楽曲の非表示」「赤線削除」を常に出す */
+      {
+        var subRow = el('div', {class:'mark-sub-row'});
+        /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
+        subRow.appendChild(makeHideMarkedButton(function(){ renderApp(); }));
+        /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
+        subRow.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
           onclick: function(){
             var m = commonListMode();
-            if (!m) return;
+            if (!m){ showAlert('極・将・神・舞のどれかを選んでから押してください。'); return; }
             showDeleteConfirm(PLATE_MODE_LABEL[m] + 'の赤線を全て削除しますか？', function(){
               allVersions.forEach(function(x){
                 if (x.docType === 'jewel') return;
@@ -4179,8 +4424,8 @@
               renderApp();
             }, { yesText: '削除', oneLine: true });
           }}));
+        bar.appendChild(subRow);
       }
-      bar.appendChild(makeHelpButton('help-btn-list'));
       var modeRow = el('div', {class:'mode-row'});
       var HINT_KEY = 'mmplate_hint_mode_closed_v1';
       var hintClosed = false;
@@ -4264,7 +4509,7 @@
 
     var grid = el('div', {class:'versions-grid'});
     var anchorCard = null;
-    sortedVersions().forEach(function(v, idx){
+    listOrderedVersions().forEach(function(v, idx){
       var isJewel = (v.docType === 'jewel');
       var card = el('div', {class:'version-card', onclick: function(){ goDetail(v.id); }});
       card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : (specVersionColor(v) || v.themeColor)}}));
@@ -4353,6 +4598,7 @@
       if (!isJewelDoc) pvHolder.appendChild(makeHelpButton('help-btn-card'));
     }
     var modeBtns = [];
+    var hideBtn = null;
     function paintModes(){
       var cur = getPlateMode(v);
       modeBtns.forEach(function(b){ b.classList.toggle('is-active', b.__mode === cur); b.setAttribute('aria-pressed', b.__mode === cur ? 'true' : 'false'); });
@@ -4382,6 +4628,11 @@
           seg.appendChild(b);
         });
         markBar.appendChild(seg);
+        /* 赤線楽曲の非表示（常に表示。シンクのお相手記録には関係しない） */
+        hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
+        var hideRow = el('div', {class:'mark-sub-row'});
+        hideRow.appendChild(hideBtn);
+        markBar.appendChild(hideRow);
         paintModes();
       }
       root.appendChild(markBar);
@@ -4953,7 +5204,7 @@
     if (!t){ goPlateTierList(); return; }
     var bar = el('div', {class:'view-topbar'});
     var statusEl = el('span', {class:'save-toast', role:'status'});
-    var pngBtn = makeSaveGroup(function(base, b){ exportPNG({versionName: t.title}, statusEl, b, base); });
+    var pngBtn = makeSaveGroup(function(base, b){ exportPNG({versionName: t.title}, statusEl, b, base, splitTierShot); });
     bar.appendChild(pngBtn);
     bar.appendChild(el('div', {style:{flex:'1'}}));
     bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
@@ -5652,6 +5903,10 @@
       renderGuideSection(root);
     } else if (section === 'import'){
       renderImportSection(root);
+    } else if (section === 'fill'){
+      renderFillSection(root);
+    } else if (section === 'count'){
+      renderCountSection(root);
     } else {
       renderReviewsSection(root);
     }
@@ -5967,7 +6222,7 @@
        極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
      通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
   var MAINET_ORIGIN = 'https://maimaidx.jp';
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nPromise.all([get(3),get(4)]).then(function(a){var rec=a[0].concat(a[1]);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){box.textContent='読み取りに失敗しました：'+e.message;});})();";
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nPromise.all([get(0),get(1),get(2),get(3),get(4)]).then(function(a){var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){box.textContent='読み取りに失敗しました：'+e.message;});})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -5994,23 +6249,23 @@
     });
     return hit;
   }
+  /* 取り込みで赤線をつけるプレート。
+     通常の表は、プレート画像が無くても極・将・神・舞すべて（例：真には将のプレートが無いが、将の赤線はつける）。
+     舞・覇者の表は今まで通り、表にあるプレートだけ */
+  function importModesFor(v){
+    return isMaiHashaDoc(v) ? availablePlateModes(v) : selectablePlateModes(v);
+  }
   function buildImportPlan(records){
     var idx = {};
     (records || []).forEach(function(r){
       if (!Array.isArray(r) || r.length < 6) return;
       idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
     });
-    var COND = {
-      '極':   function(x){ return /^(fc|fcp|ap|app)$/.test(x.fc); },
-      '将':   function(x){ return x.ach >= 100; },
-      '神':   function(x){ return /^(ap|app)$/.test(x.fc); },
-      '舞舞': function(x){ return /^(fdx|fdxp|fsd|fsdp)$/.test(x.sync); },
-      '覇者': function(x){ return x.ach >= 80; }
-    };
+    var COND = PLATE_COND;
     var plan = [], matched = 0, total = 0;
     allVersions.forEach(function(v){
       if (v.docType === 'jewel') return;
-      var modes = availablePlateModes(v);
+      var modes = importModesFor(v);
       if (!modes.length) return;
       var mai = isMaiHashaDoc(v), diff = mai ? 4 : 3;
       var maps = {};
@@ -6048,7 +6303,7 @@
       if (v.docType === 'jewel') return;
       var ids = [];
       (v.levels || []).forEach(function(l){ (l.songs || []).forEach(function(s){ ids.push(s.id); }); });
-      parts.push(v.id + ':' + availablePlateModes(v).join('') + ':' + ids.join(','));
+      parts.push(v.id + ':' + importModesFor(v).join('') + ':' + ids.join(','));
     });
     return fnvHashStr(parts.join('|'));
   }
@@ -6127,6 +6382,15 @@
     });
     wrap.appendChild(steps);
 
+    /* ③の下の注意書き */
+    var caution = el('div', {class:'import-caution', role:'note'});
+    caution.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var cBody = el('div');
+    cBody.appendChild(el('p', {text:'取り込んだ進捗は保存されますが、自動では更新されません。'}));
+    cBody.appendChild(el('p', {text:'スコアを更新したあとは、お手数ですがご自身でもう一度取り込んでください。'}));
+    caution.appendChild(cBody);
+    wrap.appendChild(caution);
+
     var code = bookmarkletCode();
     var actions = el('div', {class:'page-actions'});
     var copyBtn = el('button', {class:'btn btn-primary btn-lg', type:'button', text:'コードをコピー'});
@@ -6153,6 +6417,400 @@
     root.appendChild(wrap);
   }
 
+  /* ========================= 下埋め進捗 =========================
+     maimai NET から取り込んだ記録（BASIC〜EXPERT など）から、プレートごとの下埋めの残りを出す。
+     対象の難易度は表の「下埋め料金」の色（例：緑〜赤）。曲は表の曲ではなく、そのバージョンの全譜面 */
+  var PLATE_COND = {
+    '極':   function(x){ return /^(fc|fcp|ap|app)$/.test(x.fc); },
+    '将':   function(x){ return x.ach >= 100; },
+    '神':   function(x){ return /^(ap|app)$/.test(x.fc); },
+    '舞舞': function(x){ return /^(fdx|fdxp|fsd|fsdp)$/.test(x.sync); },
+    '覇者': function(x){ return x.ach >= 80; }
+  };
+  var DIFF_INFO = [
+    { name:'BASIC',     color:'#3fbf5f', ink:'#ffffff' },
+    { name:'ADVANCED',  color:'#f2b705', ink:'#2a2000' },
+    { name:'EXPERT',    color:'#e0463f', ink:'#ffffff' },
+    { name:'MASTER',    color:'#9b4fd6', ink:'#ffffff' },
+    { name:'Re:MASTER', color:'#d9c2f7', ink:'#3a2560' }
+  ];
+  var FILL_MODES = ['極', '将', '神', '舞舞'];
+  var fillView = 'list', fillId = null;
+  var FILL_MODE_KEY = 'mmplate_fill_mode_v1';
+  var fillMode = (function(){ try{ var x = sessionStorage.getItem(FILL_MODE_KEY); return FILL_MODES.indexOf(x) >= 0 ? x : '極'; }catch(e){ return '極'; } })();
+  function setFillMode(m){ fillMode = m; try{ sessionStorage.setItem(FILL_MODE_KEY, m); }catch(e){} }
+
+  /* 表の「緑〜赤」から、下埋めの難易度（0:BASIC〜4:Re:MASTER）を高い順に */
+  function fillDiffsFor(v){
+    var found = [];
+    String(v.priceRange || '').split('').forEach(function(ch){ var i = COLOR_ORDER.indexOf(ch); if (i >= 0) found.push(i); });
+    if (!found.length) found = [0, 2];
+    var lo = Math.min.apply(null, found), hi = Math.max.apply(null, found), out = [];
+    for (var d = hi; d >= lo; d--) out.push(d);
+    return out;
+  }
+  function fillChartsFor(v){
+    var vers = docSongVersions(v);
+    return SONG_MASTER_LIST.filter(function(s){
+      if (!vers.some(function(x){ return songInVer(s, x); })) return false;
+      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世 */
+      return true;
+    });
+  }
+  function netRecordIndex(){
+    var o = loadNetRecords();
+    if (!o || !Array.isArray(o.records)) return null;
+    var idx = {}, lower = false;
+    o.records.forEach(function(r){
+      if (!Array.isArray(r) || r.length < 6) return;
+      if (+r[2] < 3) lower = true;
+      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
+    });
+    return { idx: idx, hasLower: lower, at: o.at };
+  }
+  function fillDocs(){
+    return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel' && !isMaiHashaDoc(v); });
+  }
+  function computeFill(v, mode, rec){
+    var charts = fillChartsFor(v), cond = PLATE_COND[mode];
+    var rows = fillDiffsFor(v).map(function(d){
+      var pool = d === 4 ? charts.filter(function(s){ return !!s.remas; }) : charts;
+      var left = 0;
+      pool.forEach(function(s){
+        var x = rec.idx[normSongName(s.name) + '|' + s.type + '|' + d];
+        if (!(x && cond && cond(x))) left++;
+      });
+      return { diff: d, total: pool.length, left: left };
+    });
+    var total = 0, left = 0;
+    rows.forEach(function(r){ total += r.total; left += r.left; });
+    return { rows: rows, total: total, left: left, done: total - left };
+  }
+  function fmtHourMin(sec){
+    var m = Math.round(sec / 60), h = Math.floor(m / 60);
+    return h > 0 ? (h + '時間' + (m % 60) + '分') : ((m % 60) + '分');
+  }
+
+  function goFill(id){ section = 'fill'; fillView = id ? 'detail' : 'list'; fillId = id || null; renderApp(); scrollToTopNow(); }
+
+  /* 一覧：プレート表のプレビューなし版 */
+  function renderSimpleVersionList(root, docs, onOpen){
+    var grid = el('div', {class:'versions-grid simple-grid'});
+    docs.forEach(function(v){
+      var card = el('button', {type:'button', class:'version-card simple-card', onclick: function(){ onOpen(v.id); }});
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+  }
+  function makeModeSeg(modes, cur, onPick, label){
+    var seg = el('div', {class:'plate-mode-seg', role:'group', 'aria-label': label || 'プレート'});
+    modes.forEach(function(m){
+      var b = el('button', {type:'button', text: PLATE_MODE_LABEL[m], class: cur === m ? 'is-active' : '',
+        onclick: function(){ onPick(m); }});
+      b.setAttribute('aria-pressed', cur === m ? 'true' : 'false');
+      seg.appendChild(b);
+    });
+    return seg;
+  }
+  function needImportNote(root, text){
+    var box = el('div', {class:'import-caution fill-note', role:'note'});
+    box.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var body = el('div');
+    String(text).split('\n').forEach(function(t){ body.appendChild(el('p', {text: t})); });
+    var go = el('button', {type:'button', class:'btn btn-sm fill-import-btn', text:'maimai NET から取り込む', onclick: function(){ goSection('import'); }});
+    body.appendChild(go);
+    box.appendChild(body);
+    root.appendChild(box);
+  }
+
+  function renderFillSection(root){
+    var docs = fillDocs();
+    if (fillView === 'detail'){
+      var v = findVersion(fillId);
+      if (!v || docs.indexOf(v) < 0){ fillView = 'list'; fillId = null; }
+      else { renderFillDetail(root, v); return; }
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'下埋め進捗'}));
+    root.appendChild(el('p', {class:'page-lead', text:'バージョンを選ぶと、プレートごとの下埋めの残りが見られます。'}));
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    renderSimpleVersionList(root, docs, goFill);
+  }
+
+  function renderFillDetail(root, v){
+    root.appendChild(el('h2', {class:'page-title fill-title', text: v.versionName}));
+    var bar = el('div', {class:'detail-actions fill-actions'});
+    bar.appendChild(makeModeSeg(FILL_MODES, fillMode, function(m){ setFillMode(m); renderApp(); }, '下埋めを見るプレート'));
+    root.appendChild(bar);
+
+    if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
+    var rec = netRecordIndex();
+    if (!rec){
+      needImportNote(root, 'maimai NET から記録を取り込むと、下埋めの残りが表示されます。');
+      return;
+    }
+    if (!rec.hasLower){
+      needImportNote(root, '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
+      return;
+    }
+    var r = computeFill(v, fillMode, rec);
+    var pct = r.total ? Math.floor(r.done / r.total * 100) : 0;
+
+    var card = el('div', {class:'fill-card'});
+    card.appendChild(el('div', {class:'fill-plate', text: plateNameForMode(v, fillMode) === fillMode ? (PLATE_MODE_LABEL[fillMode] + 'の下埋め') : (plateNameForMode(v, fillMode) + 'の下埋め')}));
+    /* 帯：赤（EXPERT）・黄（ADVANCED）・緑（BASIC）の残り → 白（達成済み） */
+    var row = el('div', {class:'fill-bar-row'});
+    var barEl = el('div', {class:'fill-bar', role:'img', 'aria-label': '進捗' + pct + '%'});
+    r.rows.forEach(function(x){
+      if (!x.left) return;
+      var info = DIFF_INFO[x.diff];
+      barEl.appendChild(el('div', {class:'fill-seg', title: info.name + ' 残り' + x.left,
+        style:{flexGrow: String(x.left), background: info.color, color: info.ink}, text: String(x.left)}));
+    });
+    if (r.done){
+      barEl.appendChild(el('div', {class:'fill-seg fill-seg-done', title:'達成 ' + r.done, style:{flexGrow: String(r.done)}, text: String(r.done)}));
+    }
+    row.appendChild(barEl);
+    var pctEl = el('div', {class:'fill-pct'});
+    pctEl.appendChild(el('span', {class:'fill-pct-label', text:'進捗'}));
+    pctEl.appendChild(el('span', {class:'fill-pct-num', text: pct + '%'}));
+    row.appendChild(pctEl);
+    card.appendChild(row);
+
+    var legend = el('div', {class:'fill-legend'});
+    r.rows.forEach(function(x){
+      var info = DIFF_INFO[x.diff];
+      var it = el('span', {class:'fill-legend-item'});
+      it.appendChild(el('i', {style:{background: info.color}}));
+      it.appendChild(document.createTextNode(info.name + ' 残り' + x.left));
+      legend.appendChild(it);
+    });
+    var it2 = el('span', {class:'fill-legend-item'});
+    it2.appendChild(el('i', {class:'fill-legend-done'}));
+    it2.appendChild(document.createTextNode('達成 ' + r.done + ' / ' + r.total));
+    legend.appendChild(it2);
+    card.appendChild(legend);
+
+    var stats = el('div', {class:'fill-stats'});
+    function stat(label, value, sub){
+      var s = el('div', {class:'fill-stat'});
+      s.appendChild(el('div', {class:'fill-stat-label', text: label}));
+      s.appendChild(el('div', {class:'fill-stat-value', text: value}));
+      if (sub) s.appendChild(el('div', {class:'fill-stat-sub', text: sub}));
+      stats.appendChild(s);
+    }
+    stat('残り', r.left + '譜面');
+    stat('残り', fmtHourMin(r.left * SEC_PER_CHART), '1譜面 3分24秒で計算');
+    stat('残り', yen(Math.ceil(r.left / 3) * 100), '1人プレイ（2人なら ' + yen(roundUpToHundred(Math.round(r.left * 100 / 4))) + '）');
+    card.appendChild(stats);
+    root.appendChild(card);
+    root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+  }
+
+  /* ========================= 回数と日付の記録 =========================
+     プレートごとに、その曲を達成するまでのプレイ回数と、達成した日を書いておく（この端末に保存） */
+  var countView = 'list', countId = null;
+  var COUNT_MODES = ['極', '将', '神', '舞舞', '覇者'];
+  var COUNT_MODE_KEY = 'mmplate_count_mode_v1';
+  var countMode = (function(){ try{ var x = sessionStorage.getItem(COUNT_MODE_KEY); return COUNT_MODES.indexOf(x) >= 0 ? x : '極'; }catch(e){ return '極'; } })();
+  function setCountMode(m){ countMode = m; try{ sessionStorage.setItem(COUNT_MODE_KEY, m); }catch(e){} }
+  var COUNT_REC_KEY = 'mmplate_count_records_v1';
+  var countRecords = (function(){ try{ var o = JSON.parse(localStorage.getItem(COUNT_REC_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function persistCountRecords(){ try{ localStorage.setItem(COUNT_REC_KEY, JSON.stringify(countRecords)); }catch(e){} }
+  function getCountRec(vid, mode, sid){
+    var a = countRecords[vid], b = a && a[mode];
+    return (b && b[sid]) || null;
+  }
+  function setCountRec(vid, mode, sid, patch){
+    var a = countRecords[vid] || (countRecords[vid] = {});
+    var b = a[mode] || (a[mode] = {});
+    var cur = b[sid] || {};
+    Object.keys(patch).forEach(function(k){ if (patch[k]) cur[k] = patch[k]; else delete cur[k]; });
+    if (Object.keys(cur).length) b[sid] = cur; else delete b[sid];
+    if (!Object.keys(b).length) delete a[mode];
+    if (!Object.keys(a).length) delete countRecords[vid];
+    persistCountRecords();
+  }
+  function countDocs(){ return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }); }
+  function countModesFor(v){ return selectablePlateModes(v); }
+  function goCount(id){ section = 'count'; countView = id ? 'detail' : 'list'; countId = id || null; renderApp(); scrollToTopNow(); }
+
+  function renderCountSection(root){
+    var docs = countDocs();
+    if (countView === 'detail'){
+      var v = findVersion(countId);
+      if (!v || docs.indexOf(v) < 0){ countView = 'list'; countId = null; }
+      else { renderCountDetail(root, v); return; }
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'回数と日付の記録'}));
+    root.appendChild(el('p', {class:'page-lead', text:'達成するまでに何回プレイしたかと、達成した日を曲ごとに残せます（この端末に保存）。'}));
+    var bar = el('div', {class:'detail-actions'});
+    bar.appendChild(makeModeSeg(COUNT_MODES, countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    root.appendChild(bar);
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    renderSimpleVersionList(root, docs, goCount);
+  }
+
+  function fmtYmd(s){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? (+m[1]) + '/' + (+m[2]) + '/' + (+m[3]) : ''; }
+
+  function renderCountDetail(root, v){
+    root.appendChild(el('h2', {class:'page-title', text: v.versionName}));
+    var modes = countModesFor(v);
+    var mode = modes.indexOf(countMode) >= 0 ? countMode : modes[0];
+    var bar = el('div', {class:'detail-actions'});
+    bar.appendChild(makeModeSeg(modes, mode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    root.appendChild(bar);
+
+    var card = el('div', {class:'count-card'});
+    var wrote = false;
+    (v.levels || []).forEach(function(level){
+      if (level.hidden || isPvLevelHidden(v, level)) return;
+      var songs = (level.songs || []).filter(function(s){ return !s.hidden; });
+      if (!songs.length) return;
+      wrote = true;
+      card.appendChild(el('div', {class:'sync-level count-level', text: level.label || '',
+        style:{color: level.color || 'var(--text)', '--lvc': level.color || '#ffffff'}}));
+      var list = el('div', {class:'count-list'});
+      songs.forEach(function(song){
+        var item = el('div', {class:'count-item'});
+        var thumb = el('div', {class:'sync-thumb count-thumb'});
+        var src = song.img || resolveSongImage(song.name);
+        if (src){
+          thumb.appendChild(makeSongImg(song.name, src, getCachedSongImage(song.name), function(){
+            thumb.classList.add('no-img');
+            thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+          }));
+        } else {
+          thumb.classList.add('no-img');
+          thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+        }
+        var ct = chartTypeFor(v, song, level.label);
+        if (ct && CHART_TYPE_SOURCES[ct]) thumb.appendChild(makeChartTypeMark(ct));
+        item.appendChild(thumb);
+
+        var rec = getCountRec(v.id, mode, song.id) || {};
+        var fields = el('div', {class:'count-fields'});
+        var nRow = el('label', {class:'count-n'});
+        var inp = el('input', {type:'number', inputmode:'numeric', min:'1', class:'count-input', 'aria-label': (song.name || '') + 'の回数'});
+        inp.value = rec.n || '';
+        inp.addEventListener('input', function(){
+          var x = String(inp.value || '').replace(/[^0-9]/g, '').slice(0, 5);
+          setCountRec(v.id, mode, song.id, { n: x });
+        });
+        nRow.appendChild(inp);
+        nRow.appendChild(el('span', {class:'count-unit', text:'回'}));
+        fields.appendChild(nRow);
+        var dBtn = el('button', {type:'button', class:'count-date' + (rec.d ? '' : ' is-empty'), text: rec.d ? fmtYmd(rec.d) : '日付'});
+        dBtn.addEventListener('click', function(){
+          var cur = (getCountRec(v.id, mode, song.id) || {}).d || '';
+          openDateWheel(cur, function(val){
+            setCountRec(v.id, mode, song.id, { d: val });
+            dBtn.textContent = val ? fmtYmd(val) : '日付';
+            dBtn.classList.toggle('is-empty', !val);
+          });
+        });
+        fields.appendChild(dBtn);
+        item.appendChild(fields);
+        list.appendChild(item);
+      });
+      card.appendChild(list);
+    });
+    if (!wrote) card.appendChild(el('div', {class:'pv-empty', text:'（楽曲が登録されていません）'}));
+    root.appendChild(card);
+    root.appendChild(el('div', {class:'pv-caption', text:'書いた内容はこの端末の中にだけ残ります。'}));
+  }
+
+  /* 日付をスクロールで選ぶ（年・月・日の3列） */
+  function openDateWheel(initial, onDone){
+    var now = new Date();
+    var m0 = /^(\d{4})-(\d{2})-(\d{2})$/.exec(initial || '');
+    var sel = m0 ? { y: +m0[1], m: +m0[2], d: +m0[3] } : { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+    var Y0 = 2012, Y1 = now.getFullYear() + 1;
+    if (sel.y < Y0) sel.y = Y0;
+    if (sel.y > Y1) sel.y = Y1;
+    var H = 40;
+    function daysIn(y, m){ return new Date(y, m, 0).getDate(); }
+    function range(a, b){ var o = []; for (var i = a; i <= b; i++) o.push(i); return o; }
+
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box wheel-box', role:'dialog', 'aria-modal':'true', 'aria-label':'日付を選ぶ'});
+    box.appendChild(el('div', {class:'pin-title', text:'日付を選ぶ'}));
+    var wheels = el('div', {class:'wheels'});
+    wheels.appendChild(el('div', {class:'wheel-band', 'aria-hidden':'true'}));
+    function makeCol(values, unit, key){
+      var col = el('div', {class:'wheel-col', tabindex:'0'});
+      col.__values = values; col.__key = key;
+      function fill(vals){
+        col.textContent = '';
+        col.__values = vals;
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        vals.forEach(function(x, i){
+          col.appendChild(el('div', {class:'wheel-item', text: x + unit, onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+        });
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        col.appendChild(el('div', {class:'wheel-pad'}));
+      }
+      col.__fill = fill;
+      fill(values);
+      var t = null;
+      col.addEventListener('scroll', function(){
+        clearTimeout(t);
+        t = setTimeout(function(){
+          var i = Math.max(0, Math.min(col.__values.length - 1, Math.round(col.scrollTop / H)));
+          sel[key] = col.__values[i];
+          if (key !== 'd') fixDays();
+        }, 90);
+      });
+      col.addEventListener('keydown', function(e){
+        var i = col.__values.indexOf(sel[key]);
+        if (e.key === 'ArrowDown'){ e.preventDefault(); col.scrollTo({ top: Math.min(col.__values.length - 1, i + 1) * H }); }
+        if (e.key === 'ArrowUp'){ e.preventDefault(); col.scrollTo({ top: Math.max(0, i - 1) * H }); }
+      });
+      return col;
+    }
+    var colY = makeCol(range(Y0, Y1), '年', 'y');
+    var colM = makeCol(range(1, 12), '月', 'm');
+    var colD = makeCol(range(1, daysIn(sel.y, sel.m)), '日', 'd');
+    function fixDays(){
+      var n = daysIn(sel.y, sel.m);
+      if (colD.__values.length === n) return;
+      if (sel.d > n) sel.d = n;
+      colD.__fill(range(1, n));
+      colD.scrollTop = (sel.d - 1) * H;
+    }
+    wheels.appendChild(colY); wheels.appendChild(colM); wheels.appendChild(colD);
+    box.appendChild(wheels);
+
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'消す', style:{marginRight:'auto'},
+      onclick: function(){ closeModal(backdrop); onDone(''); }}));
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'今日',
+      onclick: function(){
+        sel = { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+        colY.scrollTop = (sel.y - Y0) * H; colM.scrollTop = (sel.m - 1) * H; fixDays(); colD.scrollTop = (sel.d - 1) * H;
+      }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      function p2(n){ return (n < 10 ? '0' : '') + n; }
+      closeModal(backdrop);
+      onDone(sel.y + '-' + p2(sel.m) + '-' + p2(sel.d));
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    colY.scrollTop = (sel.y - Y0) * H;
+    colM.scrollTop = (sel.m - 1) * H;
+    colD.scrollTop = (sel.d - 1) * H;
+  }
+
   /* ========================= ホーム／メニュー =========================
      ホームから各ページへ飛ぶ。右上の「メニュー」からも同じ所へ行ける。 */
   function svgIcon(paths){
@@ -6169,6 +6827,10 @@
     backup:  svgIcon('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4L11.4 6.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0L5 12.6a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>'),
     notice:  svgIcon('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'),
     import:  svgIcon('<path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>'),
+    save:    svgIcon('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.5l-4.8-4.8L8 19"/>'),
+    fill:    svgIcon('<rect x="3" y="9" width="18" height="6" rx="3"/><path d="M6 12h7" stroke-width="3.2"/><path d="M7 5h10M7 19h10"/>'),
+    count:   svgIcon('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8 14h3M8 17h6"/>'),
+    pin:     svgIcon('<path d="M9 3.5h6l-1 5 3 3v1.5H7V11.5l3-3z"/><path d="M12 13v7.5"/>'),
     review:  svgIcon('<path d="M12 3.8l2.5 5.1 5.6.8-4.05 3.95.96 5.6L12 16.6l-5.01 2.65.96-5.6L3.9 9.7l5.6-.8z"/>')
   };
   function iconNode(name, cls){
@@ -6179,6 +6841,8 @@
   var MENU_ITEMS = [
     { key:'home',       icon:'home',   label:'ホーム' },
     { key:'plates',     icon:'plates', label:'実績プレート表' },
+    { key:'fill',       icon:'fill',   label:'下埋め進捗' },
+    { key:'count',      icon:'count',  label:'回数と日付の記録' },
     { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー' },
     { key:'import',     icon:'import', label:'maimai NET 取り込み' },
     { key:'guide',      icon:'guide',  label:'表の解説' },
@@ -6399,6 +7063,8 @@
       if (plateTierView === 'detail' && plateTierCurrentId) return '#/tiers/' + encodeURIComponent(plateTierCurrentId);
       return '#/tiers';
     }
+    if (section === 'fill') return (fillView === 'detail' && fillId) ? '#/fill/' + encodeURIComponent(fillId) : '#/fill';
+    if (section === 'count') return (countView === 'detail' && countId) ? '#/count/' + encodeURIComponent(countId) : '#/count';
     if (section === 'guide') return '#/guide';
     if (section === 'import') return '#/import';
     if (section === 'reviews') return '#/review';
@@ -6415,6 +7081,8 @@
   function backTargetLabel(){
     if (section === 'plates' && view === 'detail') return '実績プレート表';
     if (section === 'plateTiers' && plateTierView === 'detail') return 'プレート難易度メーカー';
+    if (section === 'fill' && fillView === 'detail') return '下埋め進捗';
+    if (section === 'count' && countView === 'detail') return '回数と日付の記録';
     return 'ホーム';
   }
   /* ---- スクロールしても使える操作バー ----
@@ -6427,7 +7095,7 @@
     var bar = root.querySelector('.mark-toggle-bar');
     if (!bar || !('IntersectionObserver' in window)) return;
     var back = root.querySelector('#pageBackBtn');
-    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn'));
+    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker'));
     var help = root.querySelector('.help-btn');
     var seg = bar.querySelector('.plate-mode-seg');
 
@@ -6435,6 +7103,15 @@
     var inner = el('div', {class:'sticky-inner'});
     dock.appendChild(inner);
     function mirror(orig, after){
+      /* 「13+↓ ON/OFF | ▼」のようにボタンが2つ入ったものは、中のボタンごとに元を押す */
+      if (orig.classList.contains('cut-picker')){
+        var g = orig.cloneNode(true);
+        var ob = orig.querySelectorAll('button'), cb = g.querySelectorAll('button');
+        Array.prototype.forEach.call(cb, function(x, i){
+          x.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); if (ob[i]) ob[i].click(); if (after) after(); });
+        });
+        return g;
+      }
       var c = orig.cloneNode(true);
       c.removeAttribute('id');
       c.addEventListener('click', function(e){ e.preventDefault(); orig.click(); if (after) after(); });
@@ -6484,6 +7161,8 @@
     var parent = '';
     if (section === 'plates' && view === 'detail') parent = '#/plates';
     else if (section === 'plateTiers' && plateTierView === 'detail') parent = '#/tiers';
+    else if (section === 'fill' && fillView === 'detail') parent = '#/fill';
+    else if (section === 'count' && countView === 'detail') parent = '#/count';
     var wasDetail = (section === 'plates' && view === 'detail');
     applyRoute(parent);
     renderApp();
@@ -6510,6 +7189,14 @@
       section = 'plateTiers'; plateTierView = 'detail'; plateTierCurrentId = decodeURIComponent(m[1]);
     } else if (hs === '#/tiers'){
       section = 'plateTiers'; plateTierView = 'list'; plateTierCurrentId = null;
+    } else if ((m = /^#\/fill\/(.+)$/.exec(hs))){
+      section = 'fill'; fillView = 'detail'; fillId = decodeURIComponent(m[1]);
+    } else if (hs === '#/fill'){
+      section = 'fill'; fillView = 'list'; fillId = null;
+    } else if ((m = /^#\/count\/(.+)$/.exec(hs))){
+      section = 'count'; countView = 'detail'; countId = decodeURIComponent(m[1]);
+    } else if (hs === '#/count'){
+      section = 'count'; countView = 'list'; countId = null;
     } else if (hs === '#/guide'){
       section = 'guide';
     } else if (hs === '#/import'){
