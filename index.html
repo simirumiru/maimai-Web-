@@ -1009,7 +1009,8 @@
   .fill-plate{font-weight:800;font-size:15px;margin-bottom:12px;}
   .fill-bar-row{display:flex;align-items:center;gap:12px;}
   .fill-bar{flex:1;min-width:0;display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--border-ctl);background:var(--panel);}
-  .fill-seg{flex-basis:0;min-width:2.4em;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;}
+  .fill-seg{flex-basis:0;min-width:2.4em;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;
+    color:#17252f;}   /* 帯の数字はどの色の上でも同じ濃い色にそろえる */
   .fill-seg + .fill-seg{border-left:1px solid rgba(0,0,0,.12);}
   .fill-seg-done{background:#ffffff;color:#17252f;}
   .fill-pct{flex:none;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;}
@@ -6690,8 +6691,10 @@
     rows.forEach(function(r){ total += r.total; left += r.left; });
     return { rows: rows, total: total, left: left, done: total - left };
   }
+  /* 分の1の位は四捨五入（表の下埋め時間と同じ書き方） */
   function fmtHourMin(sec){
-    var m = Math.round(sec / 60), h = Math.floor(m / 60);
+    var m = Math.round(Math.round(sec / 60) / 10) * 10, h = Math.floor(m / 60);
+    if (sec > 0 && m === 0) return '10分未満';   /* 残りが少しだけあるのに「0分」と出さない */
     return h > 0 ? (h + '時間' + (m % 60) + '分') : ((m % 60) + '分');
   }
 
@@ -6837,7 +6840,7 @@
       if (!x.left) return;
       var info = DIFF_INFO[x.diff];
       barEl.appendChild(el('div', {class:'fill-seg', title: info.name + ' 残り' + x.left,
-        style:{flexGrow: String(x.left), background: info.color, color: info.ink}, text: String(x.left)}));
+        style:{flexGrow: String(x.left), background: info.color}, text: String(x.left)}));
     });
     if (r.done){
       barEl.appendChild(el('div', {class:'fill-seg fill-seg-done', title:'達成 ' + r.done, style:{flexGrow: String(r.done)}, text: String(r.done)}));
