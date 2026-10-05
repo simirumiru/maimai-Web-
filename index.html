@@ -1101,7 +1101,7 @@
   .fill-legend-item{gap:6px;}
   .fill-legend-item i{width:12px;height:12px;}
   .fill-legend-name{color:var(--text-dim);font-weight:600;}
-  .fill-legend-count{font-weight:800;color:var(--text);}
+  .fill-legend-count{font-weight:800;color:var(--text);margin-left:2px;}
   .fill-stats{gap:12px;}
   .fill-stat{padding:12px 14px;display:flex;flex-direction:column;gap:4px;}
   .fill-stat-label{font-size:12.5px;color:var(--text-dim);}
@@ -1119,8 +1119,9 @@
   }
   @media (max-width:420px){
     .fill-legend{font-size:12.5px;}
-    .fill-legend-left{gap:10px;font-size:clamp(10.5px,3.1vw,12.5px);letter-spacing:-.02em;}
-    .fill-legend-left .fill-legend-item{gap:4px;}
+    .fill-legend-left{gap:8px;font-size:clamp(9px,2.75vw,12.5px);letter-spacing:-.03em;}
+    .fill-legend-left .fill-legend-item{gap:3px;}
+    .fill-legend-left .fill-legend-item i{width:10px;height:10px;}
   }
   .fill-export .fill-legend-left{font-size:14px;}
   .fill-export .fill-stat-value{font-size:26px;}
@@ -6899,18 +6900,36 @@
     row.appendChild(pctEl);
     card.appendChild(row);
 
-    /* 1行目：緑・黄・赤の残り（必ず1行）、2行目：達成 */
+    /* 1行目：赤・黄・緑の残り（必ず1行）、2行目：達成 */
     var legend = el('div', {class:'fill-legend'});
     var lrow = el('div', {class:'fill-legend-row fill-legend-left'});
-    r.rows.slice().reverse().forEach(function(x){
+    /* EXPERT → ADVANCED → BASIC の順（帯と同じ並び）。「EXPERT 残り n」 */
+    r.rows.forEach(function(x){
       var info = DIFF_INFO[x.diff];
       var it = el('span', {class:'fill-legend-item'});
       it.appendChild(el('i', {style:{background: info.color}}));
-      it.appendChild(el('span', {class:'fill-legend-name', text: info.name}));
+      it.appendChild(el('span', {class:'fill-legend-name', text: info.name + '残り'}));
       it.appendChild(el('b', {class:'fill-legend-count', text: String(x.left)}));
       lrow.appendChild(it);
     });
     legend.appendChild(lrow);
+    /* 画面の幅に入りきらないときは、1行に収まるまで文字を少しずつ小さくする */
+    function fitLegendRow(){
+      if (!lrow.isConnected) return;
+      lrow.style.fontSize = '';
+      var fs = parseFloat(getComputedStyle(lrow).fontSize) || 13;
+      for (var k = 0; k < 30 && lrow.scrollWidth > lrow.clientWidth + 1 && fs > 8; k++){
+        fs -= 0.25; lrow.style.fontSize = fs + 'px';
+      }
+    }
+    setTimeout(fitLegendRow, 0);
+    if (!window.__fillLegendResize){
+      window.__fillLegendResize = true;
+      window.addEventListener('resize', function(){
+        Array.prototype.forEach.call(document.querySelectorAll('.fill-legend-left'), function(r){ if (r.__fit) r.__fit(); });
+      });
+    }
+    lrow.__fit = fitLegendRow;
     var drow = el('div', {class:'fill-legend-row'});
     var it2 = el('span', {class:'fill-legend-item'});
     it2.appendChild(el('i', {class:'fill-legend-done'}));
