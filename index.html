@@ -1109,9 +1109,8 @@
   .fill-price-line{gap:10px;}
   .fill-price-who{font-size:13px;}
   @media (max-width:520px){
-    /* スマホ：譜面数と時間を横に並べ、料金は下の段に広く */
-    .fill-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-    .fill-stat-price{grid-column:1 / -1;}
+    /* スマホの画面：3つを縦に並べる */
+    .fill-stats{grid-template-columns:1fr;gap:10px;}
     .fill-card{padding:16px 14px;}
     .fill-bar{height:38px;}
     .fill-seg{font-size:14px;min-width:2.6em;}
@@ -1125,6 +1124,11 @@
   }
   .fill-export .fill-legend-left{font-size:14px;}
   .fill-export .fill-stat-value{font-size:26px;}
+  /* 保存画像：どの端末で保存しても3つを横に並べ、余白を作らない */
+  .fill-card.fill-export .fill-stats{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;}
+  .fill-card.fill-export .fill-stat-price{grid-column:auto;}
+  .fill-card.fill-export .fill-stat{justify-content:center;padding:12px 16px;}
+  .fill-card.fill-export .fill-stat-price .fill-stat-value{font-size:22px;}
   /* 黒（ダークテーマ・黒で保存）：帯の数字は白。達成済みの部分は白ではなく濃い灰色にして、白い数字が読めるようにする */
   html[data-theme="dark"] .fill-card:not(.export-white) .fill-seg, .fill-export:not(.export-white) .fill-seg{
     color:#ffffff;text-shadow:0 0 3px rgba(0,0,0,.55), 0 1px 1px rgba(0,0,0,.4);}
