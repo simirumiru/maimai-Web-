@@ -1088,6 +1088,49 @@
   .count-card > .export-only-title + .count-level{margin-top:0;}
   .count-export > .export-only-title + .count-level{margin-top:0;}
   .fill-price-who{font-size:12px;font-weight:800;color:var(--text-dim);min-width:2em;}
+  /* ---- 下埋め：読みやすさ（文字を大きく・濃く、項目名をはっきり） ---- */
+  .fill-card{padding:20px 20px 18px;}
+  .fill-plate{font-size:16px;margin-bottom:14px;}
+  .fill-bar-row{gap:14px;}
+  .fill-bar{height:42px;border-radius:10px;}
+  .fill-seg{font-size:15px;min-width:2.9em;}
+  .fill-pct-label{font-size:12px;}
+  .fill-pct-num{font-size:30px;letter-spacing:-.01em;}
+  .fill-legend{gap:8px;margin:14px 0 18px;font-size:13.5px;color:var(--text);}
+  .fill-legend-row{gap:6px 18px;}
+  .fill-legend-item{gap:6px;}
+  .fill-legend-item i{width:12px;height:12px;}
+  .fill-legend-name{color:var(--text-dim);font-weight:600;}
+  .fill-legend-count{font-weight:800;color:var(--text);}
+  .fill-stats{gap:12px;}
+  .fill-stat{padding:12px 14px;display:flex;flex-direction:column;gap:4px;}
+  .fill-stat-label{font-size:12.5px;color:var(--text-dim);}
+  .fill-stat-value{font-size:24px;line-height:1.25;}
+  .fill-price-line{gap:10px;}
+  .fill-price-who{font-size:13px;}
+  @media (max-width:520px){
+    /* スマホ：譜面数と時間を横に並べ、料金は下の段に広く */
+    .fill-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    .fill-stat-price{grid-column:1 / -1;}
+    .fill-card{padding:16px 14px;}
+    .fill-bar{height:38px;}
+    .fill-seg{font-size:14px;min-width:2.6em;}
+    .fill-pct-num{font-size:26px;}
+    .fill-stat-value{font-size:21px;}
+  }
+  @media (max-width:420px){
+    .fill-legend{font-size:12.5px;}
+    .fill-legend-left{gap:10px;font-size:clamp(10.5px,3.1vw,12.5px);letter-spacing:-.02em;}
+    .fill-legend-left .fill-legend-item{gap:4px;}
+  }
+  .fill-export .fill-legend-left{font-size:14px;}
+  .fill-export .fill-stat-value{font-size:26px;}
+  /* 黒（ダークテーマ・黒で保存）：帯の数字は白。達成済みの部分は白ではなく濃い灰色にして、白い数字が読めるようにする */
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-seg, .fill-export:not(.export-white) .fill-seg{
+    color:#ffffff;text-shadow:0 0 3px rgba(0,0,0,.55), 0 1px 1px rgba(0,0,0,.4);}
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-seg-done, .fill-export:not(.export-white) .fill-seg-done{background:#4a4d57;}
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-bar, .fill-export:not(.export-white) .fill-bar{border-color:#4a4d57;}
+  html[data-theme="dark"] .fill-card:not(.export-white) i.fill-legend-done, .fill-export:not(.export-white) i.fill-legend-done{background:#4a4d57;border-color:#6b707c;}
   /* 取り込み中の表示（画面の上） */
   .import-progress{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;width:min(92vw,380px);
     background:#1d2a35;color:#fff;border-radius:14px;padding:10px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
@@ -6859,14 +6902,16 @@
       var info = DIFF_INFO[x.diff];
       var it = el('span', {class:'fill-legend-item'});
       it.appendChild(el('i', {style:{background: info.color}}));
-      it.appendChild(document.createTextNode(info.name + ' 残り' + x.left));
+      it.appendChild(el('span', {class:'fill-legend-name', text: info.name}));
+      it.appendChild(el('b', {class:'fill-legend-count', text: String(x.left)}));
       lrow.appendChild(it);
     });
     legend.appendChild(lrow);
     var drow = el('div', {class:'fill-legend-row'});
     var it2 = el('span', {class:'fill-legend-item'});
     it2.appendChild(el('i', {class:'fill-legend-done'}));
-    it2.appendChild(document.createTextNode('達成 ' + r.done + ' / ' + r.total));
+    it2.appendChild(el('span', {class:'fill-legend-name', text:'達成'}));
+    it2.appendChild(el('b', {class:'fill-legend-count', text: r.done + ' / ' + r.total}));
     drow.appendChild(it2);
     legend.appendChild(drow);
     card.appendChild(legend);
@@ -6879,11 +6924,11 @@
       if (sub) s.appendChild(el('div', {class:'fill-stat-sub', text: sub}));
       stats.appendChild(s);
     }
-    stat('残り', r.left + '譜面');
-    stat('残り', fmtHourMin(r.left * SEC_PER_CHART));
+    stat('残り譜面', r.left + '譜面');
+    stat('残り時間', fmtHourMin(r.left * SEC_PER_CHART));
     /* 料金は1人・2人とも大きく */
     var ps = el('div', {class:'fill-stat fill-stat-price'});
-    ps.appendChild(el('div', {class:'fill-stat-label', text:'残り'}));
+    ps.appendChild(el('div', {class:'fill-stat-label', text:'残り料金'}));
     [['1人', Math.ceil(r.left / 3) * 100], ['2人', roundUpToHundred(Math.round(r.left * 100 / 4))]].forEach(function(x){
       var line = el('div', {class:'fill-price-line'});
       line.appendChild(el('span', {class:'fill-price-who', text: x[0]}));
