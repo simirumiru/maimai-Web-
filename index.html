@@ -28,6 +28,13 @@
 <!-- スマホのホーム画面に追加したときのアイコン（同じ場所に置いた画像ファイルを使う） -->
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- アプリとして使う（ホーム画面に追加） -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#131417">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="maiプレート">
 <meta name="apple-mobile-web-app-title" content="maiプレート">
 <meta name="theme-color" content="#f3f8fb">
 <script>
@@ -1023,6 +1030,15 @@
   @media (max-width:520px){ .fill-stats{grid-template-columns:1fr;} .fill-stat-value{font-size:18px;} }
   .fill-note{margin:6px 0 16px;}
   .fill-price-line{display:flex;align-items:baseline;gap:8px;}
+  /* 取り込みから2週間の案内 */
+  .import-remind{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
+    border-radius:12px;padding:10px 6px 10px 14px;margin:0 0 14px;font-size:13px;line-height:1.7;color:var(--text);}
+  .import-remind-body{flex:1;min-width:0;}
+  .import-remind-body p{margin:0;}
+  .import-remind-go{margin-top:6px;}
+  .import-remind-close{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text-dim);
+    width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;flex:none;}
+  .import-remind-close:hover{background:var(--panel-3);}
   /* ---- 下埋め・回数と日付：画像保存 ---- */
   .export-only-title, .export-only-note, .count-print{display:none;}
   .fill-export .export-only-title, .count-export .export-only-title{display:block;font-family:var(--font-display);font-weight:800;
@@ -1076,7 +1092,8 @@
     background:#1d2a35;color:#fff;border-radius:14px;padding:10px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
   .import-progress-text{font-size:13.5px;font-weight:800;margin-bottom:8px;}
   .import-progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
-  .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .3s ease;}
+  .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .12s linear;}
+  .import-progress.is-done .import-progress-fill{background:#81c995;}
   /* 極・将・神・舞を「赤線削除」の横に（説明の吹き出しはその下） */
   .mark-sub-row{align-items:flex-start;}
   .mark-sub-row .mode-row{margin-left:0;align-items:flex-start;flex-basis:auto;}
@@ -5976,6 +5993,7 @@
 
     renderSyncBar(root);
     renderViewModeBar(root);
+    renderImportReminder(root);
     renderPageBack(root);
 
     if (section === 'home'){
@@ -6313,7 +6331,7 @@
        極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
      通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
   var MAINET_ORIGIN = 'https://maimaidx.jp';
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nvar dn=0,tot=5,fin=false;var pt=setInterval(function(){if(fin){clearInterval(pt);return;}try{w.postMessage({type:'maiplate-progress',done:dn,total:tot},O);}catch(e){}},400);\nfunction g2(d){return get(d).then(function(r){dn++;box.textContent='maiプレート：記録を読み取り中… '+Math.round(dn/tot*100)+'%';return r;});}\nPromise.all([g2(0),g2(1),g2(2),g2(3),g2(4)]).then(function(a){fin=true;var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){fin=true;box.textContent='読み取りに失敗しました：'+e.message;try{w.postMessage({type:'maiplate-progress',error:1},O);}catch(x){}});})();";
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nvar dn=0,tot=5,fin=false;var pt=setInterval(function(){if(fin){clearInterval(pt);return;}try{w.postMessage({type:'maiplate-progress',done:dn,total:tot},O);}catch(e){}},400);\nvar sh=0;var st=setInterval(function(){if(fin){clearInterval(st);return;}var cap=Math.min(95,dn/tot*100+19);if(sh<cap)sh=Math.min(cap,sh+Math.max(0.12,(cap-sh)*0.035));box.textContent='maiプレート：記録を読み取り中… '+Math.floor(sh)+'%';},60);\nfunction g2(d){return get(d).then(function(r){dn++;return r;});}\nPromise.all([g2(0),g2(1),g2(2),g2(3),g2(4)]).then(function(a){fin=true;var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){fin=true;box.textContent='読み取りに失敗しました：'+e.message;try{w.postMessage({type:'maiplate-progress',error:1},O);}catch(x){}});})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -6332,29 +6350,95 @@
     pendingImport = d;
     maybeApplyImport();
   });
-  /* 取り込み中：画面の上に「maimai NET から読み込み中… n%」を出す */
-  var importProgEl = null, importProgTimer = null;
+  /* ---- 最後の取り込みから2週間たったら、もう一度取り込むよう案内する ----
+     1回も取り込んでいない人には出さない。×で閉じたら、そのタブを開いている間は出さない */
+  var IMPORT_REMIND_DAYS = 14;
+  var REMIND_CLOSED_KEY = 'mmplate_import_remind_closed_v1';
+  function renderImportReminder(root){
+    if (section === 'import') return;
+    var o = loadNetRecords();
+    if (!o || !o.at) return;
+    var days = Math.floor((Date.now() - o.at) / 86400000);
+    if (days < IMPORT_REMIND_DAYS) return;
+    try{ if (sessionStorage.getItem(REMIND_CLOSED_KEY) === String(o.at)) return; }catch(e){}
+    var box = el('div', {class:'import-remind', role:'status'});
+    box.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var body = el('div', {class:'import-remind-body'});
+    body.appendChild(el('p', {text:'最後に maimai NET から取り込んでから ' + days + '日たちました。'}));
+    body.appendChild(el('p', {text:'スコアを更新していたら、もう一度取り込んでください。'}));
+    body.appendChild(el('button', {type:'button', class:'btn btn-sm import-remind-go', text:'maimai NET から取り込む',
+      onclick: function(){ goSection('import'); }}));
+    box.appendChild(body);
+    box.appendChild(el('button', {type:'button', class:'import-remind-close', 'aria-label':'閉じる', text:'×',
+      onclick: function(){
+        try{ sessionStorage.setItem(REMIND_CLOSED_KEY, String(o.at)); }catch(e){}
+        if (box.parentNode) box.parentNode.removeChild(box);
+      }}));
+    root.appendChild(box);
+  }
+
+  /* 取り込み中：画面の上に「maimai NET から読み込み中… n%」を出す。
+     本当の進み具合（5ページ中いくつ読めたか）を目安にしつつ、表示は少しずつ滑らかに進める。
+     実際より先に進みすぎないよう「読めた分＋少し」で止め、読み終わったら100%まで進めて「取り込みました」 */
+  var importProgEl = null, importProgTimer = null, importProgLoop = null;
+  var importProg = { shown: 0, real: 0, phase: 'read' };   /* phase: read → apply → done */
+  function ensureImportProgEl(){
+    if (importProgEl) return;
+    importProgEl = el('div', {class:'import-progress', role:'status', 'aria-live':'polite'});
+    importProgEl.appendChild(el('div', {class:'import-progress-text'}));
+    var track = el('div', {class:'import-progress-track'});
+    track.appendChild(el('div', {class:'import-progress-fill'}));
+    importProgEl.appendChild(track);
+    document.body.appendChild(importProgEl);
+    importProg = { shown: 0, real: 0, phase: 'read' };
+  }
+  function paintImportProgress(){
+    if (!importProgEl) return;
+    var cap = importProg.phase === 'read' ? Math.min(95, importProg.real + 19) : 100;
+    if (importProg.shown < cap){
+      var step = importProg.phase === 'read' ? Math.max(0.12, (cap - importProg.shown) * 0.035) : Math.max(1.5, (100 - importProg.shown) * 0.25);
+      importProg.shown = Math.min(cap, importProg.shown + step);
+    }
+    var n = Math.floor(importProg.shown);
+    var text = importProg.phase === 'done' ? '✓ 取り込みました'
+      : importProg.phase === 'apply' ? ('maiプレートに反映中… ' + n + '%')
+      : ('maimai NET から読み込み中… ' + n + '%');
+    importProgEl.querySelector('.import-progress-text').textContent = text;
+    importProgEl.querySelector('.import-progress-fill').style.width = importProg.shown + '%';
+    importProgEl.classList.toggle('is-done', importProg.phase === 'done');
+  }
+  function startImportProgLoop(){
+    if (importProgLoop) return;
+    importProgLoop = setInterval(paintImportProgress, 60);
+  }
   function showImportProgress(d){
     if (d && d.error){ hideImportProgress(); return; }
-    var total = Math.max(1, +(d && d.total) || 1), done = Math.min(total, Math.max(0, +(d && d.done) || 0));
-    var pct = Math.round(done / total * 100);
-    if (!importProgEl){
-      importProgEl = el('div', {class:'import-progress', role:'status', 'aria-live':'polite'});
-      importProgEl.appendChild(el('div', {class:'import-progress-text'}));
-      var track = el('div', {class:'import-progress-track'});
-      track.appendChild(el('div', {class:'import-progress-fill'}));
-      importProgEl.appendChild(track);
-      document.body.appendChild(importProgEl);
+    ensureImportProgEl();
+    if (d && d.applying){
+      importProg.phase = 'apply';
+    } else {
+      var total = Math.max(1, +(d && d.total) || 1), done = Math.min(total, Math.max(0, +(d && d.done) || 0));
+      importProg.real = Math.max(importProg.real, Math.round(done / total * 100));
     }
-    importProgEl.querySelector('.import-progress-text').textContent =
-      (d && d.applying) ? 'maiプレートに反映中…' : ('maimai NET から読み込み中… ' + pct + '%');
-    importProgEl.querySelector('.import-progress-fill').style.width = ((d && d.applying) ? 100 : pct) + '%';
+    startImportProgLoop();
+    paintImportProgress();
     /* しばらく何も届かなければ消す（途中で止まったときに出たままにしない） */
     clearTimeout(importProgTimer);
     importProgTimer = setTimeout(hideImportProgress, 60000);
   }
+  /* 反映が終わったら100%にして「取り込みました」を出し、少ししてから消す */
+  function finishImportProgress(){
+    ensureImportProgEl();
+    importProg.phase = 'done';
+    importProg.shown = 100;
+    paintImportProgress();
+    clearInterval(importProgLoop); importProgLoop = null;
+    clearTimeout(importProgTimer);
+    importProgTimer = setTimeout(hideImportProgress, 3000);
+  }
   function hideImportProgress(){
     clearTimeout(importProgTimer);
+    clearInterval(importProgLoop); importProgLoop = null;
     if (importProgEl && importProgEl.parentNode) importProgEl.parentNode.removeChild(importProgEl);
     importProgEl = null;
   }
@@ -6467,8 +6551,7 @@
     if (!allVersions.length || !SONG_DATA_FULL) return;
     var d = pendingImport;
     pendingImport = null;
-    hideImportProgress();
-    if (d.error || !Array.isArray(d.records)){ showAlert(d.error || '記録を受け取れませんでした。'); return; }
+    if (d.error || !Array.isArray(d.records)){ hideImportProgress(); showAlert(d.error || '記録を受け取れませんでした。'); return; }
     var p = buildImportPlan(d.records.slice(0, 20000));
     saveNetRecords(d.records.slice(0, 20000));
     /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
@@ -6480,6 +6563,7 @@
     });
     persistSongMarks();
     renderApp();
+    finishImportProgress();
     showAlert('取り込みました。');
   }
 
@@ -7567,6 +7651,12 @@
 
   if (!isBackupHash(location.hash)) applyRoute(currentRouteHash());
   routeReady = true;
+  /* アプリとして使うための裏方（sw.js）を登録。対応していないブラウザ・手元のファイルでは何もしない */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
+    });
+  }
   loadSongsJson();
   renderApp();
   /* バックアップのURLから開いたときは、復元の確認を先に出す（お知らせは次に開いたとき） */
