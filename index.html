@@ -6244,8 +6244,17 @@
      その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
      内容を変えて再び出したいときは NOTICE_ID を変える。 */
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
-  var APP_VERSION = '2.0';
+  var APP_VERSION = '2.1';
   var CHANGELOG = [
+    { ver:'2.1', date:'2026/10/16', items:[
+      ['maimai NET 取り込み', '', 'importNote'],
+      ['新曲に対応', '10/16追加の新曲を追加しました。'],
+      ['ホーム画面を整理', '項目を内容ごとに分けました。'],
+      ['未達成楽曲一覧', 'FC・SSS・AP・FDXの未達成譜面を定数順に確認できます。'],
+      ['下埋め進捗', '残りの譜面数・時間・料金を確認できます。'],
+      ['回数と日付の記録', '達成までの回数と日付を記録できます。'],
+      ['プレート表の固定', 'よく見るバージョンを3つまで上に固定できます。']
+    ]},
     { ver:'2.0', date:'2026/10/04', items:[
       ['新しいデザイン', '多数の新機能追加のためUIを一新しました。\nご迷惑をおかけします🙏'],
       ['maimai NET から取り込み', 'ブックマークを使いmaimaiネットの情報を取り込めます。'],
@@ -6285,9 +6294,12 @@
       items.forEach(function(it){
         var li = el('li');
         li.appendChild(el('div', {class:'notice-item-title', text: it[0]}));
-        li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
+        if (it[1]) li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
         if (it[2] === 'loadNote'){
           li.appendChild(el('div', {class:'notice-emph', text:'初回のみ楽曲の表示に時間がかかります。ご了承ください。'}));
+        }
+        if (it[2] === 'importNote'){
+          li.appendChild(el('div', {class:'notice-emph', text:'ブックマークに登録した取り込みコードを、コピーし直して更新してください。'}));
         }
         if (it[2] === 'modeNote'){
           /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
@@ -7783,6 +7795,7 @@
   var HOME_FEATURES = [
     ['table',  '実績プレート表・実績フレーム表を確認'],
     ['mark',   '取り込みやタップで赤線をつけ進捗管理'],
+    ['todo',   '未達成楽曲の一覧'],
     ['fill',   '下埋めの進捗管理'],
     ['sync',   'シンクのお相手を記録'],
     ['count',  '回数と日付の記録'],
