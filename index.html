@@ -6550,12 +6550,15 @@
 
   /* ========================= maimai でらっくす NET から進捗を取り込む =========================
      ブックマークレット（ブックマークに保存して使う小さなプログラム）を maimai NET の画面で開くと、
-     MASTER と Re:MASTER の記録を読み取り、このサイトへ送ってくる。
+     import.js を読み込み、BASIC〜Re:MASTER の記録を読み取ってこのサイトへ送ってくる。
      受け取った記録で、極・将・神・舞（・覇）の赤線を付け直す（「全」は変えない）。
        極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
      通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
   var MAINET_ORIGIN = 'https://maimaidx.jp';
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nvar dn=0,tot=5,fin=false;var pt=setInterval(function(){if(fin){clearInterval(pt);return;}try{w.postMessage({type:'maiplate-progress',done:dn,total:tot},O);}catch(e){}},400);\nvar sh=0;var st=setInterval(function(){if(fin){clearInterval(st);return;}var cap=Math.min(95,dn/tot*100+19);if(sh<cap)sh=Math.min(cap,sh+Math.max(0.12,(cap-sh)*0.035));box.textContent='maiプレート：記録を読み取り中… '+Math.floor(sh)+'%';},60);\nfunction g2(d){return get(d).then(function(r){dn++;return r;});}\nPromise.all([g2(0),g2(1),g2(2),g2(3),g2(4)]).then(function(a){fin=true;var rec=[].concat.apply([],a);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){fin=true;box.textContent='読み取りに失敗しました：'+e.message;try{w.postMessage({type:'maiplate-progress',error:1},O);}catch(x){}});})();";
+  /* ブックマークには「maiプレートの import.js を読み込むだけ」の短いコードを入れる。
+     取り込みの中身（maimai NET の読み取り方など）は import.js にあるので、直してもブックマークの登録し直しはいらない。
+     タブを開くのはブックマークを押した瞬間でないとブロックされるので、ここで先に開いて import.js に渡す。 */
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';if(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}var w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}window.__maiplateT=T;window.__maiplateW=w;var s=document.createElement('script');s.src=T.replace(/[^\\/]*$/,'')+'import.js?t='+Date.now();s.onerror=function(){alert('maiプレートの取り込みプログラムを読み込めませんでした。通信状況を確認して、もう一度開いてください。');};document.body.appendChild(s);})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -6816,6 +6819,7 @@
     var cBody = el('div');
     cBody.appendChild(el('p', {text:'取り込んだ進捗は保存されますが、自動では更新されません。'}));
     cBody.appendChild(el('p', {text:'スコアを更新したあとは、お手数ですがご自身でもう一度取り込んでください。'}));
+    cBody.appendChild(el('p', {text:'ブックマークは一度登録すれば、サイトが更新されても登録し直す必要はありません。'}));
     caution.appendChild(cBody);
     wrap.appendChild(caution);
 
