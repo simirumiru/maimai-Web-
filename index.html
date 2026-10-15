@@ -2413,19 +2413,13 @@
     });
     return out;
   }
-  /* 「13+まで表示（13以下は隠す）」の状態を基準に、押したボタンの結果だけで表示を決める。
-     ON  … 13+ からそのレベルまでを出し、それより下は隠す（例：12+↓ ON → 13+・13・12+ を表示）
-     OFF … そのレベルから下を隠し、それより上は出す */
+  /* 未達成楽曲一覧と同じ仕組み：
+     ON  … そのレベルとそれより下をすべて出す（例：13↓ ON → 13・12+・12…10+ を表示）
+     OFF … そのレベルとそれより下をすべて隠す
+     どちらも、それより上のレベルはそのまま */
   function setCutoff(lb, on){
-    var cut = LEVEL_CUT_ORDER.indexOf(lb);
-    if (cut < 0) return;
-    levelsFrom('13+').forEach(function(p){
-      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
-      var show = on ? (i <= cut) : (i < cut);
-      if (!pvLevelHidden[p[0].id]) pvLevelHidden[p[0].id] = {};
-      pvLevelHidden[p[0].id][p[1].id] = !show;
-    });
-    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
+    if (LEVEL_CUT_ORDER.indexOf(lb) < 0) return;
+    setShownFrom(lb, !!on);
   }
   /* ボタンのON／OFF：そのレベル自身が（どれかの表で）出ているか */
   function isCutShown(fromLabel){
