@@ -2417,18 +2417,53 @@
     if (!storageOK) return;
     try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
   }
-  /* ---- 「13+↓ ON/OFF | ▼」 ---- */
+  /* ---- 「13+↓ ON/OFF | ▼」 ----
+     kind = 'plates'：実績プレート表の表示（回数と日付の記録も共通）
+     kind = 'sync'  ：シンクのお相手記録の表示（詳細画面の各レベルの ON/OFF と共通） */
   var CUT_LABELS = ['13+', '13', '12+'];
+  function loadCutPick(key){
+    try{ var x = localStorage.getItem(key); return CUT_LABELS.indexOf(x) >= 0 ? x : '13+'; }catch(e){ return '13+'; }
+  }
   var CUT_PICK_KEY = 'mmplate_cut_pick_v1';
-  var cutPick = (function(){
-    try{ var x = localStorage.getItem(CUT_PICK_KEY); return CUT_LABELS.indexOf(x) >= 0 ? x : '13+'; }catch(e){ return '13+'; }
-  })();
-  function makeCutPicker(){
+  var cutPick = loadCutPick(CUT_PICK_KEY);
+  var SYNC_CUT_PICK_KEY = 'mmplate_sync_cut_pick_v1';
+  var syncCutPick = loadCutPick(SYNC_CUT_PICK_KEY);
+  /* シンクのお相手記録の表示：基準は「13+まで表示（13以下は隠す）」。押した結果だけで決める */
+  function isSyncCutShown(lb){
+    return levelsFrom(lb).some(function(p){ return p[1].label === lb && !isSyncLevelHidden(p[0], p[1]); });
+  }
+  function setSyncCutoff(lb, on){
+    var cut = LEVEL_CUT_ORDER.indexOf(lb);
+    if (cut < 0) return;
+    levelsFrom('13+').forEach(function(p){
+      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
+      var show = on ? (i <= cut) : (i < cut);
+      if (!syncHidden[p[0].id]) syncHidden[p[0].id] = {};
+      syncHidden[p[0].id][p[1].id] = !show;
+    });
+    persistSyncHidden();
+  }
+  var CUT_KINDS = {
+    plates: {
+      pick: function(){ return cutPick; },
+      setPick: function(x){ cutPick = x; try{ localStorage.setItem(CUT_PICK_KEY, x); }catch(e){} },
+      shown: function(lb){ return isCutShown(lb); },
+      set: function(lb, on){ setCutoff(lb, on); }
+    },
+    sync: {
+      pick: function(){ return syncCutPick; },
+      setPick: function(x){ syncCutPick = x; try{ localStorage.setItem(SYNC_CUT_PICK_KEY, x); }catch(e){} },
+      shown: function(lb){ return isSyncCutShown(lb); },
+      set: function(lb, on){ setSyncCutoff(lb, on); }
+    }
+  };
+  function makeCutPicker(kind){
+    var K = CUT_KINDS[kind] || CUT_KINDS.plates;
     var wrap = el('div', {class:'cut-picker', role:'group', 'aria-label':'下のレベルの表示'});
-    var lb = cutPick;
-    var onoff = makeOnOffButton(lb + '↓', isCutShown(lb), function(){
-      var next = !isCutShown(lb);
-      setCutoff(lb, next);
+    var lb = K.pick();
+    var onoff = makeOnOffButton(lb + '↓', K.shown(lb), function(){
+      var next = !K.shown(lb);
+      K.set(lb, next);
       renderApp();
       return next;
     });
@@ -2436,8 +2471,8 @@
     wrap.appendChild(onoff);
     var nb = el('button', {type:'button', class:'btn btn-sm cut-next', text:'▼', 'aria-haspopup':'menu',
       title:'切り替えるレベルを選ぶ', 'aria-label':'切り替えるレベルを選ぶ（今は' + lb + '）'});
-    nb.__openMenu = function(anchor){ openCutMenu(anchor || nb); };
-    nb.addEventListener('click', function(){ openCutMenu(nb); });
+    nb.__openMenu = function(anchor){ openCutMenu(anchor || nb, K); };
+    nb.addEventListener('click', function(){ openCutMenu(nb, K); });
     wrap.appendChild(nb);
     return wrap;
   }
@@ -2452,20 +2487,21 @@
   }
   function onCutMenuOutside(e){ if (cutMenuEl && !cutMenuEl.contains(e.target) && !(e.target.closest && e.target.closest('.cut-next'))) closeCutMenu(); }
   function onCutMenuKey(e){ if (e.key === 'Escape') closeCutMenu(); }
-  function openCutMenu(anchor){
+  function openCutMenu(anchor, K){
+    K = K || CUT_KINDS.plates;
     if (cutMenuEl){ closeCutMenu(); return; }
     var menu = el('div', {class:'cut-menu', role:'menu'});
+    var curPick = K.pick();
     CUT_LABELS.forEach(function(x){
-      var on = isCutShown(x);
-      var it = el('button', {type:'button', role:'menuitemradio', class:'cut-menu-item' + (x === cutPick ? ' is-current' : ''),
-        'aria-checked': x === cutPick ? 'true' : 'false',
+      var on = K.shown(x);
+      var it = el('button', {type:'button', role:'menuitemradio', class:'cut-menu-item' + (x === curPick ? ' is-current' : ''),
+        'aria-checked': x === curPick ? 'true' : 'false',
         onclick: function(){
-          cutPick = x;
-          try{ localStorage.setItem(CUT_PICK_KEY, cutPick); }catch(e){}
+          K.setPick(x);
           closeCutMenu();
           renderApp();
         }});
-      it.appendChild(el('span', {class:'cut-menu-check', text: x === cutPick ? '✓' : ''}));
+      it.appendChild(el('span', {class:'cut-menu-check', text: x === curPick ? '✓' : ''}));
       it.appendChild(el('span', {class:'cut-menu-label', text: x + '↓'}));
       it.appendChild(el('span', {class:'cut-menu-state' + (on ? ' is-on' : ''), text: on ? 'ON' : 'OFF'}));
       menu.appendChild(it);
@@ -7127,38 +7163,12 @@
       root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
       return;
     }
-    var grid = el('div', {class:'versions-grid'});
-    var anchor = null;
-    docs.forEach(function(v){
-      var card = el('div', {class:'version-card', role:'button', tabindex:'0', onclick: function(){ goSync(v.id); }});
-      card.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goSync(v.id); } });
-      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
-      card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
-      /* 書いた名前の縮小プレビュー */
-      try{
-        var wrap = el('div', {class:'card-preview sync-card-preview'});
-        var inner = el('div', {class:'card-preview-inner'});
-        inner.appendChild(buildSyncRecordNode(v, { preview: true }));
-        wrap.appendChild(inner);
-        card.appendChild(wrap);
-      }catch(err){
-        card.appendChild(el('div', {class:'note', text:'このバージョンのプレビューを表示できませんでした'}));
-      }
-      if (v.id === syncAnchor) anchor = card;
-      grid.appendChild(card);
-    });
-    root.appendChild(grid);
-    /* 縮小した中身の高さに合わせて枠の高さを決める（長いものは途中まで） */
-    function fitSync(){
-      Array.prototype.forEach.call(grid.querySelectorAll('.sync-card-preview'), function(w){
-        var inner = w.querySelector('.card-preview-inner');
-        if (!inner) return;
-        var h = inner.getBoundingClientRect().height;
-        if (h > 0) w.style.height = Math.min(240, Math.ceil(h)) + 'px';
-      });
-    }
-    setTimeout(fitSync, 0); setTimeout(fitSync, 300);
-    if (anchor) setTimeout(function(){ if (anchor.isConnected){ try{ anchor.scrollIntoView({ block: 'center' }); }catch(e){} } }, 30);
+    /* 13+↓ などのON/OFF（シンクのお相手記録の表示。詳細画面の各レベルのON/OFFにも反映） */
+    var cutRow = el('div', {class:'mark-toggle-bar sync-cut-row'});
+    cutRow.appendChild(makeCutPicker('sync'));
+    root.appendChild(cutRow);
+    /* 一覧はバージョン名だけ（プレビューは出さない） */
+    renderSimpleVersionList(root, docs, goSync, syncAnchor);
     syncAnchor = null;
   }
   function renderSyncDetail(root, v){
