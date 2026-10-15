@@ -988,6 +988,8 @@
   .export-white .pv-range-end{color:#d43f3a !important;}
   /* 選んでいる色に枠（内側に太めの線） */
   .save-base{position:relative;}
+  /* 右端のボタンは外枠の丸みに合わせて角を丸め、選択中の青枠が欠けないようにする */
+  .save-group > .save-base:last-child{border-radius:0 999px 999px 0;padding-right:14px;}
   .save-base.is-selected{box-shadow:inset 0 0 0 3px var(--accent);}
   .save-base-dark.is-selected{box-shadow:inset 0 0 0 3px var(--accent), inset 0 0 0 4px #1e1e1e;}
   /* ---- 難易度表：保存画像だけの大きな左右差マーク ---- */
@@ -1050,10 +1052,19 @@
     font-size:13px;font-weight:900;color:var(--accent-ink);}
   .fill-pick.is-on{border-color:var(--accent);background:var(--accent-soft);}
   .fill-pick.is-on .fill-pick-check{background:var(--accent);border-color:var(--accent);}
-  .fill-sum-list{font-size:12.5px;color:var(--text-dim);line-height:1.7;margin:-4px 0 12px;}
+  .fill-sum-list{margin:-4px 0 14px;}
+  .fill-sum-list-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;}
+  .ver-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .ver-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;background:var(--panel-2);
+    border:1px solid var(--border);font-size:12px;font-weight:700;line-height:1.3;color:var(--text);white-space:nowrap;}
+  .ver-chip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);}
   .fill-sum-list-label{font-weight:800;color:var(--text);}
   .fill-sum-edit{margin-left:8px;vertical-align:middle;}
   .fill-export .export-only-title{word-break:break-word;}
+  /* 画像保存は横幅を固定（合計でバージョン名が長くても横に伸ばさず折り返す） */
+  .fill-card.fill-export{width:820px !important;}
+  .export-only-sub{display:none;}
+  .fill-export .export-only-sub{display:flex;margin:-2px 0 18px;}
   /* 取り込みから2週間の案内 */
   .import-remind{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
     border-radius:12px;padding:10px 6px 10px 14px;margin:0 0 14px;font-size:13px;line-height:1.7;color:var(--text);}
@@ -2454,18 +2465,16 @@
   var cutPick = loadCutPick(CUT_PICK_KEY);
   var SYNC_CUT_PICK_KEY = 'mmplate_sync_cut_pick_v1';
   var syncCutPick = loadCutPick(SYNC_CUT_PICK_KEY);
-  /* シンクのお相手記録の表示：基準は「13+まで表示（13以下は隠す）」。押した結果だけで決める */
+  /* シンクのお相手記録の表示（プレート表・未達成楽曲一覧と同じ仕組み）：
+     ON＝そのレベルとそれより下をすべて出す／OFF＝そのレベルとそれより下をすべて隠す。それより上はそのまま */
   function isSyncCutShown(lb){
     return levelsFrom(lb).some(function(p){ return p[1].label === lb && !isSyncLevelHidden(p[0], p[1]); });
   }
   function setSyncCutoff(lb, on){
-    var cut = LEVEL_CUT_ORDER.indexOf(lb);
-    if (cut < 0) return;
-    levelsFrom('13+').forEach(function(p){
-      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
-      var show = on ? (i <= cut) : (i < cut);
+    if (LEVEL_CUT_ORDER.indexOf(lb) < 0) return;
+    levelsFrom(lb).forEach(function(p){
       if (!syncHidden[p[0].id]) syncHidden[p[0].id] = {};
-      syncHidden[p[0].id][p[1].id] = !show;
+      syncHidden[p[0].id][p[1].id] = !on;
     });
     persistSyncHidden();
   }
@@ -6819,7 +6828,6 @@
     var cBody = el('div');
     cBody.appendChild(el('p', {text:'取り込んだ進捗は保存されますが、自動では更新されません。'}));
     cBody.appendChild(el('p', {text:'スコアを更新したあとは、お手数ですがご自身でもう一度取り込んでください。'}));
-    cBody.appendChild(el('p', {text:'ブックマークは一度登録すれば、サイトが更新されても登録し直す必要はありません。'}));
     caution.appendChild(cBody);
     wrap.appendChild(caution);
 
@@ -6930,6 +6938,27 @@
 
   /* 一覧：プレート表のプレビューなし版 */
   /* anchorId：さっき開いていたバージョン。一覧に戻ったら、その位置まで戻す */
+  /* バージョン名を短く（「maimai でらっくす BUDDiES」→「BUDDiES」など）。合計の一覧で使う */
+  function shortVerName(name){
+    var n = String(name || '').replace(/〈.*〉/, '').trim();
+    if (/^maimai\s*でらっくす/.test(n)){
+      var r = n.replace(/^maimai\s*でらっくす\s*/, '');
+      return !r ? 'でらっくす' : (r === 'PLUS' ? 'でらっくす PLUS' : r);
+    }
+    if (/^maimai\s*＆\s*maimai\s*PLUS$/.test(n)) return 'maimai ＆ PLUS';
+    return n.replace(/^maimai\s+/, '') || n;
+  }
+  /* バージョンの色の点＋短い名前のチップを並べる */
+  function verChips(docs, cls){
+    var box = el('div', {class:'ver-chips' + (cls ? ' ' + cls : '')});
+    docs.forEach(function(x){
+      var c = el('span', {class:'ver-chip', title: x.versionName});
+      c.appendChild(el('i', {class:'ver-chip-dot', style:{background: x.swatch || specVersionColor(x) || x.themeColor || '#888'}}));
+      c.appendChild(document.createTextNode(shortVerName(x.versionName)));
+      box.appendChild(c);
+    });
+    return box;
+  }
   function renderSimpleVersionList(root, docs, onOpen, anchorId){
     var grid = el('div', {class:'versions-grid simple-grid'});
     var anchor = null;
@@ -7078,10 +7107,12 @@
     var sumNames = isSum ? fillSumDocs().map(function(x){ return String(x.versionName || '').replace(/〈.*〉/, '').trim() || x.versionName; }) : [];
     if (isSum){
       var chosen = el('div', {class:'fill-sum-list'});
-      chosen.appendChild(el('span', {class:'fill-sum-list-label', text:'選んだバージョン（' + sumNames.length + '個）：'}));
-      chosen.appendChild(document.createTextNode(fillSumDocs().map(function(x){ return x.versionName; }).join('、')));
-      chosen.appendChild(el('button', {type:'button', class:'btn btn-sm fill-sum-edit', text:'選び直す',
+      var chosenHead = el('div', {class:'fill-sum-list-head'});
+      chosenHead.appendChild(el('span', {class:'fill-sum-list-label', text:'選んだバージョン（' + sumNames.length + '個）'}));
+      chosenHead.appendChild(el('button', {type:'button', class:'btn btn-sm fill-sum-edit', text:'選び直す',
         onclick: function(){ fillSelecting = true; section = 'fill'; fillView = 'list'; fillId = null; renderApp(); scrollToTopNow(); }}));
+      chosen.appendChild(chosenHead);
+      chosen.appendChild(verChips(fillSumDocs()));
       root.appendChild(chosen);
     }
 
@@ -7102,7 +7133,8 @@
     fillCardRef = card;
     var plateName = fillPlateName();
     /* 保存画像にだけ出すバージョン名 */
-    card.appendChild(el('div', {class:'export-only-title', text: isSum ? ('合計：' + sumNames.join('・')) : v.versionName}));
+    card.appendChild(el('div', {class:'export-only-title', text: isSum ? ('合計（' + sumNames.length + 'バージョン）') : v.versionName}));
+    if (isSum) card.appendChild(verChips(fillSumDocs(), 'export-only-sub'));
     card.appendChild(el('div', {class:'fill-plate', text: plateName + 'の下埋め'}));
     /* 保存画像では「〜の下埋め」の代わりに実績プレートの画像を出す（画像が無いプレートは名前） */
     var hasPlate = !isSum && (isMai || plateNameForMode(v, mode) !== mode);
