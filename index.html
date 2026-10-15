@@ -6299,7 +6299,7 @@
           li.appendChild(el('div', {class:'notice-emph', text:'初回のみ楽曲の表示に時間がかかります。ご了承ください。'}));
         }
         if (it[2] === 'importNote'){
-          li.appendChild(el('div', {class:'notice-emph', text:'ブックマークに登録した取り込みコードを、コピーし直して更新してください。'}));
+          li.appendChild(el('div', {class:'notice-emph', text:'下埋め進捗機能を利用する場合は、ブックマークに登録した取り込みコードを、コピーし直して更新してください。'}));
         }
         if (it[2] === 'modeNote'){
           /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
@@ -6558,7 +6558,7 @@
   /* ブックマークには「maiプレートの import.js を読み込むだけ」の短いコードを入れる。
      取り込みの中身（maimai NET の読み取り方など）は import.js にあるので、直してもブックマークの登録し直しはいらない。
      タブを開くのはブックマークを押した瞬間でないとブロックされるので、ここで先に開いて import.js に渡す。 */
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';if(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}var w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}window.__maiplateT=T;window.__maiplateW=w;var s=document.createElement('script');s.src=T.replace(/[^\\/]*$/,'')+'import.js?t='+Date.now();s.onerror=function(){alert('maiプレートの取り込みプログラムを読み込めませんでした。通信状況を確認して、もう一度開いてください。');};document.body.appendChild(s);})();";
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';if(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}var w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}window.__maiplateT=T;window.__maiplateW=w;var s=document.createElement('script');s.src=T.replace(/[^\\/]*$/,'')+'import.js?t='+Date.now();s.onerror=function(){var m='maiプレートの取り込みプログラムを読み込めませんでした。通信状況を確認して、もう一度開いてください。';var b=document.createElement('div');b.style.cssText='position:fixed;left:12px;right:12px;top:16px;z-index:99999;background:#7a1f1f;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)';b.textContent=m;document.body.appendChild(b);var O=new URL(T).origin,n=0,t=setInterval(function(){try{w.postMessage({type:'maiplate-progress',error:1,msg:m},O);}catch(e){}if(++n>20)clearInterval(t);},500);};document.body.appendChild(s);})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -6638,8 +6638,14 @@
     if (importProgLoop) return;
     importProgLoop = setInterval(paintImportProgress, 60);
   }
+  var importErrShownAt = 0;
   function showImportProgress(d){
-    if (d && d.error){ hideImportProgress(); return; }
+    if (d && d.error){
+      hideImportProgress();
+      /* 読み込めなかった理由が届いたら、こちらのタブにも1回だけ出す */
+      if (d.msg && Date.now() - importErrShownAt > 15000){ importErrShownAt = Date.now(); showAlert(String(d.msg)); }
+      return;
+    }
     ensureImportProgEl();
     if (d && d.applying){
       importProg.phase = 'apply';
