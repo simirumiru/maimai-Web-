@@ -7254,8 +7254,8 @@
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
   function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
-  /* 定数の「↓ ON/OFF」：基準は「全部表示」。押した定数から下を出す／隠す（MASTER と 舞・覇者で別々に覚える） */
-  var TODO_CUT_KEY = 'mmplate_todo_cut_v1';
+  /* 定数の「↓ ON/OFF」：ON＝その定数以下を表示／OFF＝その定数以下を隠して上だけ表示（MASTER と 舞・覇者で別々に覚える） */
+  var TODO_CUT_KEY = 'mmplate_todo_cut_v2';
   var todoCut = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_CUT_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
   function saveTodoCut(){ try{ localStorage.setItem(TODO_CUT_KEY, JSON.stringify(todoCut)); }catch(e){} }
   function todoKonstList(kind){
@@ -7266,7 +7266,7 @@
   function todoCutFor(kind){
     var list = todoKonstList(kind);
     var c = todoCut[kind];
-    if (!c || list.indexOf(c.pick) < 0) c = { pick: list[list.length - 1], on: true };   /* 最初は全部表示 */
+    if (!c || list.indexOf(c.pick) < 0) c = { pick: list[0], on: true };   /* 最初は一番上の定数↓ON＝全部表示 */
     return c;
   }
   /* その定数が今表示されているか */
@@ -7274,7 +7274,7 @@
     var c = todoCutFor(kind);
     if (!(k >= 0)) return true;
     var v = Math.round(k * 10) / 10;
-    return c.on ? (v >= c.pick) : (v > c.pick);
+    return c.on ? (v <= c.pick) : (v > c.pick);
   }
   function todoCutKind(kind){
     return {
