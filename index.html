@@ -7254,8 +7254,9 @@
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
   function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
-  /* 定数の「↓ ON/OFF」：プレート表と同じ仕組み。ON＝その定数まで表示（それより下は隠す）／OFF＝その定数以下を隠す（MASTER と 舞・覇者で別々に覚える） */
-  var TODO_CUT_KEY = 'mmplate_todo_cut_v3';
+  /* 定数の「↓ ON/OFF」：ON＝その定数とそれより下をすべて表示／OFF＝その定数とそれより下をすべて隠す
+     （それより上はそのまま。▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
+  var TODO_CUT_KEY = 'mmplate_todo_cut_v4';
   var todoCut = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_CUT_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
   function saveTodoCut(){ try{ localStorage.setItem(TODO_CUT_KEY, JSON.stringify(todoCut)); }catch(e){} }
   function todoKonstList(kind){
@@ -7263,30 +7264,34 @@
     todoCharts(kind).forEach(function(x){ if (x.k >= 0){ var v = Math.round(x.k * 10) / 10; if (!seen[v]){ seen[v] = true; out.push(v); } } });
     return out.sort(function(a, b){ return b - a; });
   }
-  /* pick＝▼で選んでいる定数、cut＝実際の表示の区切り（▼で選んだだけでは表示は変わらない：プレート表と同じ） */
+  /* pick＝▼で選んでいる定数、hidden＝隠している定数の一覧 */
   function todoCutFor(kind){
     var list = todoKonstList(kind);
     var c = todoCut[kind] || {};
-    var low = list[list.length - 1];
-    var pick = list.indexOf(c.pick) >= 0 ? c.pick : low;
-    var cut = (c.cut && list.indexOf(c.cut.v) >= 0) ? c.cut : { v: low, on: true };   /* 最初は全部表示 */
-    return { pick: pick, cut: cut };
+    var pick = list.indexOf(c.pick) >= 0 ? c.pick : list[list.length - 1];
+    var hidden = Array.isArray(c.hidden) ? c.hidden : [];
+    return { pick: pick, hidden: hidden };
   }
   /* その定数が今表示されているか */
   function todoKonstShown(kind, k){
     if (!(k >= 0)) return true;
-    var c = todoCutFor(kind).cut;
     var v = Math.round(k * 10) / 10;
-    return c.on ? (v >= c.v) : (v > c.v);
+    return todoCutFor(kind).hidden.indexOf(v) < 0;
   }
   function todoCutKind(kind){
     return {
       labels: function(){ return todoKonstList(kind); },
       fmt: function(x){ return Number(x).toFixed(1); },
       pick: function(){ return todoCutFor(kind).pick; },
-      setPick: function(x){ var c = todoCutFor(kind); todoCut[kind] = { pick: x, cut: c.cut }; saveTodoCut(); },
+      setPick: function(x){ var c = todoCutFor(kind); todoCut[kind] = { pick: x, hidden: c.hidden }; saveTodoCut(); },
       shown: function(x){ return todoKonstShown(kind, x); },
-      set: function(x, on){ todoCut[kind] = { pick: x, cut: { v: x, on: !!on } }; saveTodoCut(); }
+      set: function(x, on){
+        var c = todoCutFor(kind);
+        var hidden = c.hidden.filter(function(v){ return v > x; });          /* それより上はそのまま */
+        if (!on) todoKonstList(kind).forEach(function(v){ if (v <= x) hidden.push(v); });   /* OFF：その定数以下をすべて隠す */
+        todoCut[kind] = { pick: x, hidden: hidden };
+        saveTodoCut();
+      }
     };
   }
 
