@@ -1109,6 +1109,24 @@
   .todo-konst-num{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:.01em;}
   .todo-konst-count{font-size:12px;font-weight:700;color:var(--text-dim);}
   .todo-grid{display:flex;flex-wrap:wrap;gap:6px;}
+  .todo-summary-shown{font-size:12.5px;color:var(--text-dim);font-weight:700;}
+  .todo-cut-row{margin:-4px 0 12px;}
+  .cut-menu-long{max-height:min(60vh, 420px);overflow-y:auto;}
+  .todo-card-body > .export-only-title + .todo-konst{margin-top:0;}
+  /* 保存画像：1行12曲で並べる */
+  html .todo-card-body.todo-export{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883; --canvas:#1e1e1e; color:var(--text);}
+  html .todo-card-body.todo-export.export-white{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
+    --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
+    --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c; --canvas:#ffffff; color:var(--text);}
+  .todo-export{padding:26px !important;}
+  .todo-export .export-only-title{display:block;font-family:var(--font-display);font-weight:800;font-size:26px;margin:0 0 14px;}
+  .todo-export-sub{font-size:18px;color:var(--text-dim);}
+  .todo-export .todo-grid{display:grid;grid-template-columns:repeat(12, 80px);gap:6px;}
+  .todo-export .todo-thumb{width:80px;height:80px;}
   .todo-thumb{width:64px;height:64px;}
   @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
@@ -2472,10 +2490,10 @@
     }
   };
   function makeCutPicker(kind){
-    var K = CUT_KINDS[kind] || CUT_KINDS.plates;
+    var K = (typeof kind === 'object' && kind) ? kind : (CUT_KINDS[kind] || CUT_KINDS.plates);
     var wrap = el('div', {class:'cut-picker', role:'group', 'aria-label':'下のレベルの表示'});
     var lb = K.pick();
-    var onoff = makeOnOffButton(lb + '↓', K.shown(lb), function(){
+    var onoff = makeOnOffButton((K.fmt ? K.fmt(lb) : lb) + '↓', K.shown(lb), function(){
       var next = !K.shown(lb);
       K.set(lb, next);
       renderApp();
@@ -2497,16 +2515,21 @@
     cutMenuEl = null;
     document.removeEventListener('pointerdown', onCutMenuOutside, true);
     document.removeEventListener('keydown', onCutMenuKey, true);
-    window.removeEventListener('scroll', closeCutMenu, true);
+    window.removeEventListener('scroll', onCutMenuScroll, true);
+  }
+  /* 画面がスクロールしたら閉じる（一覧の中をスクロールしたときは閉じない） */
+  function onCutMenuScroll(e){
+    if (cutMenuEl && e && e.target && e.target.nodeType === 1 && (e.target === cutMenuEl || cutMenuEl.contains(e.target))) return;
+    closeCutMenu();
   }
   function onCutMenuOutside(e){ if (cutMenuEl && !cutMenuEl.contains(e.target) && !(e.target.closest && e.target.closest('.cut-next'))) closeCutMenu(); }
   function onCutMenuKey(e){ if (e.key === 'Escape') closeCutMenu(); }
   function openCutMenu(anchor, K){
     K = K || CUT_KINDS.plates;
     if (cutMenuEl){ closeCutMenu(); return; }
-    var menu = el('div', {class:'cut-menu', role:'menu'});
+    var menu = el('div', {class:'cut-menu' + (K.labels ? ' cut-menu-long' : ''), role:'menu'});
     var curPick = K.pick();
-    CUT_LABELS.forEach(function(x){
+    (K.labels ? K.labels() : CUT_LABELS).forEach(function(x){
       var on = K.shown(x);
       var it = el('button', {type:'button', role:'menuitemradio', class:'cut-menu-item' + (x === curPick ? ' is-current' : ''),
         'aria-checked': x === curPick ? 'true' : 'false',
@@ -2516,7 +2539,7 @@
           renderApp();
         }});
       it.appendChild(el('span', {class:'cut-menu-check', text: x === curPick ? '✓' : ''}));
-      it.appendChild(el('span', {class:'cut-menu-label', text: x + '↓'}));
+      it.appendChild(el('span', {class:'cut-menu-label', text: (K.fmt ? K.fmt(x) : x) + '↓'}));
       it.appendChild(el('span', {class:'cut-menu-state' + (on ? ' is-on' : ''), text: on ? 'ON' : 'OFF'}));
       menu.appendChild(it);
     });
@@ -2530,7 +2553,7 @@
     setTimeout(function(){
       document.addEventListener('pointerdown', onCutMenuOutside, true);
       document.addEventListener('keydown', onCutMenuKey, true);
-      window.addEventListener('scroll', closeCutMenu, true);
+      window.addEventListener('scroll', onCutMenuScroll, true);
     }, 0);
     var cur = menu.querySelector('.is-current');
     if (cur) cur.focus({ preventScroll: true });
@@ -7231,6 +7254,38 @@
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
   function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
+  /* 定数の「↓ ON/OFF」：基準は「全部表示」。押した定数から下を出す／隠す（MASTER と 舞・覇者で別々に覚える） */
+  var TODO_CUT_KEY = 'mmplate_todo_cut_v1';
+  var todoCut = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_CUT_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function saveTodoCut(){ try{ localStorage.setItem(TODO_CUT_KEY, JSON.stringify(todoCut)); }catch(e){} }
+  function todoKonstList(kind){
+    var seen = {}, out = [];
+    todoCharts(kind).forEach(function(x){ if (x.k >= 0){ var v = Math.round(x.k * 10) / 10; if (!seen[v]){ seen[v] = true; out.push(v); } } });
+    return out.sort(function(a, b){ return b - a; });
+  }
+  function todoCutFor(kind){
+    var list = todoKonstList(kind);
+    var c = todoCut[kind];
+    if (!c || list.indexOf(c.pick) < 0) c = { pick: list[list.length - 1], on: true };   /* 最初は全部表示 */
+    return c;
+  }
+  /* その定数が今表示されているか */
+  function todoKonstShown(kind, k){
+    var c = todoCutFor(kind);
+    if (!(k >= 0)) return true;
+    var v = Math.round(k * 10) / 10;
+    return c.on ? (v >= c.pick) : (v > c.pick);
+  }
+  function todoCutKind(kind){
+    return {
+      labels: function(){ return todoKonstList(kind); },
+      fmt: function(x){ return Number(x).toFixed(1); },
+      pick: function(){ return todoCutFor(kind).pick; },
+      setPick: function(x){ var c = todoCutFor(kind); todoCut[kind] = { pick: x, on: c.on }; saveTodoCut(); },
+      shown: function(x){ return todoKonstShown(kind, x); },
+      set: function(x, on){ todoCut[kind] = { pick: x, on: !!on }; saveTodoCut(); }
+    };
+  }
 
   /* 定数から「14+」などのレベル名（x.6〜x.9 は x+） */
   function konstLevelLabel(k){
@@ -7286,9 +7341,21 @@
       seg.appendChild(b);
     });
     bar.appendChild(seg);
+    var tStatus = el('span', {class:'save-toast', role:'status'});
+    var cardRef = null;
+    bar.insertBefore(makeSaveGroup(function(base, b){
+      if (!cardRef) return;
+      var nm = K.label.replace(/[\\/:*?"<>|・]/g, '') + '_' + todoMode + '未達成.png';
+      captureNodePNG(cardRef, nm, tStatus, b, 'todo-export', base);
+    }), seg);
+    bar.appendChild(tStatus);
     root.appendChild(bar);
 
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
+    /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
+    var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
+    cutRow.appendChild(makeCutPicker(todoCutKind(kind)));
+    root.appendChild(cutRow);
     var rec = netRecordIndex();
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
 
@@ -7308,13 +7375,26 @@
     sum.appendChild(el('span', {class:'todo-summary-label', text: mode.key + ' 未達成'}));
     sum.appendChild(el('b', {class:'todo-summary-count', text: left.length + ' / ' + all.length}));
     sum.appendChild(el('span', {class:'todo-summary-unit', text:'譜面'}));
+    var shownLeft = left.filter(function(x){ return todoKonstShown(kind, x.k); });
+    if (shownLeft.length !== left.length) sum.appendChild(el('span', {class:'todo-summary-shown', text:'（表示中 ' + shownLeft.length + '）'}));
     root.appendChild(sum);
 
     if (!left.length){
       root.appendChild(el('div', {class:'empty-state', text:'すべて達成しています！'}));
       return;
     }
+    if (!shownLeft.length){
+      root.appendChild(el('div', {class:'empty-state', text:'表示する定数がありません。上の「↓ ON/OFF」で表示する定数を選んでください。'}));
+      return;
+    }
+    left = shownLeft;
     var card = el('div', {class:'todo-card-body'});
+    cardRef = card;
+    /* 保存画像にだけ出す見出し */
+    var et = el('div', {class:'export-only-title todo-export-title'});
+    et.appendChild(el('span', {style:{color: col}, text: K.label}));
+    et.appendChild(el('span', {class:'todo-export-sub', text:'　' + mode.key + ' 未達成 ' + left.length + '譜面'}));
+    card.appendChild(et);
     var curKey = null, grid = null;
     left.forEach(function(x){
       var key = x.k >= 0 ? x.k.toFixed(1) : '?';
