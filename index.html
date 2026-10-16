@@ -1300,6 +1300,8 @@
     .sticky-inner .onoff-btn{padding:4px 6px;font-size:10.5px;}
   }
   .sticky-tools.no-anim{transition:none;}
+  .sticky-inner .sticky-text{flex-basis:auto;font-size:12px;margin:0;}
+  .sticky-inner .btn-sm{min-height:30px;padding:4px 10px;font-size:12px;}
 </style>
 </head>
 <body>
@@ -8040,13 +8042,17 @@
   var stickyObserver = null;
   function mountStickyTools(root){
     if (stickyObserver){ stickyObserver.disconnect(); stickyObserver = null; }
-    if (section !== 'plates' || (view !== 'list' && view !== 'detail')) return;
-    var bar = root.querySelector('.mark-toggle-bar');
+    /* どのページのどの操作を上に残すか */
+    var bar = null, generic = false, skipSel = '';
+    if (section === 'plates' && (view === 'list' || view === 'detail')) bar = root.querySelector('.mark-toggle-bar');
+    else if (section === 'sync' && syncView !== 'detail'){ bar = root.querySelector('.sync-cut-row'); generic = true; }
+    else if (section === 'fill' && fillView === 'detail'){ bar = root.querySelector('.fill-actions'); generic = true; skipSel = '.save-group, .save-toast'; }
+    else if (section === 'fill'){ bar = root.querySelector('.fill-sum-bar'); generic = true; }
     if (!bar || !('IntersectionObserver' in window)) return;
     var back = root.querySelector('#pageBackBtn');
-    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker'));
-    var help = root.querySelector('.help-btn');
-    var seg = bar.querySelector('.plate-mode-seg');
+    var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker'));
+    var help = generic ? null : root.querySelector('.help-btn');
+    var seg = generic ? null : bar.querySelector('.plate-mode-seg');
 
     var dock = el('div', {class:'sticky-tools', 'aria-hidden':'true'});
     var inner = el('div', {class:'sticky-inner'});
@@ -8071,18 +8077,36 @@
       c.addEventListener('click', function(e){ e.preventDefault(); orig.click(); if (after) after(); });
       return c;
     }
+    function mirrorSeg(sg){
+      var c = sg.cloneNode(false);
+      c.classList.remove('list-mode-seg');
+      Array.prototype.forEach.call(sg.children, function(b){ c.appendChild(mirror(b, build)); });
+      return c;
+    }
+    /* シンク・下埋め：バーの中身を順に写す（ボタンは元を押す、文字はそのまま） */
+    function buildGeneric(){
+      Array.prototype.forEach.call(bar.children, function(ch){
+        if (skipSel && ch.matches(skipSel)) return;
+        if (ch.classList.contains('cut-picker')) inner.appendChild(mirror(ch, build));
+        else if (ch.classList.contains('plate-mode-seg')){ inner.appendChild(el('div', {class:'sticky-spacer'})); inner.appendChild(mirrorSeg(ch)); }
+        else if (ch.tagName === 'BUTTON'){ var m = mirror(ch, build); m.disabled = ch.disabled; inner.appendChild(m); }
+        else if (ch.textContent){
+          var t = ch.cloneNode(true); t.classList.add('sticky-text');
+          /* 合計の選択中は「n個選択中」だけにして1行に収める */
+          var m = /(\d+個選択中)/.exec(ch.textContent);
+          if (ch.classList.contains('fill-sum-hint') && m) t.textContent = m[1];
+          inner.appendChild(t);
+        }
+      });
+    }
     function build(){
       inner.textContent = '';
       if (back && back.isConnected) inner.appendChild(mirror(back));
+      if (generic){ buildGeneric(); return; }
       toggles.forEach(function(t){ if (t.isConnected) inner.appendChild(mirror(t, build)); });
       inner.appendChild(el('div', {class:'sticky-spacer'}));
       if (help) inner.appendChild(mirror(help));
-      if (seg && seg.isConnected){
-        var s = seg.cloneNode(false);
-        s.classList.remove('list-mode-seg');
-        Array.prototype.forEach.call(seg.children, function(b){ s.appendChild(mirror(b, build)); });
-        inner.appendChild(s);
-      }
+      if (seg && seg.isConnected) inner.appendChild(mirrorSeg(seg));
     }
     build();
     root.appendChild(dock);
