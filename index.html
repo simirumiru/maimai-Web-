@@ -1157,6 +1157,32 @@
   .count-export .count-n.no-n .count-unit{visibility:hidden;}   /* 保存画像：回数が空の曲は「回」も出さない */
   .count-card > .export-only-title + .count-level{margin-top:0;}
   .count-export > .export-only-title + .count-level{margin-top:0;}
+  /* プレートの確定日・獲得日 */
+  .count-plate-dates{display:flex;flex-wrap:wrap;gap:10px 28px;margin:0 0 16px;}
+  .count-pd-row{display:flex;align-items:center;gap:10px;}
+  .count-pd-label{font-family:var(--font-display);font-weight:800;font-size:17px;color:var(--text);}
+  .count-pd-date{appearance:none;-webkit-appearance:none;border:1px solid var(--border-strong);background:var(--panel);color:var(--text);
+    border-radius:9px;padding:6px 12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;min-height:38px;}
+  .count-pd-date.is-empty{color:var(--text-faint);font-weight:600;}
+  .count-pd-print{display:none;}
+  .count-export .count-pd-date{display:none;}
+  .count-export .count-pd-print{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--text);}
+  .count-export .count-pd-label{font-size:20px;}
+  .count-export .count-pd-row.is-empty, .count-export .count-plate-dates.all-empty{display:none;}
+  .count-export .count-plate-dates{gap:10px 40px;margin:0 0 20px;}
+  .count-export .count-plate-img{position:static;width:auto;height:auto;overflow:visible;opacity:1;display:flex;justify-content:center;margin:26px 0 0;}
+  .count-export .count-plate-img img{display:block;width:440px;height:auto;}
+  .count-export .count-plate-img .export-only-plate-name{font-size:22px;}
+  /* 保存画像：レベルの間に区切り線（前のレベルの曲と次のレベルの文字の真ん中）、左右2列は真ん中に縦線 */
+  .count-export .count-level{margin:20px 0 12px;padding-top:20px;border-top:2px solid var(--border-strong);}
+  .count-export > .export-only-title + .count-level,
+  .count-export > .export-only-title + .count-split,
+  .count-export > .count-plate-dates + .count-level,
+  .count-export > .count-plate-dates.all-empty + .count-level,
+  .count-export .count-col > .count-level:first-child{margin-top:0;padding-top:0;border-top:0;}
+  .count-export .count-split{display:grid;grid-template-columns:auto 2px auto;column-gap:28px;align-items:stretch;}
+  .count-export .count-split-line{background:var(--border-strong);border-radius:1px;}
+  .count-export .count-split .count-list{grid-template-columns:repeat(2, 230px);gap:10px 20px;}
   .fill-price-who{font-size:12px;font-weight:800;color:var(--text-dim);min-width:2em;}
   /* ---- 下埋め：読みやすさ（文字を大きく・濃く、項目名をはっきり） ---- */
   .fill-card{padding:20px 20px 18px;}
@@ -2364,9 +2390,14 @@
   }
   var BASE_PLATE_MODES = ['極', '将', '神', '舞舞'];
   /* 詳細・一覧で出すボタン：極・将・神・舞（舞＆覇者の表だけ覇も） */
+  /* 真（maimai ＆ maimai PLUS）の表か。真には真将が無いので、将のボタンを出さない */
+  function isShinDoc(v){
+    return !!v && v.docType !== 'jewel' && !isMaiHashaDoc(v) && docSongVersions(v).indexOf('maimai') >= 0;
+  }
   function selectablePlateModes(v){
     if (!v || v.docType === 'jewel') return [];
-    return availablePlateModes(v).indexOf('覇者') >= 0 ? BASE_PLATE_MODES.concat(['覇者']) : BASE_PLATE_MODES.slice();
+    var base = BASE_PLATE_MODES.filter(function(m){ return !(m === '将' && isShinDoc(v)); });
+    return availablePlateModes(v).indexOf('覇者') >= 0 ? base.concat(['覇者']) : base;
   }
   function getPlateMode(v){
     if (!v || !v.id) return '';
@@ -4569,6 +4600,37 @@
     });
     wrap.appendChild(left);
     wrap.appendChild(el('div', {class:'sync-split-line'}));
+    wrap.appendChild(right);
+  }
+  /* 回数と日付の記録の保存画像：シンクのお相手記録と同じく、レベルの途中では切らずに左右2列に分け、真ん中に仕切り線 */
+  function splitCountShot(shot){
+    var units = [], cur = null;
+    Array.prototype.forEach.call(shot.children, function(c){
+      if (c.classList.contains('count-level')){ cur = { head: c, list: null }; units.push(cur); }
+      else if (c.classList.contains('count-list') && cur){ cur.list = c; }
+    });
+    if (units.length < 2) return;
+    var weights = units.map(function(u){
+      var n = u.list ? u.list.querySelectorAll('.count-item').length : 0;
+      return 1.2 + Math.ceil(n / 2);
+    });
+    var total = weights.reduce(function(a, b){ return a + b; }, 0);
+    var acc = 0, cut = 1, best = Infinity;
+    for (var i = 0; i < units.length - 1; i++){
+      acc += weights[i];
+      var d = Math.abs(acc - total / 2);
+      if (d < best){ best = d; cut = i + 1; }
+    }
+    var wrap = el('div', {class:'count-split'});
+    var left = el('div', {class:'count-col'}), right = el('div', {class:'count-col'});
+    shot.insertBefore(wrap, units[0].head);
+    units.forEach(function(u, i){
+      var col = i < cut ? left : right;
+      col.appendChild(u.head);
+      if (u.list) col.appendChild(u.list);
+    });
+    wrap.appendChild(left);
+    wrap.appendChild(el('div', {class:'count-split-line'}));
     wrap.appendChild(right);
   }
   /* プレート難易度表の保存画像：ランクの並びを半分で切って左右に並べ、真ん中に仕切り線を入れる。
@@ -7098,6 +7160,7 @@
     var isMai = (v.id === MAI_FILL_ID);
     var isSum = (v.id === SUM_FILL_ID);
     var modes = isMai ? MAI_FILL_MODES : FILL_MODES;
+    if (!isMai && !isSum && isShinDoc(v)) modes = modes.filter(function(m){ return m !== '将'; });   /* 真将は無い */
     var mode = modes.indexOf(fillMode) >= 0 ? fillMode : modes[0];
     root.appendChild(el('h2', {class:'page-title fill-title', text: v.versionName}));
     var bar = el('div', {class:'detail-actions fill-actions'});
@@ -7574,7 +7637,7 @@
     bar.appendChild(makeSaveGroup(function(base, b){
       var pn = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
       var nm = String(v.versionName || '記録').replace(/[\\/:*?"<>|]/g, '') + '_' + pn + '_回数と日付.png';
-      captureNodePNG(card, nm, cStatus, b, 'count-export', base);
+      captureNodePNG(card, nm, cStatus, b, 'count-export', base, splitCountShot);
     }));
     bar.appendChild(makeModeSeg(modes, mode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
     bar.appendChild(cStatus);
@@ -7586,6 +7649,34 @@
 
     var plateLabel = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
     card.appendChild(el('div', {class:'export-only-title', text: v.versionName + '　' + plateLabel + '　回数と日付'}));
+    /* プレートの確定日・獲得日（例：超将確定日／超将獲得日）。保存画像には書いた方だけ出す */
+    var pdBox = el('div', {class:'count-plate-dates'});
+    var pdRec = getCountRec(v.id, mode, '__plate') || {};
+    function paintPdBox(){ pdBox.classList.toggle('all-empty', !pdRec.kt && !pdRec.kg); }
+    [['kt', '確定日'], ['kg', '獲得日']].forEach(function(f){
+      var row = el('div', {class:'count-pd-row' + (pdRec[f[0]] ? '' : ' is-empty')});
+      row.appendChild(el('span', {class:'count-pd-label', text: plateLabel + f[1]}));
+      var btn = el('button', {type:'button', class:'count-pd-date' + (pdRec[f[0]] ? '' : ' is-empty'),
+        text: pdRec[f[0]] ? fmtYmd(pdRec[f[0]]) : '日付を選ぶ', 'aria-label': plateLabel + f[1]});
+      var pr = el('span', {class:'count-pd-print', text: pdRec[f[0]] ? fmtYmd(pdRec[f[0]]) : ''});
+      btn.addEventListener('click', function(){
+        openDateWheel(pdRec[f[0]] || '', function(val){
+          var patch = {}; patch[f[0]] = val;
+          setCountRec(v.id, mode, '__plate', patch);
+          pdRec = getCountRec(v.id, mode, '__plate') || {};
+          btn.textContent = val ? fmtYmd(val) : '日付を選ぶ';
+          btn.classList.toggle('is-empty', !val);
+          row.classList.toggle('is-empty', !val);
+          pr.textContent = val ? fmtYmd(val) : '';
+          paintPdBox();
+        });
+      });
+      row.appendChild(btn);
+      row.appendChild(pr);
+      pdBox.appendChild(row);
+    });
+    paintPdBox();
+    card.appendChild(pdBox);
     var wrote = false;
     (v.levels || []).forEach(function(level){
       if (level.hidden || isPvLevelHidden(v, level)) return;
@@ -7649,6 +7740,18 @@
       card.appendChild(list);
     });
     if (!wrote) card.appendChild(el('div', {class:'pv-empty', text:'（楽曲が登録されていません）'}));
+    /* 保存画像の一番下に、選んでいるプレートを大きめに出す（画像が無いプレートは名前） */
+    var cPlateBox = el('div', {class:'export-only-plate count-plate-img'});
+    if (plateNameForMode(v, mode) !== mode){
+      var cpimg = makePlateImg(plateLabel, getCachedPlateBadge(plateLabel), function(){
+        cPlateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateLabel}));
+      });
+      cpimg.loading = 'eager';
+      cPlateBox.appendChild(cpimg);
+    } else {
+      cPlateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateLabel}));
+    }
+    card.appendChild(cPlateBox);
     root.appendChild(card);
     root.appendChild(el('div', {class:'pv-caption', text:'書いた内容はこの端末の中にだけ残ります。'}));
   }
@@ -8043,13 +8146,17 @@
   function mountStickyTools(root){
     if (stickyObserver){ stickyObserver.disconnect(); stickyObserver = null; }
     /* どのページのどの操作を上に残すか */
-    var bar = null, generic = false, skipSel = '';
+    var bar = null, generic = false, skipSel = '', extraSeg = null, backOnly = false;
+    var back = root.querySelector('#pageBackBtn');
     if (section === 'plates' && (view === 'list' || view === 'detail')) bar = root.querySelector('.mark-toggle-bar');
     else if (section === 'sync' && syncView !== 'detail'){ bar = root.querySelector('.sync-cut-row'); generic = true; }
     else if (section === 'fill' && fillView === 'detail'){ bar = root.querySelector('.fill-actions'); generic = true; skipSel = '.save-group, .save-toast'; }
     else if (section === 'fill'){ bar = root.querySelector('.fill-sum-bar'); generic = true; }
+    else if (section === 'todo' && todoKind){ bar = root.querySelector('.todo-cut-row'); generic = true; extraSeg = root.querySelector('.todo-mode-seg'); }
+    else if (section === 'count' && countView === 'detail'){ bar = root.querySelector('.count-cut-row'); generic = true; extraSeg = root.querySelector('.detail-actions .plate-mode-seg'); }
+    /* それ以外のページは「＜ 戻る場所」だけを上に残す */
+    if (!bar && back){ bar = back; generic = true; backOnly = true; }
     if (!bar || !('IntersectionObserver' in window)) return;
-    var back = root.querySelector('#pageBackBtn');
     var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker'));
     var help = generic ? null : root.querySelector('.help-btn');
     var seg = generic ? null : bar.querySelector('.plate-mode-seg');
@@ -8085,6 +8192,7 @@
     }
     /* シンク・下埋め：バーの中身を順に写す（ボタンは元を押す、文字はそのまま） */
     function buildGeneric(){
+      if (backOnly) return;
       Array.prototype.forEach.call(bar.children, function(ch){
         if (skipSel && ch.matches(skipSel)) return;
         if (ch.classList.contains('cut-picker')) inner.appendChild(mirror(ch, build));
@@ -8098,6 +8206,7 @@
           inner.appendChild(t);
         }
       });
+      if (extraSeg && extraSeg.isConnected){ inner.appendChild(el('div', {class:'sticky-spacer'})); inner.appendChild(mirrorSeg(extraSeg)); }
     }
     function build(){
       inner.textContent = '';
