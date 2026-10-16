@@ -351,6 +351,10 @@
   .sync-export .sync-split .sync-list{grid-template-columns:repeat(2, 330px);gap:8px 20px;}
   .sync-export .sync-col > .sync-level-head:first-child{margin-top:0;}
   .sync-export .sync-name-print{font-size:18px;}
+  /* 保存画像：前のレベルの曲と次のレベルの見出しのちょうど真ん中に区切り線 */
+  .sync-export .sync-level-head{margin:20px 0 12px;padding-top:20px;border-top:2px solid var(--border-strong);}
+  .sync-export .sync-split .sync-col > .sync-level-head:first-child,
+  .sync-export .sync-title + .sync-level-head{margin-top:0;padding-top:0;border-top:0;}
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
@@ -1918,12 +1922,13 @@
      古い版で保存したデータや、途中で項目が増える前のデータには
      項目そのものが無いことがある。1か所でも undefined があると
      描画の途中で止まり、一覧全体が真っ白になるので、ここで既定値を入れておく。 */
-  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）。表に入っていても出さない */
+  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）、MAGiCALのCan Do（ST・復活曲）。表に入っていても出さない */
   function excludedSongsFor(v){
     if (!v || v.docType === 'jewel' || isMaiHashaDoc(v)) return [];
     var list = [
       { name: 'ジングルベル', ver: 'maimai' },
-      { name: '前前前世', ver: 'maimai MURASAKi PLUS' }
+      { name: '前前前世', ver: 'maimai MURASAKi PLUS' },
+      { name: 'Can Do', ver: 'maimai でらっくす MAGiCAL' }      /* 復活曲（初収録は橙PLUS）。プレートの対象外 */
     ];
     var vers = docSongVersions(v);
     return list.filter(function(e){ return vers.indexOf(e.ver) >= 0; }).map(function(e){ return e.name; });
@@ -3093,7 +3098,8 @@
   /* 収録曲数から除く曲（真：ジングルベル、菫：前前前世） */
   var SEED_EXCLUDED_SONGS = {
     'maimai ＆ maimai PLUS': [{ name: 'ジングルベル', type: 'ST' }],
-    'maimai MURASAKi PLUS': [{ name: '前前前世', type: 'ST' }]
+    'maimai MURASAKi PLUS': [{ name: '前前前世', type: 'ST' }],
+    'maimai でらっくす MAGiCAL': [{ name: 'Can Do', type: 'ST' }]
   };
   /* 表に書く時間：譜面数 × 3分24秒 を、分の1の位で四捨五入（表の解説の書き方と同じ） */
   function computeSeedTime(songCount, tiers){
@@ -6893,7 +6899,7 @@
     var vers = docSongVersions(v);
     return SONG_MASTER_LIST.filter(function(s){
       if (!vers.some(function(x){ return songInVer(s, x); })) return false;
-      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世 */
+      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世・MAGiCALのCan Do */
       return true;
     });
   }
