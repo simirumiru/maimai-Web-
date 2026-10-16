@@ -49,13 +49,29 @@ function fail(t){
 
 /* ---- 1\u30da\u30fc\u30b8\u5206\u3092\u8aad\u3080\uff08\u6642\u9593\u304c\u304b\u304b\u308a\u3059\u304e\u305f\u30891\u56de\u3060\u3051\u3084\u308a\u76f4\u3059\uff09 ---- */
 function ic(r, re){ var m = r.querySelectorAll('img'); for (var i = 0; i < m.length; i++){ var x = re.exec(String(m[i].src).replace(/[?#].*$/, '')); if (x) return x[1]; } return ''; }
+var VER = 'v4';
+/* 1\u30da\u30fc\u30b8\u3092\u8aad\u3080\u3002\u6642\u9593\u5207\u308c\uff0860\u79d2\uff09\u3084 NET \u306e\u30a8\u30e9\u30fc\u753b\u9762\u306e\u3068\u304d\u306f\u3001\u5c11\u3057\u5f85\u3063\u30662\u56de\u307e\u3067\u3084\u308a\u76f4\u3059 */
+function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 function load(d, tries){
   var ctl = ('AbortController' in window) ? new AbortController() : null;
-  var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 90000) : null;
+  var timer = ctl ? setTimeout(function(){ ctl.abort(); }, 60000) : null;
+  pageStart = Date.now();
   return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff=' + d, { credentials: 'include', signal: ctl ? ctl.signal : undefined })
     .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-    .then(function(t){ clearTimeout(timer); return t; },
-          function(e){ clearTimeout(timer); if (tries > 0) return load(d, tries - 1); throw e; });
+    .then(function(t){
+      clearTimeout(timer);
+      /* \u66f2\u306e\u4e00\u89a7\u304c1\u3064\u3082\u7121\u3044\uff1d\u30ed\u30b0\u30a4\u30f3\u5207\u308c\u3084\u30a8\u30e9\u30fc\u753b\u9762 */
+      if (t.indexOf('music_name_block') < 0){
+        var e = new Error(/login|\u30ed\u30b0\u30a4\u30f3/i.test(t) ? '\u30ed\u30b0\u30a4\u30f3\u753b\u9762' : '\u30a8\u30e9\u30fc\u753b\u9762'); e.netPage = true; throw e;
+      }
+      return t;
+    })
+    .catch(function(e){
+      clearTimeout(timer);
+      lastErr = (e && e.name === 'AbortError') ? '\u6642\u9593\u5207\u308c' : (e && e.message || String(e));
+      if (tries > 0){ retry++; return wait(2000).then(function(){ return load(d, tries - 1); }); }
+      throw e;
+    });
 }
 function parse(t, d){
   var doc = new DOMParser().parseFromString(t, 'text/html'); var out = [], g = '';
@@ -74,7 +90,7 @@ function parse(t, d){
 }
 
 /* ---- \u9032\u307f\u5177\u5408\uff08\u4f55\u30da\u30fc\u30b8\u8aad\u3081\u305f\u304b\uff0b\u5c11\u3057\u305a\u3064\u9032\u3081\u308b\u8868\u793a\uff09 ---- */
-var dn = 0, tot = 5, fin = false, sh = 0;
+var dn = 0, tot = 5, fin = false, sh = 0, pageStart = Date.now(), retry = 0, lastErr = '';
 var pt = setInterval(function(){
   if (fin || stale()){ clearInterval(pt); return; }
   try{ if (w && !w.closed) w.postMessage({ type: 'maiplate-progress', done: dn, total: tot }, O); }catch(e){}
@@ -83,13 +99,26 @@ var st = setInterval(function(){
   if (fin || stale()){ clearInterval(st); return; }
   var cap = Math.min(95, dn / tot * 100 + 19);
   if (sh < cap) sh = Math.min(cap, sh + Math.max(0.12, (cap - sh) * 0.035));
+  var sec = Math.floor((Date.now() - pageStart) / 1000);
   say('mai\u30d7\u30ec\u30fc\u30c8\uff1a\u8a18\u9332\u3092\u8aad\u307f\u53d6\u308a\u4e2d\u2026 ' + Math.floor(sh) + '%\uff08' + dn + '/' + tot + '\uff09' +
+    '\n' + (dn + 1) + '\u30da\u30fc\u30b8\u76ee ' + sec + '\u79d2' + (retry ? '\u30fb\u3084\u308a\u76f4\u3057' + retry + '\u56de\uff08' + lastErr + '\uff09' : '') + '\u3000' + VER +
     (mobile ? '\n\u3053\u306e\u753b\u9762\u306e\u307e\u307e\u5c11\u3057\u5f85\u3063\u3066\u304f\u3060\u3055\u3044' : ''));
 }, 60);
 msg.style.whiteSpace = 'pre-line';
 
-function page(d){ return load(d, 1).then(function(t){ var r = parse(t, d); dn++; return r; }); }
-Promise.all([page(0), page(1), page(2), page(3), page(4)]).then(function(a){
+/* NET \u306f\u540c\u6642\u306b\u305f\u304f\u3055\u3093\u8aad\u3080\u3068\u6b62\u307e\u308b\u3053\u3068\u304c\u3042\u308b\u306e\u3067\u30011\u30da\u30fc\u30b8\u305a\u3064\u9806\u756a\u306b\u8aad\u3080 */
+function readAll(){
+  var all = [];
+  var chain = Promise.resolve();
+  [0, 1, 2, 3, 4].forEach(function(d){
+    chain = chain.then(function(){
+      if (stale()) throw new Error('stale');
+      return load(d, 2).then(function(t){ all.push(parse(t, d)); dn++; retry = 0; lastErr = ''; });
+    });
+  });
+  return chain.then(function(){ return all; });
+}
+readAll().then(function(a){
   fin = true;
   if (stale()) return;
   var rec = [].concat.apply([], a);
@@ -128,6 +157,7 @@ Promise.all([page(0), page(1), page(2), page(3), page(4)]).then(function(a){
     say('\u8aad\u307f\u53d6\u308a\u304c\u7d42\u308f\u308a\u307e\u3057\u305f\uff08' + rec.length + '\u8b5c\u9762\uff09', 'mai\u30d7\u30ec\u30fc\u30c8\u306b\u9001\u308b', openAndSend);
   }
 }).catch(function(e){
-  fail('\u8aad\u307f\u53d6\u308a\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002\u901a\u4fe1\u72b6\u6cc1\u3092\u78ba\u8a8d\u3057\u3066\u3001\u3082\u3046\u4e00\u5ea6\u30d6\u30c3\u30af\u30de\u30fc\u30af\u3092\u958b\u3044\u3066\u304f\u3060\u3055\u3044\u3002\uff08' + (e && e.name === 'AbortError' ? '\u6642\u9593\u5207\u308c' : (e && e.message || e)) + '\uff09');
+  if (e && e.netPage){ fail('maimai NET \u304c' + e.message + '\u3092\u8fd4\u3057\u307e\u3057\u305f\uff08' + (dn + 1) + '\u30da\u30fc\u30b8\u76ee\uff09\u3002NET \u306b\u30ed\u30b0\u30a4\u30f3\u3057\u76f4\u3059\u304b\u3001\u5c11\u3057\u6642\u9593\u3092\u304a\u3044\u3066\u3082\u3046\u4e00\u5ea6\u30d6\u30c3\u30af\u30de\u30fc\u30af\u3092\u958b\u3044\u3066\u304f\u3060\u3055\u3044\u3002' + VER); return; }
+  fail('\u8aad\u307f\u53d6\u308a\u306b\u5931\u6557\u3057\u307e\u3057\u305f\uff08' + (dn + 1) + '\u30da\u30fc\u30b8\u76ee\u30fb' + (e && e.name === 'AbortError' ? '\u6642\u9593\u5207\u308c' : (e && e.message || e)) + '\uff09\u3002\u901a\u4fe1\u72b6\u6cc1\u3092\u78ba\u8a8d\u3057\u3066\u3001\u3082\u3046\u4e00\u5ea6\u30d6\u30c3\u30af\u30de\u30fc\u30af\u3092\u958b\u3044\u3066\u304f\u3060\u3055\u3044\u3002' + VER);
 });
 })();
