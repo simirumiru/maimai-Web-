@@ -1240,7 +1240,7 @@
   /* 取り込み中の表示（画面の上） */
   .import-progress{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;width:min(92vw,380px);
     background:#1d2a35;color:#fff;border-radius:14px;padding:10px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
-  .import-progress-text{font-size:13.5px;font-weight:800;margin-bottom:8px;}
+  .import-progress-text{font-size:13.5px;font-weight:800;margin-bottom:8px;white-space:pre-line;}
   .import-progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
   .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .12s linear;}
   .import-progress.is-done .import-progress-fill{background:#81c995;}
@@ -6692,6 +6692,9 @@
     var text = importProg.phase === 'done' ? '✓ 取り込みました'
       : importProg.phase === 'apply' ? ('maiプレートに反映中… ' + n + '%')
       : ('maimai NET から読み込み中… ' + n + '%');
+    /* NET のタブが裏に回ると、スマホでは読み取りが止められることがある。しばらく届かなければ戻るよう案内する */
+    if (importProg.phase === 'read' && importProg.last && Date.now() - importProg.last > 5000)
+      text += '\n止まっているときは maimai NET のタブに戻ってください';
     importProgEl.querySelector('.import-progress-text').textContent = text;
     importProgEl.querySelector('.import-progress-fill').style.width = importProg.shown + '%';
     importProgEl.classList.toggle('is-done', importProg.phase === 'done');
@@ -6709,6 +6712,7 @@
       return;
     }
     ensureImportProgEl();
+    importProg.last = Date.now();
     if (d && d.applying){
       importProg.phase = 'apply';
     } else {
@@ -6719,7 +6723,7 @@
     paintImportProgress();
     /* しばらく何も届かなければ消す（途中で止まったときに出たままにしない） */
     clearTimeout(importProgTimer);
-    importProgTimer = setTimeout(hideImportProgress, 60000);
+    importProgTimer = setTimeout(hideImportProgress, 180000);
   }
   /* 反映が終わったら100%にして「取り込みました」を出し、少ししてから消す */
   function finishImportProgress(){
@@ -6869,7 +6873,7 @@
     [
       ['コピー', '下のボタンで取り込み用のコードをコピー'],
       ['ブックマーク', 'ブックマークを1つ作り、URLをコピーしたコードに書き換える'],
-      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く']
+      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
     ].forEach(function(s, i){
       var li = el('li', {class:'step'});
       li.appendChild(el('span', {class:'step-num', text: String(i + 1)}));
