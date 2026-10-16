@@ -1158,19 +1158,21 @@
   .count-card > .export-only-title + .count-level{margin-top:0;}
   .count-export > .export-only-title + .count-level{margin-top:0;}
   /* プレートの確定日・獲得日 */
-  .count-plate-dates{display:flex;flex-wrap:wrap;gap:10px 28px;margin:0 0 16px;}
-  .count-pd-row{display:flex;align-items:center;gap:10px;}
-  .count-pd-label{font-family:var(--font-display);font-weight:800;font-size:17px;color:var(--text);}
+  /* 大切な記録なので、枠で囲んで目立たせる */
+  .count-plate-dates{display:flex;flex-wrap:wrap;gap:12px 32px;margin:0 0 18px;padding:14px 18px;border-radius:14px;width:fit-content;max-width:100%;box-sizing:border-box;
+    background:var(--accent-soft);border:2px solid var(--accent);}
+  .count-pd-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .count-pd-label{font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--accent);}
   .count-pd-date{appearance:none;-webkit-appearance:none;border:1px solid var(--border-strong);background:var(--panel);color:var(--text);
-    border-radius:9px;padding:6px 12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;min-height:38px;}
+    border-radius:10px;padding:6px 14px;font:inherit;font-size:20px;font-weight:800;cursor:pointer;min-height:44px;}
   .count-pd-date.is-empty{color:var(--text-faint);font-weight:600;}
   .count-pd-print{display:none;}
   .count-export .count-pd-date{display:none;}
-  .count-export .count-pd-print{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--text);}
-  .count-export .count-pd-label{font-size:20px;}
+  .count-export .count-pd-print{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--text);letter-spacing:.02em;}
+  .count-export .count-pd-label{font-size:24px;}
   .count-export .count-pd-row.is-empty, .count-export .count-plate-dates.all-empty{display:none;}
-  .count-export .count-plate-dates{gap:10px 40px;margin:0 0 20px;}
-  .count-export .count-plate-img{position:static;width:auto;height:auto;overflow:visible;opacity:1;display:flex;justify-content:center;margin:26px 0 0;}
+  .count-export .count-plate-dates{gap:12px 48px;margin:0 0 24px;padding:18px 24px;}
+  .count-export .count-plate-img{position:static;width:auto;height:auto;overflow:visible;opacity:1;display:flex;justify-content:flex-start;margin:26px 0 0;}
   .count-export .count-plate-img img{display:block;width:440px;height:auto;}
   .count-export .count-plate-img .export-only-plate-name{font-size:22px;}
   /* 保存画像：レベルの間に区切り線（前のレベルの曲と次のレベルの文字の真ん中）、左右2列は真ん中に縦線 */
@@ -2462,13 +2464,18 @@
     });
     return out;
   }
-  /* 未達成楽曲一覧と同じ仕組み：
-     ON  … そのレベルとそれより下をすべて出す（例：13↓ ON → 13・12+・12…10+ を表示）
-     OFF … そのレベルとそれより下をすべて隠す
-     どちらも、それより上のレベルはそのまま */
+  /* 13+↓ などの ON/OFF（シンク・回数と日付・未達成楽曲一覧も同じ仕組み）：
+     ON  … そのレベルとそれより下をすべて出す。それより上も出す（例：13+↓ OFF のあと 13↓ ON → 13+・13・12+…をすべて表示）
+     OFF … そのレベルとそれより下をすべて隠し、それより上は出す */
   function setCutoff(lb, on){
-    if (LEVEL_CUT_ORDER.indexOf(lb) < 0) return;
-    setShownFrom(lb, !!on);
+    var cut = LEVEL_CUT_ORDER.indexOf(lb);
+    if (cut < 0) return;
+    levelsFrom('13+').forEach(function(p){
+      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
+      if (!pvLevelHidden[p[0].id]) pvLevelHidden[p[0].id] = {};
+      pvLevelHidden[p[0].id][p[1].id] = on ? false : (i >= cut);
+    });
+    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
   }
   /* ボタンのON／OFF：そのレベル自身が（どれかの表で）出ているか */
   function isCutShown(fromLabel){
@@ -2503,16 +2510,18 @@
   var cutPick = loadCutPick(CUT_PICK_KEY);
   var SYNC_CUT_PICK_KEY = 'mmplate_sync_cut_pick_v1';
   var syncCutPick = loadCutPick(SYNC_CUT_PICK_KEY);
-  /* シンクのお相手記録の表示（プレート表・未達成楽曲一覧と同じ仕組み）：
-     ON＝そのレベルとそれより下をすべて出す／OFF＝そのレベルとそれより下をすべて隠す。それより上はそのまま */
+  /* シンクのお相手記録の表示（プレート表と同じ仕組み）：
+     ON＝そのレベルより上も下もすべて出す／OFF＝そのレベルとそれより下をすべて隠し、上は出す */
   function isSyncCutShown(lb){
     return levelsFrom(lb).some(function(p){ return p[1].label === lb && !isSyncLevelHidden(p[0], p[1]); });
   }
   function setSyncCutoff(lb, on){
-    if (LEVEL_CUT_ORDER.indexOf(lb) < 0) return;
-    levelsFrom(lb).forEach(function(p){
+    var cut = LEVEL_CUT_ORDER.indexOf(lb);
+    if (cut < 0) return;
+    levelsFrom('13+').forEach(function(p){
+      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
       if (!syncHidden[p[0].id]) syncHidden[p[0].id] = {};
-      syncHidden[p[0].id][p[1].id] = !on;
+      syncHidden[p[0].id][p[1].id] = on ? false : (i >= cut);
     });
     persistSyncHidden();
   }
@@ -4568,71 +4577,46 @@
   }
   /* シンクのお相手記録の保存画像：表示ONのレベルを半分くらいで左右に分け、真ん中に仕切り線を入れる。
      レベルの途中では切らない。曲の段数で高さを見積もり、左右がなるべく同じ高さになる所で切る */
-  function splitSyncShot(shot){
+  /* 保存画像を左右2列に分ける（シンクのお相手記録・回数と日付の記録で共通）。
+     左右の曲数がなるべく同じになる所で切る。レベルの途中で切れたときは、右の列の上にもそのレベルの見出しを出す。
+     曲が少ないとき（8曲以下）は分けない */
+  function splitBalancedShot(shot, o){
     var units = [], cur = null;
     Array.prototype.forEach.call(shot.children, function(c){
-      if (c.classList.contains('sync-level-head')){
-        if (c.classList.contains('sync-level-off')){ cur = null; return; }
+      if (c.classList.contains(o.head)){
+        if (o.skipHead && c.classList.contains(o.skipHead)){ cur = null; return; }
         cur = { head: c, list: null }; units.push(cur);
-      } else if (c.classList.contains('sync-list') && cur){
-        cur.list = c;
+      } else if (c.classList.contains(o.list) && cur){ cur.list = c; }
+    });
+    var total = 0;
+    units.forEach(function(u){ u.items = u.list ? Array.prototype.slice.call(u.list.children) : []; total += u.items.length; });
+    if (!units.length || total <= 8) return;
+    var leftCount = Math.ceil(total / 2);
+    var wrap = el('div', {class: o.cls + '-split'});
+    var left = el('div', {class: o.cls + '-col'}), right = el('div', {class: o.cls + '-col'});
+    shot.insertBefore(wrap, units[0].head);
+    var used = 0;
+    units.forEach(function(u){
+      var n = u.items.length;
+      if (used >= leftCount){ right.appendChild(u.head); if (u.list) right.appendChild(u.list); }
+      else if (used + n <= leftCount){ left.appendChild(u.head); if (u.list) left.appendChild(u.list); }
+      else {
+        /* このレベルの途中で左右に分ける */
+        var k = leftCount - used;
+        left.appendChild(u.head); left.appendChild(u.list);
+        var head2 = u.head.cloneNode(true); head2.classList.add('is-cont');
+        var list2 = u.list.cloneNode(false);
+        u.items.slice(k).forEach(function(it){ list2.appendChild(it); });
+        right.appendChild(head2); right.appendChild(list2);
       }
-    });
-    if (units.length < 2) return;
-    var weights = units.map(function(u){
-      var n = u.list ? u.list.querySelectorAll('.sync-row').length : 0;
-      return 1.2 + Math.ceil(n / 2);
-    });
-    var total = weights.reduce(function(a, b){ return a + b; }, 0);
-    var acc = 0, cut = 1, best = Infinity;
-    for (var i = 0; i < units.length - 1; i++){
-      acc += weights[i];
-      var d = Math.abs(acc - total / 2);
-      if (d < best){ best = d; cut = i + 1; }
-    }
-    var wrap = el('div', {class:'sync-split'});
-    var left = el('div', {class:'sync-col'}), right = el('div', {class:'sync-col'});
-    shot.insertBefore(wrap, units[0].head);
-    units.forEach(function(u, i){
-      var col = i < cut ? left : right;
-      col.appendChild(u.head);
-      if (u.list) col.appendChild(u.list);
+      used += n;
     });
     wrap.appendChild(left);
-    wrap.appendChild(el('div', {class:'sync-split-line'}));
+    wrap.appendChild(el('div', {class: o.cls + '-split-line'}));
     wrap.appendChild(right);
   }
-  /* 回数と日付の記録の保存画像：シンクのお相手記録と同じく、レベルの途中では切らずに左右2列に分け、真ん中に仕切り線 */
-  function splitCountShot(shot){
-    var units = [], cur = null;
-    Array.prototype.forEach.call(shot.children, function(c){
-      if (c.classList.contains('count-level')){ cur = { head: c, list: null }; units.push(cur); }
-      else if (c.classList.contains('count-list') && cur){ cur.list = c; }
-    });
-    if (units.length < 2) return;
-    var weights = units.map(function(u){
-      var n = u.list ? u.list.querySelectorAll('.count-item').length : 0;
-      return 1.2 + Math.ceil(n / 2);
-    });
-    var total = weights.reduce(function(a, b){ return a + b; }, 0);
-    var acc = 0, cut = 1, best = Infinity;
-    for (var i = 0; i < units.length - 1; i++){
-      acc += weights[i];
-      var d = Math.abs(acc - total / 2);
-      if (d < best){ best = d; cut = i + 1; }
-    }
-    var wrap = el('div', {class:'count-split'});
-    var left = el('div', {class:'count-col'}), right = el('div', {class:'count-col'});
-    shot.insertBefore(wrap, units[0].head);
-    units.forEach(function(u, i){
-      var col = i < cut ? left : right;
-      col.appendChild(u.head);
-      if (u.list) col.appendChild(u.list);
-    });
-    wrap.appendChild(left);
-    wrap.appendChild(el('div', {class:'count-split-line'}));
-    wrap.appendChild(right);
-  }
+  function splitSyncShot(shot){ splitBalancedShot(shot, { head: 'sync-level-head', skipHead: 'sync-level-off', list: 'sync-list', cls: 'sync' }); }
+  function splitCountShot(shot){ splitBalancedShot(shot, { head: 'count-level', list: 'count-list', cls: 'count' }); }
   /* プレート難易度表の保存画像：ランクの並びを半分で切って左右に並べ、真ん中に仕切り線を入れる。
      ランクの途中では切らない。高さは「プレートの段数」でおおよそ見積もって、左右がなるべく同じ高さになる所で切る */
   function splitTierShot(shot){
@@ -7373,8 +7357,8 @@
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
   function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
-  /* 定数の「↓ ON/OFF」：ON＝その定数とそれより下をすべて表示／OFF＝その定数とそれより下をすべて隠す
-     （それより上はそのまま。▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
+  /* 定数の「↓ ON/OFF」：ON＝すべて表示／OFF＝その定数とそれより下をすべて隠す
+     （▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
   var TODO_CUT_KEY = 'mmplate_todo_cut_v4';
   var todoCut = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_CUT_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
   function saveTodoCut(){ try{ localStorage.setItem(TODO_CUT_KEY, JSON.stringify(todoCut)); }catch(e){} }
@@ -7405,9 +7389,9 @@
       setPick: function(x){ var c = todoCutFor(kind); todoCut[kind] = { pick: x, hidden: c.hidden }; saveTodoCut(); },
       shown: function(x){ return todoKonstShown(kind, x); },
       set: function(x, on){
-        var c = todoCutFor(kind);
-        var hidden = c.hidden.filter(function(v){ return v > x; });          /* それより上はそのまま */
-        if (!on) todoKonstList(kind).forEach(function(v){ if (v <= x) hidden.push(v); });   /* OFF：その定数以下をすべて隠す */
+        /* ON：上も下もすべて出す／OFF：その定数以下をすべて隠し、上は出す（プレート表と同じ） */
+        var hidden = [];
+        if (!on) todoKonstList(kind).forEach(function(v){ if (v <= x) hidden.push(v); });
         todoCut[kind] = { pick: x, hidden: hidden };
         saveTodoCut();
       }
@@ -7648,7 +7632,7 @@
     root.appendChild(cutRow);
 
     var plateLabel = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
-    card.appendChild(el('div', {class:'export-only-title', text: v.versionName + '　' + plateLabel + '　回数と日付'}));
+    card.appendChild(el('div', {class:'export-only-title', text: v.versionName}));
     /* プレートの確定日・獲得日（例：超将確定日／超将獲得日）。保存画像には書いた方だけ出す */
     var pdBox = el('div', {class:'count-plate-dates'});
     var pdRec = getCountRec(v.id, mode, '__plate') || {};
