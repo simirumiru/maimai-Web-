@@ -1126,6 +1126,15 @@
   .todo-grid{display:flex;flex-wrap:wrap;gap:6px;}
   .todo-summary-shown{font-size:12.5px;color:var(--text-dim);font-weight:700;}
   .todo-cut-row{margin:-4px 0 12px;}
+  /* 未達成楽曲一覧：画像保存の右に FC〜FDX+ を並べる。スマホ幅でも1行に収まるよう少し詰める */
+  @media (max-width:480px){
+    .todo-actions{gap:6px;}
+    .todo-actions .save-icon{display:none;}
+    .todo-actions .save-group-label{padding:6px 8px 6px 10px;font-size:12px;}
+    .todo-actions .save-base{min-width:0;padding:6px 8px;font-size:12px;}
+    .todo-actions .save-group > .save-base:last-child{padding-right:10px;}
+    .todo-actions .todo-mode-seg button{min-width:26px;padding:5px 4px;font-size:11.5px;}
+  }
   .cut-menu-long{max-height:min(60vh, 420px);overflow-y:auto;}
   .todo-card-body > .export-only-title + .todo-konst{margin-top:0;}
   /* 保存画像：1行12曲で並べる */
@@ -7346,7 +7355,7 @@
   }
 
   /* ========================= 未達成楽曲一覧 =========================
-     取り込んだ記録から、FC／SSS／AP／FDX をまだ取れていない譜面を、楽曲定数ごとにまとめて出す。
+     取り込んだ記録から、FC／SSS／AP／AP+（理論値）／FDX／FDX+ をまだ取れていない譜面を、楽曲定数ごとにまとめて出す。
      ・MASTER全譜面：全曲の MASTER
      ・舞・覇者：舞・覇者の対象曲の Re:MASTER
      並び順は実績プレート表の 13以下と同じ（定数 → ジャンル → 追加日） */
@@ -7362,7 +7371,11 @@
     { key: 'FC',  cond: '極' },
     { key: 'SSS', cond: '将' },
     { key: 'AP',  cond: '神' },
-    { key: 'FDX', cond: '舞舞' }
+    /* 理論値（AP+ ＝ 101.0000%） */
+    { key: 'AP+', test: function(x){ return x.fc === 'app' || x.ach >= 101; } },
+    { key: 'FDX', cond: '舞舞' },
+    /* FDX+（FULL SYNC DX+） */
+    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } }
   ];
   var todoKind = null;
   var TODO_MODE_KEY = 'mmplate_todo_mode_v1';
@@ -7455,7 +7468,7 @@
     var K = TODO_KINDS[kind];
     var col = kind === 'mai' ? todoMaiColor() : K.color;
     root.appendChild(el('h2', {class:'page-title', style:{color: col}, text: K.label}));
-    var bar = el('div', {class:'detail-actions'});
+    var bar = el('div', {class:'detail-actions todo-actions'});
     var seg = el('div', {class:'plate-mode-seg todo-mode-seg', role:'group', 'aria-label':'見る条件'});
     TODO_MODES.forEach(function(m){
       var b = el('button', {type:'button', text: m.key, class: todoMode === m.key ? 'is-active' : '',
@@ -7483,7 +7496,7 @@
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
 
     var mode = TODO_MODES.filter(function(m){ return m.key === todoMode; })[0] || TODO_MODES[0];
-    var cond = PLATE_COND[mode.cond];
+    var cond = mode.test || PLATE_COND[mode.cond];
     var all = todoCharts(kind);
     var left = all.filter(function(x){
       var r = rec.idx[normSongName(x.s.name) + '|' + x.s.type + '|' + K.diff];
