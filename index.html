@@ -1130,17 +1130,17 @@
   .todo-cut-row, .count-cut-row{gap:8px;}
   /* 実績プレート表の一覧：2段目（n〜n・達成済みを非表示・極将神舞）をスマホ幅でも1行に収める */
   @media (max-width:480px){
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row{gap:5px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row > *{flex:none;white-space:nowrap;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .range-btn{padding:5px 7px;gap:4px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .onoff-btn{padding:5px 6px;font-size:11px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .list-mode-seg button{min-width:26px;font-size:12px;}
+    .mark-toggle-bar > .mark-sub-row{gap:5px;}
+    .mark-toggle-bar > .mark-sub-row > *{flex:none;white-space:nowrap;}
+    .mark-toggle-bar > .mark-sub-row .range-btn{padding:5px 7px;gap:4px;}
+    .mark-toggle-bar > .mark-sub-row .onoff-btn{padding:5px 6px;font-size:11px;}
+    .mark-toggle-bar > .mark-sub-row .list-mode-seg button{min-width:26px;font-size:12px;}
   }
   @media (max-width:370px){
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row{gap:4px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .range-btn{padding:5px 5px;font-size:11px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .onoff-btn{padding:5px 4px;font-size:10.5px;}
-    .mark-toggle-bar:not(.detail-actions) > .mark-sub-row .list-mode-seg button{min-width:24px;font-size:11.5px;}
+    .mark-toggle-bar > .mark-sub-row{gap:4px;}
+    .mark-toggle-bar > .mark-sub-row .range-btn{padding:5px 5px;font-size:11px;}
+    .mark-toggle-bar > .mark-sub-row .onoff-btn{padding:5px 4px;font-size:10.5px;}
+    .mark-toggle-bar > .mark-sub-row .list-mode-seg button{min-width:24px;font-size:11.5px;}
   }
   .todo-cut-row .plate-mode-seg, .count-cut-row .plate-mode-seg{margin-left:0;}
   .cut-menu-long{max-height:min(60vh, 420px);overflow-y:auto;}
@@ -1288,7 +1288,6 @@
   .wheels.range-wheels{grid-template-columns:1fr auto 1fr;}
   .wheels.single-wheel{grid-template-columns:1fr;}
   .wheel-picker .range-btn{min-width:54px;justify-content:space-between;}
-  .wheel-picker:not(.is-none) .range-label{color:var(--accent);}
   .range-tilde{align-self:center;font-size:20px;font-weight:800;color:var(--text-dim);padding:0 4px;}
   .range-btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap;}
   .range-caret{font-size:10px;color:var(--accent);}
@@ -4952,10 +4951,10 @@
       /* 「上に固定」の横に「赤線削除」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
       {
         var subRow = el('div', {class:'mark-sub-row'});
-        /* 表示する難易度（n〜n。全部の表まとめて。舞・覇者の表は別） */
-        subRow.appendChild(makeRangePicker('plates'));
         /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
         subRow.appendChild(makeHideMarkedButton(function(){ renderApp(); }));
+        /* 表示する難易度（n〜n。全部の表まとめて。舞・覇者の表は別） */
+        subRow.appendChild(makeRangePicker('plates'));
         /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
         bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
           onclick: function(){
@@ -5153,13 +5152,12 @@
         modePicker = makeWheelPicker({ title: '進捗を記録するプレート', cls: 'mode-picker',
           items: [['', 'なし']].concat(modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; })),
           current: getPlateMode(v) || '', onPick: function(m){ selectPlateMode(m); } });
-        markBar.appendChild(modePicker);
-        /* 赤線楽曲の非表示（常に表示。シンクのお相手記録には関係しない） */
+        /* 画像保存の下の段：達成済みを非表示 → n〜n → なし・極・将・神・舞 */
         hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
         var hideRow = el('div', {class:'mark-sub-row'});
-        /* 表示する難易度（n〜n）を「達成済みを非表示」の左に */
-        hideRow.appendChild(makeRangePicker(lvGroup('plates', v)));
         hideRow.appendChild(hideBtn);
+        hideRow.appendChild(makeRangePicker(lvGroup('plates', v)));
+        hideRow.appendChild(modePicker);
         markBar.appendChild(hideRow);
         paintModes();
       }
