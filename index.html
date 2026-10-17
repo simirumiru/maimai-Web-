@@ -28,6 +28,13 @@
 <!-- スマホのホーム画面に追加したときのアイコン（同じ場所に置いた画像ファイルを使う） -->
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- アプリとして使う（ホーム画面に追加） -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#131417">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="maiプレート">
 <meta name="apple-mobile-web-app-title" content="maiプレート">
 <meta name="theme-color" content="#f3f8fb">
 <script>
@@ -293,6 +300,9 @@
   .pv-export .pv-badges{margin-left:0;margin-right:0;gap:8px;flex-direction:column;flex-wrap:nowrap;}
   .pv-export .pv-badge-row{display:flex;gap:8px;}
   .pv-export .pv-badges .pv-badge-img{flex:0 0 calc((100% - 16px) / 3);}
+  /* 保存画像のプレートは、曲の数が少ない表でも大きく（1枚 416px＝12曲並べたときの幅の3分の1） */
+  .pv-export .pv-badges .pv-badge-img{flex:0 0 416px;width:416px;}
+  .pv-export .pv-badges{width:max-content;max-width:none;}
   .pv-thumb{position:relative;width:68px;height:68px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
   .pv-thumb.no-img{background:var(--panel-2);display:flex;align-items:center;justify-content:center;}
   .pv-thumb.no-img .placeholder-text{font-size:9px;color:var(--text-dim);text-align:center;padding:3px;line-height:1.2;word-break:break-word;}
@@ -314,7 +324,7 @@
   /* 保存する画像にはボタンを写さない */
   .sync-export .sync-level-toggle{display:none;}
   .sync-export .sync-level-off{display:none;}
-  .sync-list{display:grid;grid-template-columns:1fr;gap:6px;}
+  .sync-list{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:6px 14px;}   /* 画面でも2列（左→右、次の段へ） */
   .sync-row{display:flex;align-items:center;gap:10px;min-width:0;}
   .sync-thumb{position:relative;width:40px;height:40px;border-radius:6px;overflow:hidden;
     border:1px solid var(--border);flex:none;}
@@ -335,7 +345,16 @@
   .sync-export .sync-list{grid-template-columns:repeat(2, 420px);gap:8px 28px;
     justify-content:start;}
   .sync-export .sync-thumb{width:56px;height:56px;}
+  /* 左右に分けたとき：真ん中に縦の線。曲は各列で2つずつ */
+  .sync-export .sync-split{display:grid;grid-template-columns:auto 2px auto;column-gap:28px;align-items:stretch;}
+  .sync-export .sync-split-line{background:var(--border-strong);border-radius:1px;}
+  .sync-export .sync-split .sync-list{grid-template-columns:repeat(2, 330px);gap:8px 20px;}
+  .sync-export .sync-col > .sync-level-head:first-child{margin-top:0;}
   .sync-export .sync-name-print{font-size:18px;}
+  /* 保存画像：前のレベルの曲と次のレベルの見出しのちょうど真ん中に区切り線 */
+  .sync-export .sync-level-head{margin:20px 0 12px;padding-top:20px;border-top:2px solid var(--border-strong);}
+  .sync-export .sync-split .sync-col > .sync-level-head:first-child,
+  .sync-export .sync-title + .sync-level-head{margin-top:0;padding-top:0;border-top:0;}
   /* プレートは折り返しで自動的に段組みされる:
        狭い画面（スマホ縦）= 2列 → 極将 / 神舞舞
        広い画面（スマホ横〜PC）= 3列 → 極将神 / 舞舞 */
@@ -728,6 +747,9 @@
   .home-hero-lead{margin:12px auto 18px;max-width:34em;text-wrap:balance;color:var(--text-dim);font-size:14px;line-height:1.7;}
   .home-hero-cta{font-size:15px;padding:11px 22px;border-radius:10px;}
   .home-h{font-size:15px;font-weight:800;margin:0 0 12px;padding-left:10px;border-left:3px solid var(--accent);}
+  .home-cards + .home-h{margin-top:-8px;}
+  .menu-group{font-size:11.5px;font-weight:800;color:var(--text-faint);letter-spacing:.04em;padding:12px 12px 4px;}
+  .menu-group:first-child{padding-top:4px;}
   .home-cards{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:10px;margin-bottom:28px;}
   @media (min-width:700px){ .home-cards{grid-template-columns:repeat(3, minmax(0,1fr));} }
   .home-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;cursor:pointer;
@@ -923,7 +945,7 @@
   .btn-ghost{background:var(--panel);}
   .plate-mode-seg, .theme-seg, .menu-btn{background:var(--panel);}
   /* ---- 画像として保存：どのテーマでも今までどおりの黒い表で書き出す ---- */
-  html #previewCard.pv-export, html .sync-card.sync-export{
+  html #previewCard.pv-export, html .sync-card.sync-export, html .count-card.count-export, html .fill-card.fill-export{
     --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
     --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
     --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883;
@@ -943,16 +965,20 @@
   /* ---- 画像として保存：黒／白 ---- */
   .save-group{display:inline-flex;align-items:stretch;border:1px solid var(--border-ctl);border-radius:999px;overflow:hidden;background:var(--panel);flex:none;}
   .save-group-label{appearance:none;-webkit-appearance:none;border:none;background:var(--panel);cursor:pointer;
-    display:inline-flex;align-items:center;padding:7px 12px 7px 14px;font:inherit;font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;}
+    display:inline-flex;align-items:center;padding:5px 10px 5px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
   .save-group-label:hover{background:var(--accent-soft);}
+  .save-group-label{display:inline-flex;align-items:center;gap:6px;}
+  .save-icon{display:inline-flex;}
+  .save-icon svg{width:16px;height:16px;}
   .save-group-label:disabled{opacity:.5;cursor:default;}
   .save-base{appearance:none;-webkit-appearance:none;border:none;border-left:1px solid var(--border-ctl);cursor:pointer;
-    font:inherit;font-size:12.5px;font-weight:800;min-width:40px;padding:7px 12px;}
+    font:inherit;font-size:12px;font-weight:800;min-width:34px;padding:5px 10px;}
   .save-base-dark{background:#1e1e1e;color:#f2f4f8;}
   .save-base-white{background:#ffffff;color:#17252f;}
   .save-base:disabled{opacity:.5;cursor:default;}
   /* ---- 白で保存するときの表 ---- */
-  html #previewCard.pv-export.export-white, html .sync-card.sync-export.export-white{
+  html #previewCard.pv-export.export-white, html .sync-card.sync-export.export-white,
+  html .count-card.count-export.export-white, html .fill-card.fill-export.export-white{
     --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
     --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
     --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c;
@@ -966,6 +992,8 @@
   .export-white .pv-range-end{color:#d43f3a !important;}
   /* 選んでいる色に枠（内側に太めの線） */
   .save-base{position:relative;}
+  /* 右端のボタンは外枠の丸みに合わせて角を丸め、選択中の青枠が欠けないようにする */
+  .save-group > .save-base:last-child{border-radius:0 999px 999px 0;padding-right:12px;}
   .save-base.is-selected{box-shadow:inset 0 0 0 3px var(--accent);}
   .save-base-dark.is-selected{box-shadow:inset 0 0 0 3px var(--accent), inset 0 0 0 4px #1e1e1e;}
   /* ---- 難易度表：保存画像だけの大きな左右差マーク ---- */
@@ -974,6 +1002,10 @@
   .pv-export .lr-big{display:inline-flex;align-items:center;font-size:.72em;font-weight:800;line-height:1;
     padding:.28em .6em;border-radius:999px;border:2px solid var(--border-ctl);background:var(--panel-3);color:var(--text);white-space:nowrap;}
   .pv-export .ptier-meta-row .lr-corner-badge{display:none;}
+  /* 難易度表の保存画像：左右2列＋真ん中の仕切り線 */
+  .pv-export .ptier-split{display:grid;grid-template-columns:560px 2px 560px;column-gap:28px;align-items:stretch;}
+  .pv-export .ptier-split-line{background:var(--border-strong);border-radius:1px;}
+  .pv-export .ptier-col{min-width:0;}
   /* ---- ？ボタン ---- */
   .help-btn{appearance:none;-webkit-appearance:none;width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;
     border:1.5px solid var(--border-ctl);background:var(--panel);color:var(--text-dim);font:inherit;font-size:16px;font-weight:800;line-height:1;
@@ -985,6 +1017,307 @@
   .mark-sub-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-basis:100%;}
   .mark-toggle-bar .mark-sub-row + .mode-row{margin-left:0;flex-basis:100%;}
   .hide-marked-btn[hidden], .mark-sub-row[hidden]{display:none;}
+  /* ---- 下埋め進捗 ---- */
+  .simple-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+  .simple-card{text-align:left;font:inherit;color:var(--text);width:100%;}
+  .simple-card .vc-title{margin:0;font-size:14.5px;}
+  .fill-actions .plate-mode-seg, .detail-actions .plate-mode-seg{margin-left:0;}
+  .fill-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+  .fill-plate{font-weight:800;font-size:15px;margin-bottom:12px;}
+  .fill-bar-row{display:flex;align-items:center;gap:12px;}
+  .fill-bar{flex:1;min-width:0;display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--border-ctl);background:var(--panel);}
+  .fill-seg{flex-basis:0;min-width:2.4em;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;
+    color:#17252f;}   /* 帯の数字はどの色の上でも同じ濃い色にそろえる */
+  .fill-seg + .fill-seg{border-left:1px solid rgba(0,0,0,.12);}
+  .fill-seg-done{background:#ffffff;color:#17252f;}
+  .fill-pct{flex:none;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1;}
+  .fill-pct-label{font-size:11px;color:var(--text-dim);font-weight:700;}
+  .fill-pct-num{font-size:22px;font-weight:800;}
+  .fill-legend{display:flex;flex-direction:column;gap:5px;margin:10px 0 16px;font-size:12px;color:var(--text-dim);}
+  .fill-legend-row{display:flex;gap:4px 14px;}
+  .fill-legend-left{flex-wrap:nowrap;white-space:nowrap;}
+  @media (max-width:420px){ .fill-legend-left{gap:9px;font-size:clamp(9.5px,2.9vw,12px);letter-spacing:-.02em;} }
+  .fill-legend-item{display:inline-flex;align-items:center;gap:5px;}
+  .fill-legend-item i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  i.fill-legend-done{background:#ffffff;border:1px solid var(--border-strong);}
+  .fill-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .fill-stat{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:0;}
+  .fill-stat-label{font-size:11.5px;color:var(--text-dim);font-weight:700;}
+  .fill-stat-value{font-size:20px;font-weight:800;line-height:1.3;word-break:break-word;}
+  .fill-stat-sub{font-size:10.5px;color:var(--text-faint);line-height:1.4;margin-top:2px;}
+  @media (max-width:520px){ .fill-stats{grid-template-columns:1fr;} .fill-stat-value{font-size:18px;} }
+  .fill-note{margin:6px 0 16px;}
+  .fill-price-line{display:flex;align-items:baseline;gap:8px;}
+  /* 合計を見る */
+  .fill-sum-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;}
+  .fill-sum-hint{font-size:13px;font-weight:700;color:var(--text);flex-basis:100%;}
+  .fill-pick-row{display:flex;align-items:center;gap:8px;}
+  .fill-pick-check{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border-ctl);display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:900;color:var(--accent-ink);}
+  .fill-pick.is-on{border-color:var(--accent);background:var(--accent-soft);}
+  .fill-pick.is-on .fill-pick-check{background:var(--accent);border-color:var(--accent);}
+  .fill-sum-list{margin:-4px 0 14px;}
+  .fill-sum-list-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;}
+  .ver-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .ver-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;background:var(--panel-2);
+    border:1px solid var(--border);font-size:12px;font-weight:700;line-height:1.3;color:var(--text);white-space:nowrap;}
+  .ver-chip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);}
+  .fill-sum-list-label{font-weight:800;color:var(--text);}
+  .fill-sum-edit{margin-left:8px;vertical-align:middle;}
+  .fill-export .export-only-title{word-break:break-word;}
+  /* 画像保存は横幅を固定（合計でバージョン名が長くても横に伸ばさず折り返す） */
+  .fill-card.fill-export{width:820px !important;}
+  .export-only-sub{display:none;}
+  .fill-export .export-only-sub{display:flex;margin:-2px 0 18px;}
+  /* 取り込みから2週間の案内 */
+  .import-remind{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
+    border-radius:12px;padding:10px 6px 10px 14px;margin:0 0 14px;font-size:13px;line-height:1.7;color:var(--text);}
+  .import-remind-body{flex:1;min-width:0;}
+  .import-remind-body p{margin:0;}
+  .import-remind-go{margin-top:6px;}
+  .import-remind-close{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text-dim);
+    width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;flex:none;}
+  .import-remind-close:hover{background:var(--panel-3);}
+  /* ---- 下埋め・回数と日付：画像保存 ---- */
+  .export-only-title, .export-only-note, .count-print{display:none;}
+  .fill-export .export-only-title, .count-export .export-only-title{display:block;font-family:var(--font-display);font-weight:800;
+    font-size:26px;margin:0 0 12px;color:var(--text);}
+  .fill-export .export-only-note{display:block;font-size:12px;color:var(--text-dim);margin-top:12px;}
+  .export-only-plate{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;}   /* 画面では見えないが画像は読む */
+  .fill-card{position:relative;}
+  .fill-export .export-only-plate{position:static;width:auto;height:auto;overflow:visible;opacity:1;}
+  /* ▼のレベル一覧 */
+  .cut-menu{position:fixed;z-index:1500;min-width:150px;background:var(--panel);border:1px solid var(--border-ctl);border-radius:12px;
+    box-shadow:var(--shadow-md);padding:5px;display:flex;flex-direction:column;gap:2px;}
+  .cut-menu-item{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:8px;width:100%;border:none;background:transparent;
+    border-radius:8px;padding:9px 10px;font:inherit;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;text-align:left;}
+  .cut-menu-item:hover, .cut-menu-item:focus-visible{background:var(--accent-soft);outline:none;}
+  .cut-menu-item.is-current{color:var(--accent);}
+  .cut-menu-check{width:1em;flex:none;}
+  .cut-menu-label{flex:1;}
+  .cut-menu-state{font-size:11px;font-weight:800;color:var(--text-faint);}
+  .cut-menu-state.is-on{color:var(--accent);}
+  .fill-export .fill-plate{display:none;}
+  .fill-export .export-only-plate{display:block;margin:0 0 14px;}
+  .fill-export .export-only-plate img{display:block;width:360px;height:auto;}
+  .export-only-plate-name{font-weight:800;font-size:18px;color:var(--text);}
+  .fill-export .fill-legend-left{font-size:13px;}
+  .fill-card.fill-export{width:820px;background:var(--canvas);border-color:var(--border);box-shadow:none;padding:26px;}
+  .fill-export .fill-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .fill-export .fill-stat{background:var(--panel-2);}
+  .count-export .count-input, .count-export .count-date{display:none;}
+  .count-export .count-print{display:inline-block;font-weight:800;color:var(--text);}
+  .count-export .count-print-n{font-size:18px;min-width:1.4em;text-align:right;}
+  .count-export .count-print-d{font-size:13px;color:var(--text-dim);min-height:1.2em;}
+  .count-export .count-list{grid-template-columns:repeat(4, 200px);gap:10px 22px;}
+  .count-export .count-thumb{width:64px;height:64px;}
+  .count-cut-row{margin:-4px 0 12px;}
+  /* ---- 未達成楽曲一覧 ---- */
+  .todo-card-title{font-size:16px;font-weight:800;}
+  .todo-summary{display:flex;align-items:baseline;gap:8px;margin:0 0 12px;font-size:14px;}
+  .todo-summary-label{font-weight:700;color:var(--text-dim);}
+  .todo-summary-count{font-size:22px;font-weight:800;}
+  .todo-summary-unit{color:var(--text-dim);font-weight:700;}
+  .todo-card-body{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:clamp(14px,3vw,24px);}
+  .todo-konst{display:flex;align-items:baseline;gap:8px;margin:18px 0 8px;}
+  .todo-card-body > .todo-konst:first-child{margin-top:0;}
+  .todo-konst-num{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:.01em;}
+  .todo-konst-count{font-size:12px;font-weight:700;color:var(--text-dim);}
+  .todo-grid{display:flex;flex-wrap:wrap;gap:6px;}
+  .todo-summary-shown{font-size:12.5px;color:var(--text-dim);font-weight:700;}
+  .todo-cut-row{margin:-4px 0 12px;}
+  /* n〜n の右にすぐ並べる（未達成楽曲一覧の FC〜FDX+、回数と日付の 極・将・神・舞） */
+  .todo-cut-row, .count-cut-row{gap:8px;}
+  /* 実績プレート表の一覧：2段目（n〜n・達成済みを非表示・極将神舞）をスマホ幅でも1行に収める */
+  @media (max-width:480px){
+    .mark-toggle-bar > .mark-sub-row{gap:5px;}
+    .mark-toggle-bar > .mark-sub-row > *{flex:none;white-space:nowrap;}
+    .mark-toggle-bar > .mark-sub-row .range-btn{padding:5px 7px;gap:4px;}
+    .mark-toggle-bar > .mark-sub-row .onoff-btn{padding:5px 6px;font-size:11px;}
+    .mark-toggle-bar > .mark-sub-row .list-mode-seg button{min-width:26px;font-size:12px;}
+  }
+  @media (max-width:370px){
+    .mark-toggle-bar > .mark-sub-row{gap:4px;}
+    .mark-toggle-bar > .mark-sub-row .range-btn{padding:5px 5px;font-size:11px;}
+    .mark-toggle-bar > .mark-sub-row .onoff-btn{padding:5px 4px;font-size:10.5px;}
+    .mark-toggle-bar > .mark-sub-row .list-mode-seg button{min-width:24px;font-size:11.5px;}
+  }
+  .todo-cut-row .plate-mode-seg, .count-cut-row .plate-mode-seg{margin-left:0;}
+  .cut-menu-long{max-height:min(60vh, 420px);overflow-y:auto;}
+  .todo-card-body > .export-only-title + .todo-konst{margin-top:0;}
+  /* 保存画像：1行12曲で並べる */
+  html .todo-card-body.todo-export{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883; --canvas:#1e1e1e; color:var(--text);}
+  html .todo-card-body.todo-export.export-white{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#ffffff; --panel-3:#f2f4f6;
+    --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
+    --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c; --canvas:#ffffff; color:var(--text);}
+  .todo-export{padding:26px !important;}
+  .todo-export .export-only-title{display:block;font-family:var(--font-display);font-weight:800;font-size:26px;margin:0 0 14px;}
+  .todo-export-sub{font-size:18px;color:var(--text-dim);}
+  .todo-export .todo-grid{display:grid;grid-template-columns:repeat(12, 80px);gap:6px;}
+  .todo-export .todo-thumb{width:80px;height:80px;}
+  .todo-thumb{width:64px;height:64px;}
+  @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} }
+  /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
+  .sync-card-preview{max-height:240px;position:relative;}
+  .sync-card-preview::after{content:"";position:absolute;left:0;right:0;bottom:0;height:36px;pointer-events:none;
+    background:linear-gradient(transparent, var(--panel));}
+  .sync-preview{border:none;border-radius:0;padding:14px;}
+  .sync-preview .sync-title{display:none;}
+  .sync-preview .sync-level-toggle, .sync-preview .sync-level-off{display:none;}
+  .sync-preview .sync-level-head{margin-top:6px;}
+  .sync-preview .sync-name-input{display:none;}
+  .sync-preview .sync-name-print{display:block;}
+  .count-export .count-n.no-n .count-unit{visibility:hidden;}   /* 保存画像：回数が空の曲は「回」も出さない */
+  .count-card > .export-only-title + .count-level{margin-top:0;}
+  .count-export > .export-only-title + .count-level{margin-top:0;}
+  /* プレートの確定日・獲得日
+     画面：ふつうの入力欄として小さく横に並べる（目立たせない）
+     保存画像：大切な記録なので、枠で囲んで大きく目立たせる */
+  .count-plate-dates{display:flex;flex-wrap:nowrap;gap:12px;margin:0 0 12px;}
+  .count-pd-row{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;}
+  .count-pd-label{font-weight:700;font-size:11px;color:var(--text-dim);white-space:nowrap;}
+  .count-pd-date{appearance:none;-webkit-appearance:none;border:1px solid var(--border-strong);background:var(--panel);color:var(--text);
+    border-radius:7px;padding:2px 8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:28px;white-space:nowrap;}
+  .count-export .count-pd-row{flex-direction:row;align-items:center;gap:12px;}
+  .count-export .count-pd-label{font-family:var(--font-display);font-weight:800;color:var(--accent);}
+  .count-pd-date.is-empty{color:var(--text-faint);font-weight:600;}
+  .count-pd-print{display:none;}
+  .count-export .count-pd-date{display:none;}
+  .count-export .count-pd-print{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--text);letter-spacing:.02em;}
+  .count-export .count-pd-label{font-size:24px;}
+  .count-export .count-pd-row.is-empty, .count-export .count-plate-dates.all-empty{display:none;}
+  .count-export .count-plate-dates{flex-wrap:wrap;gap:12px 48px;margin:0 0 24px;padding:18px 24px;border-radius:14px;width:fit-content;max-width:100%;box-sizing:border-box;
+    background:var(--accent-soft);border:2px solid var(--accent);}
+  .count-export .count-plate-img{position:static;width:auto;height:auto;overflow:visible;opacity:1;display:flex;justify-content:flex-start;margin:26px 0 0;}
+  .count-export .count-plate-img img{display:block;width:580px;height:auto;}
+  .count-export .count-plate-img .export-only-plate-name{font-size:22px;}
+  /* 保存画像：レベルの間に区切り線（前のレベルの曲と次のレベルの文字の真ん中）、左右2列は真ん中に縦線 */
+  .count-export .count-level{margin:20px 0 12px;padding-top:20px;border-top:2px solid var(--border-strong);}
+  .count-export > .export-only-title + .count-level,
+  .count-export > .export-only-title + .count-split,
+  .count-export > .count-plate-dates + .count-level,
+  .count-export > .count-plate-dates.all-empty + .count-level,
+  .count-export .count-col > .count-level:first-child{margin-top:0;padding-top:0;border-top:0;}
+  .count-export .count-split{display:grid;grid-template-columns:auto 2px auto;column-gap:28px;align-items:stretch;}
+  .count-export .count-split-line{background:var(--border-strong);border-radius:1px;}
+  .count-export .count-split .count-list{grid-template-columns:repeat(2, 230px);gap:10px 20px;}
+  .fill-price-who{font-size:12px;font-weight:800;color:var(--text-dim);min-width:2em;}
+  /* ---- 下埋め：読みやすさ（文字を大きく・濃く、項目名をはっきり） ---- */
+  .fill-card{padding:20px 20px 18px;}
+  .fill-plate{font-size:16px;margin-bottom:14px;}
+  .fill-bar-row{gap:14px;}
+  .fill-bar{height:42px;border-radius:10px;}
+  .fill-seg{font-size:15px;min-width:2.9em;}
+  .fill-pct-label{font-size:12px;}
+  .fill-pct-num{font-size:30px;letter-spacing:-.01em;}
+  .fill-legend{gap:8px;margin:14px 0 18px;font-size:13.5px;color:var(--text);}
+  .fill-legend-row{gap:6px 18px;}
+  .fill-legend-item{gap:6px;}
+  .fill-legend-item i{width:12px;height:12px;}
+  .fill-legend-name{color:var(--text-dim);font-weight:600;}
+  .fill-legend-count{font-weight:800;color:var(--text);margin-left:2px;}
+  .fill-stats{gap:12px;}
+  .fill-stat{padding:12px 14px;display:flex;flex-direction:column;gap:4px;}
+  .fill-stat-label{font-size:12.5px;color:var(--text-dim);}
+  .fill-stat-value{font-size:24px;line-height:1.25;}
+  .fill-price-line{gap:10px;}
+  .fill-price-who{font-size:13px;}
+  @media (max-width:520px){
+    /* スマホの画面：3つを縦に並べる */
+    .fill-stats{grid-template-columns:1fr;gap:10px;}
+    .fill-card{padding:16px 14px;}
+    .fill-bar{height:38px;}
+    .fill-seg{font-size:14px;min-width:2.6em;}
+    .fill-pct-num{font-size:26px;}
+    .fill-stat-value{font-size:21px;}
+  }
+  @media (max-width:420px){
+    .fill-legend{font-size:12.5px;}
+    .fill-legend-left{gap:8px;font-size:clamp(9px,2.75vw,12.5px);letter-spacing:-.03em;}
+    .fill-legend-left .fill-legend-item{gap:3px;}
+    .fill-legend-left .fill-legend-item i{width:10px;height:10px;}
+  }
+  .fill-export .fill-legend-left{font-size:14px;}
+  .fill-export .fill-stat-value{font-size:26px;}
+  /* 保存画像：どの端末で保存しても3つを横に並べ、余白を作らない */
+  .fill-card.fill-export .fill-stats{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;}
+  .fill-card.fill-export .fill-stat-price{grid-column:auto;}
+  .fill-card.fill-export .fill-stat{justify-content:center;padding:12px 16px;}
+  .fill-card.fill-export .fill-stat-price .fill-stat-value{font-size:22px;}
+  /* 黒（ダークテーマ・黒で保存）：帯の数字は白。達成済みの部分は白ではなく濃い灰色にして、白い数字が読めるようにする */
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-seg, .fill-export:not(.export-white) .fill-seg{
+    color:#ffffff;text-shadow:0 0 3px rgba(0,0,0,.55), 0 1px 1px rgba(0,0,0,.4);}
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-seg-done, .fill-export:not(.export-white) .fill-seg-done{background:#4a4d57;}
+  html[data-theme="dark"] .fill-card:not(.export-white) .fill-bar, .fill-export:not(.export-white) .fill-bar{border-color:#4a4d57;}
+  html[data-theme="dark"] .fill-card:not(.export-white) i.fill-legend-done, .fill-export:not(.export-white) i.fill-legend-done{background:#4a4d57;border-color:#6b707c;}
+  /* 取り込み中の表示（画面の上） */
+  .import-progress{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;width:min(92vw,380px);
+    background:#1d2a35;color:#fff;border-radius:14px;padding:10px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);}
+  .import-progress-text{font-size:13.5px;font-weight:800;margin-bottom:8px;white-space:pre-line;}
+  .import-progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
+  .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .12s linear;}
+  .import-progress.is-done .import-progress-fill{background:#81c995;}
+  /* 極・将・神・舞を「赤線削除」の横に（説明の吹き出しはその下） */
+  .mark-sub-row{align-items:flex-start;}
+  .mark-sub-row .mode-row{margin-left:0;align-items:flex-start;flex-basis:auto;}
+  .mark-sub-row .list-mode-seg{margin-left:0;}
+  .mark-sub-row .mode-row .mode-hint::before{right:auto;left:36px;}
+  /* タップの反応をよくする（素早く続けて押しても、ダブルタップの拡大と勘違いされないように） */
+  html{touch-action:manipulation;}
+  .fill-import-btn{margin-top:8px;}
+  /* ---- 回数と日付の記録 ---- */
+  .count-card{background:var(--canvas);border:1px solid var(--border);border-radius:14px;padding:clamp(14px,3vw,24px);}
+  .count-level{margin:14px 0 8px;}
+  .count-level:first-child{margin-top:0;}
+  .count-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px 12px;}
+  .count-item{display:flex;align-items:center;gap:8px;min-width:0;}
+  .count-thumb{width:60px;height:60px;}
+  .count-fields{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;}
+  .count-n{display:flex;align-items:center;gap:4px;}
+  .count-input{width:100%;max-width:64px;height:28px;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:7px;padding:2px 6px;font:inherit;font-size:14px;font-weight:700;color:var(--text);-moz-appearance:textfield;appearance:textfield;}
+  .count-input::-webkit-inner-spin-button, .count-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+  .count-unit{font-size:13px;font-weight:700;color:var(--text-dim);}
+  .count-date{appearance:none;-webkit-appearance:none;border:1px solid var(--border-strong);background:var(--panel);border-radius:7px;padding:2px 6px;height:28px;box-sizing:border-box;font:inherit;font-size:12.5px;font-weight:700;color:var(--text);text-align:left;cursor:pointer;width:100%;max-width:110px;}
+  .count-date.is-empty{color:var(--text-faint);}
+  @media (max-width:420px){ .count-list{grid-template-columns:repeat(2,minmax(0,1fr));} .count-thumb{width:52px;height:52px;} }
+  .wheel-box{max-width:340px;}
+  .wheels.range-wheels{grid-template-columns:1fr auto 1fr;}
+  .wheels.single-wheel{grid-template-columns:1fr;}
+  .wheel-picker .range-btn{min-width:54px;justify-content:space-between;}
+  .range-tilde{align-self:center;font-size:20px;font-weight:800;color:var(--text-dim);padding:0 4px;}
+  .range-btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap;}
+  .range-caret{font-size:10px;color:var(--accent);}
+  .wheels{position:relative;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;height:200px;margin:12px 0 18px;}
+  .wheel-band{position:absolute;left:0;right:0;top:80px;height:40px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-line);pointer-events:none;}
+  .wheel-col{position:relative;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;outline:none;
+    -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);}
+  .wheel-col::-webkit-scrollbar{display:none;}
+  .wheel-pad{height:40px;}
+  .wheel-item{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:17px;font-weight:700;cursor:pointer;}
+  /* 13+↓ ON/OFF | ▼ */
+  .cut-picker{display:inline-flex;align-items:stretch;flex:none;}
+  .cut-picker .cut-onoff{border-top-right-radius:0;border-bottom-right-radius:0;}
+  .cut-picker .cut-next{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-1px;padding:0 9px;font-size:10px;color:var(--accent);}
+  .sticky-inner .cut-picker .cut-next{padding:0 7px;}
+  /* 上に固定 */
+  .pin-btn{gap:4px;}
+  .pin-icon{display:inline-flex;}
+  .pin-icon svg{width:15px;height:15px;}
+  .pin-title{font-weight:800;font-size:16px;margin-bottom:4px;}
+  .pin-sub{font-size:12px;color:var(--text-dim);margin-bottom:12px;}
+  .pin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:52vh;overflow-y:auto;}
+  .pin-row{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+    background:var(--panel);border:1px solid var(--border-ctl);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;color:var(--text);}
+  .pin-row.is-on{border-color:var(--accent);background:var(--accent-soft);}
+  .pin-row.is-full{opacity:.45;}
+  .pin-num{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-ctl);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
+  .pin-row.is-on .pin-num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .pin-swatch{flex:none;width:6px;height:22px;border-radius:3px;}
+  .pin-name{flex:1;min-width:0;font-weight:600;}
   /* 取り込みページの注意書き */
   .import-caution{display:flex;gap:9px;align-items:flex-start;background:var(--warn-soft);border:1px solid var(--warn-line);
     border-radius:12px;padding:11px 14px;margin:-8px 0 22px;font-size:13px;line-height:1.7;color:var(--text);}
@@ -1013,6 +1346,11 @@
   .sticky-inner .page-back svg{width:16px;height:16px;}
   .sticky-inner .onoff-btn{padding:4px 7px;font-size:11px;}
   .sticky-spacer{flex:1 1 0;min-width:0;}
+  .sticky-inner .range-btn{padding:4px 8px;gap:5px;}
+  @media (max-width:400px){
+    .sticky-inner .range-btn{padding:4px 6px;gap:4px;}
+    .sticky-inner .plate-mode-seg button{min-width:28px;}
+  }
   .sticky-inner .help-btn{position:static;width:28px;height:28px;font-size:14px;margin:0;}
   .sticky-inner .plate-mode-seg{margin-left:auto;}
   @media (max-width:420px){
@@ -1021,6 +1359,8 @@
     .sticky-inner .onoff-btn{padding:4px 6px;font-size:10.5px;}
   }
   .sticky-tools.no-anim{transition:none;}
+  .sticky-inner .sticky-text{flex-basis:auto;font-size:12px;margin:0;}
+  .sticky-inner .btn-sm{min-height:30px;padding:4px 10px;font-size:12px;}
 </style>
 </head>
 <body>
@@ -1643,7 +1983,7 @@
      古い版で保存したデータや、途中で項目が増える前のデータには
      項目そのものが無いことがある。1か所でも undefined があると
      描画の途中で止まり、一覧全体が真っ白になるので、ここで既定値を入れておく。 */
-  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）。表に入っていても出さない */
+  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）。表に入っていても出さない（MAGiCALのCan Doは表・下埋めに入れる） */
   function excludedSongsFor(v){
     if (!v || v.docType === 'jewel' || isMaiHashaDoc(v)) return [];
     var list = [
@@ -1861,6 +2201,8 @@
     unsubReviews: null
   };
   var allReviews = [];
+  /* レビュー一覧を受け取れたか（受け取る前に「ありません」と出さないため） */
+  var reviewsState = { loaded: false, error: '' };
 
   /* 閲覧者プレビュー：ONの間は管理者でも閲覧者と同じ表示になる（確認用） */
   var previewAsViewer = false;
@@ -1990,7 +2332,8 @@
     if (!map[v.id]) map[v.id] = {};
     map[v.id][level.id] = !now;
   }
-  function isSyncLevelHidden(v, level){ return readHiddenFlag(syncHidden, v, level); }
+  /* 表示するレベルは「n〜n」の範囲で決める（下の lvRange…）。範囲の外のレベルは出さない */
+  function isSyncLevelHidden(v, level){ return !levelInRange(lvGroup('sync', v), level && level.label); }
   /* 詳細画面のプレート表で、閲覧者が自分で隠したレベル（端末ごと） */
   var PV_LEVEL_HIDDEN_KEY = 'mmplate_pv_level_hidden_v1';
   var pvLevelHidden = (function(){
@@ -1998,7 +2341,168 @@
     try{ var raw = localStorage.getItem(PV_LEVEL_HIDDEN_KEY); return raw ? JSON.parse(raw) : {}; }
     catch(e){ return {}; }
   })();
-  function isPvLevelHidden(v, level){ return readHiddenFlag(pvLevelHidden, v, level); }
+  function isPvLevelHidden(v, level){ return !levelInRange(lvGroup('plates', v), level && level.label); }
+
+  /* ---- 表示する難易度の範囲「15〜13+」など（この端末に保存） ----
+     plates … 実績プレート表・回数と日付の記録 ／ sync … シンクのお相手記録
+     舞・覇者の表は別に覚える（platesMai / syncMai。初めはすべて表示） */
+  var LV_RANGE_ORDER = ['15', '14+', '14', '13+', '13', '12+', '12', '11+', '11', '10+'];
+  var LV_RANGE_KEY = 'mmplate_level_range_v1';
+  var lvRanges = (function(){ try{ var o = JSON.parse(localStorage.getItem(LV_RANGE_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function saveLvRanges(){ try{ localStorage.setItem(LV_RANGE_KEY, JSON.stringify(lvRanges)); }catch(e){} }
+  function lvGroup(base, v){ return base + (isMaiHashaDoc(v) ? 'Mai' : ''); }
+  function lvRangeGet(g){
+    var r = lvRanges[g];
+    if (r && LV_RANGE_ORDER.indexOf(r.from) >= 0 && LV_RANGE_ORDER.indexOf(r.to) >= 0) return r;
+    if (/Mai$/.test(g)) return { from: '15', to: '10+' };
+    /* 初めて：今までの「13+↓ ON/OFF」で出していた一番下のレベルまでを範囲にする */
+    var low = LV_RANGE_ORDER.indexOf('13+');
+    if (allVersions.length){
+      var map = g === 'sync' ? syncHidden : pvLevelHidden;
+      allVersions.forEach(function(v){
+        if (v.docType === 'jewel' || isMaiHashaDoc(v)) return;
+        (v.levels || []).forEach(function(l){
+          var i = LV_RANGE_ORDER.indexOf(l.label);
+          if (i > low && !l.hidden && readHiddenFlag(map, v, l) === false) low = i;
+        });
+      });
+      lvRanges[g] = { from: '15', to: LV_RANGE_ORDER[low] };
+      saveLvRanges();
+    }
+    return { from: '15', to: LV_RANGE_ORDER[low] };
+  }
+  function levelInRange(g, label){
+    var i = LV_RANGE_ORDER.indexOf(String(label || ''));
+    if (i < 0) return true;
+    var r = lvRangeGet(g);
+    return i >= LV_RANGE_ORDER.indexOf(r.from) && i <= LV_RANGE_ORDER.indexOf(r.to);
+  }
+  function lvRangeKind(g){
+    return {
+      labels: function(){ return LV_RANGE_ORDER.slice(); },
+      fmt: function(x){ return String(x); },
+      get: function(){ return lvRangeGet(g); },
+      set: function(from, to){ lvRanges[g] = { from: from, to: to }; saveLvRanges(); }
+    };
+  }
+  /* 「15〜13+ ▼」のボタン。押すと上と下をスクロールで選ぶ画面が出る */
+  function makeRangePicker(kind){
+    var R = (typeof kind === 'object' && kind) ? kind : lvRangeKind(kind || 'plates');
+    var r = R.get();
+    var wrap = el('div', {class:'cut-picker range-picker', role:'group', 'aria-label':'表示する難易度'});
+    var b = el('button', {type:'button', class:'btn btn-sm range-btn', 'aria-haspopup':'dialog', title:'表示する難易度の範囲を選ぶ'});
+    b.appendChild(el('span', {class:'range-label', text: (r.from == null ? '―' : R.fmt(r.from)) + '〜' + (r.to == null ? '―' : R.fmt(r.to))}));
+    b.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
+    b.addEventListener('click', function(){ openRangeWheel(R); });
+    wrap.appendChild(b);
+    return wrap;
+  }
+  /* 1つだけ選ぶスクロール式のボタン（極・将・神・舞／FC・SSS…）。items = [[値, 表示], …] */
+  function makeWheelPicker(o){
+    var wrap = el('div', {class:'cut-picker wheel-picker' + (o.cls ? ' ' + o.cls : ''), role:'group', 'aria-label': o.title || ''});
+    var b = el('button', {type:'button', class:'btn btn-sm range-btn', 'aria-haspopup':'dialog', title: o.title || ''});
+    var lab = el('span', {class:'range-label'});
+    b.appendChild(lab);
+    b.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
+    function labelOf(x){ var it = o.items.filter(function(i){ return i[0] === x; })[0]; return it ? it[1] : (o.items[0] ? o.items[0][1] : ''); }
+    wrap.__set = function(x){ o.current = x; lab.textContent = labelOf(x); wrap.classList.toggle('is-none', !x); };
+    wrap.__set(o.current);
+    b.addEventListener('click', function(){
+      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); });
+    });
+    wrap.appendChild(b);
+    return wrap;
+  }
+  function openSingleWheel(title, items, cur, onDone){
+    var H = 40;
+    var idx = Math.max(0, items.map(function(i){ return i[0]; }).indexOf(cur));
+    var sel = idx;
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box wheel-box', role:'dialog', 'aria-modal':'true', 'aria-label': title});
+    box.appendChild(el('div', {class:'pin-title', text: title}));
+    var wheels = el('div', {class:'wheels single-wheel'});
+    wheels.appendChild(el('div', {class:'wheel-band', 'aria-hidden':'true'}));
+    var col = el('div', {class:'wheel-col', tabindex:'0'});
+    col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+    items.forEach(function(it, i){
+      col.appendChild(el('div', {class:'wheel-item', text: it[1], onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+    });
+    col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+    var t = null;
+    col.addEventListener('scroll', function(){
+      clearTimeout(t);
+      t = setTimeout(function(){ sel = Math.max(0, Math.min(items.length - 1, Math.round(col.scrollTop / H))); }, 90);
+    });
+    col.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowDown'){ e.preventDefault(); col.scrollTo({ top: Math.min(items.length - 1, sel + 1) * H }); }
+      if (e.key === 'ArrowUp'){ e.preventDefault(); col.scrollTo({ top: Math.max(0, sel - 1) * H }); }
+    });
+    wheels.appendChild(col);
+    box.appendChild(wheels);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      closeModal(backdrop);
+      onDone(items[sel][0]);
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    col.scrollTop = idx * H;
+  }
+  function openRangeWheel(R){
+    var labels = R.labels();
+    if (!labels.length) return;
+    var cur = R.get();
+    var sel = { from: labels.indexOf(cur.from) >= 0 ? cur.from : labels[0], to: labels.indexOf(cur.to) >= 0 ? cur.to : labels[labels.length - 1] };
+    var H = 40;
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box wheel-box', role:'dialog', 'aria-modal':'true', 'aria-label':'表示する難易度'});
+    box.appendChild(el('div', {class:'pin-title', text:'表示する難易度'}));
+    var wheels = el('div', {class:'wheels range-wheels'});
+    wheels.appendChild(el('div', {class:'wheel-band', 'aria-hidden':'true'}));
+    function makeCol(key){
+      var col = el('div', {class:'wheel-col', tabindex:'0'});
+      col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+      labels.forEach(function(x, i){
+        col.appendChild(el('div', {class:'wheel-item', text: R.fmt(x), onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+      });
+      col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+      var t = null;
+      col.addEventListener('scroll', function(){
+        clearTimeout(t);
+        t = setTimeout(function(){ sel[key] = labels[Math.max(0, Math.min(labels.length - 1, Math.round(col.scrollTop / H)))]; }, 90);
+      });
+      col.addEventListener('keydown', function(e){
+        var i = labels.indexOf(sel[key]);
+        if (e.key === 'ArrowDown'){ e.preventDefault(); col.scrollTo({ top: Math.min(labels.length - 1, i + 1) * H }); }
+        if (e.key === 'ArrowUp'){ e.preventDefault(); col.scrollTo({ top: Math.max(0, i - 1) * H }); }
+      });
+      return col;
+    }
+    var colF = makeCol('from'), colT = makeCol('to');
+    wheels.appendChild(colF);
+    wheels.appendChild(el('div', {class:'range-tilde', 'aria-hidden':'true', text:'〜'}));
+    wheels.appendChild(colT);
+    box.appendChild(wheels);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'すべて', style:{marginRight:'auto'},
+      onclick: function(){ sel.from = labels[0]; sel.to = labels[labels.length - 1]; colF.scrollTop = 0; colT.scrollTop = (labels.length - 1) * H; }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      /* 上下を逆に選んだときは入れ替える */
+      var a = labels.indexOf(sel.from), z = labels.indexOf(sel.to);
+      if (a > z){ var tmp = sel.from; sel.from = sel.to; sel.to = tmp; }
+      closeModal(backdrop);
+      R.set(sel.from, sel.to);
+      renderApp();
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    colF.scrollTop = labels.indexOf(sel.from) * H;
+    colT.scrollTop = labels.indexOf(sel.to) * H;
+  }
   function togglePvLevel(v, level){
     flipHiddenFlag(pvLevelHidden, v, level);
     if (!storageOK) return;
@@ -2052,7 +2556,7 @@
   }
   /* 「赤線楽曲の非表示 ON/OFF」ボタン。押したら onChange で表を描き直す */
   function makeHideMarkedButton(onChange){
-    var b = makeOnOffButton('赤線楽曲の非表示', hideMarkedSongs, function(){
+    var b = makeOnOffButton('達成済みを非表示', hideMarkedSongs, function(){
       setHideMarkedSongs(!hideMarkedSongs);
       if (onChange) onChange();
       return hideMarkedSongs;
@@ -2080,9 +2584,14 @@
   }
   var BASE_PLATE_MODES = ['極', '将', '神', '舞舞'];
   /* 詳細・一覧で出すボタン：極・将・神・舞（舞＆覇者の表だけ覇も） */
+  /* 真（maimai ＆ maimai PLUS）の表か。真には真将が無いので、将のボタンを出さない */
+  function isShinDoc(v){
+    return !!v && v.docType !== 'jewel' && !isMaiHashaDoc(v) && docSongVersions(v).indexOf('maimai') >= 0;
+  }
   function selectablePlateModes(v){
     if (!v || v.docType === 'jewel') return [];
-    return availablePlateModes(v).indexOf('覇者') >= 0 ? BASE_PLATE_MODES.concat(['覇者']) : BASE_PLATE_MODES.slice();
+    var base = BASE_PLATE_MODES.filter(function(m){ return !(m === '将' && isShinDoc(v)); });
+    return availablePlateModes(v).indexOf('覇者') >= 0 ? base.concat(['覇者']) : base;
   }
   function getPlateMode(v){
     if (!v || !v.id) return '';
@@ -2147,6 +2656,19 @@
     });
     return out;
   }
+  /* 13+↓ などの ON/OFF（シンク・回数と日付・未達成楽曲一覧も同じ仕組み）：
+     ON  … そのレベルとそれより下をすべて出す。それより上も出す（例：13+↓ OFF のあと 13↓ ON → 13+・13・12+…をすべて表示）
+     OFF … そのレベルとそれより下をすべて隠し、それより上は出す */
+  function setCutoff(lb, on){
+    var cut = LEVEL_CUT_ORDER.indexOf(lb);
+    if (cut < 0) return;
+    levelsFrom('13+').forEach(function(p){
+      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
+      if (!pvLevelHidden[p[0].id]) pvLevelHidden[p[0].id] = {};
+      pvLevelHidden[p[0].id][p[1].id] = on ? false : (i >= cut);
+    });
+    try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
+  }
   /* ボタンのON／OFF：そのレベル自身が（どれかの表で）出ているか */
   function isCutShown(fromLabel){
     return levelsFrom(fromLabel).some(function(p){ return p[1].label === fromLabel && !isPvLevelHidden(p[0], p[1]); });
@@ -2169,6 +2691,182 @@
     if (!storageOK) return;
     try{ localStorage.setItem(PV_LEVEL_HIDDEN_KEY, JSON.stringify(pvLevelHidden)); }catch(e){}
   }
+  /* ---- 「13+↓ ON/OFF | ▼」 ----
+     kind = 'plates'：実績プレート表の表示（回数と日付の記録も共通）
+     kind = 'sync'  ：シンクのお相手記録の表示（詳細画面の各レベルの ON/OFF と共通） */
+  var CUT_LABELS = ['13+', '13', '12+'];
+  function loadCutPick(key){
+    try{ var x = localStorage.getItem(key); return CUT_LABELS.indexOf(x) >= 0 ? x : '13+'; }catch(e){ return '13+'; }
+  }
+  var CUT_PICK_KEY = 'mmplate_cut_pick_v1';
+  var cutPick = loadCutPick(CUT_PICK_KEY);
+  var SYNC_CUT_PICK_KEY = 'mmplate_sync_cut_pick_v1';
+  var syncCutPick = loadCutPick(SYNC_CUT_PICK_KEY);
+  /* シンクのお相手記録の表示（プレート表と同じ仕組み）：
+     ON＝そのレベルより上も下もすべて出す／OFF＝そのレベルとそれより下をすべて隠し、上は出す */
+  function isSyncCutShown(lb){
+    return levelsFrom(lb).some(function(p){ return p[1].label === lb && !isSyncLevelHidden(p[0], p[1]); });
+  }
+  function setSyncCutoff(lb, on){
+    var cut = LEVEL_CUT_ORDER.indexOf(lb);
+    if (cut < 0) return;
+    levelsFrom('13+').forEach(function(p){
+      var i = LEVEL_CUT_ORDER.indexOf(p[1].label);
+      if (!syncHidden[p[0].id]) syncHidden[p[0].id] = {};
+      syncHidden[p[0].id][p[1].id] = on ? false : (i >= cut);
+    });
+    persistSyncHidden();
+  }
+  var CUT_KINDS = {
+    plates: {
+      pick: function(){ return cutPick; },
+      setPick: function(x){ cutPick = x; try{ localStorage.setItem(CUT_PICK_KEY, x); }catch(e){} },
+      shown: function(lb){ return isCutShown(lb); },
+      set: function(lb, on){ setCutoff(lb, on); }
+    },
+    sync: {
+      pick: function(){ return syncCutPick; },
+      setPick: function(x){ syncCutPick = x; try{ localStorage.setItem(SYNC_CUT_PICK_KEY, x); }catch(e){} },
+      shown: function(lb){ return isSyncCutShown(lb); },
+      set: function(lb, on){ setSyncCutoff(lb, on); }
+    }
+  };
+  function makeCutPicker(kind){
+    var K = (typeof kind === 'object' && kind) ? kind : (CUT_KINDS[kind] || CUT_KINDS.plates);
+    var wrap = el('div', {class:'cut-picker', role:'group', 'aria-label':'下のレベルの表示'});
+    var lb = K.pick();
+    var onoff = makeOnOffButton((K.fmt ? K.fmt(lb) : lb) + '↓', K.shown(lb), function(){
+      var next = !K.shown(lb);
+      K.set(lb, next);
+      renderApp();
+      return next;
+    });
+    onoff.classList.add('cut-onoff');
+    wrap.appendChild(onoff);
+    var nb = el('button', {type:'button', class:'btn btn-sm cut-next', text:'▼', 'aria-haspopup':'menu',
+      title:'切り替えるレベルを選ぶ', 'aria-label':'切り替えるレベルを選ぶ（今は' + lb + '）'});
+    nb.__openMenu = function(anchor){ openCutMenu(anchor || nb, K); };
+    nb.addEventListener('click', function(){ openCutMenu(nb, K); });
+    wrap.appendChild(nb);
+    return wrap;
+  }
+  /* ▼：13+↓・13↓・12+↓ の一覧を出して選ぶ */
+  var cutMenuEl = null;
+  function closeCutMenu(){
+    if (cutMenuEl && cutMenuEl.parentNode) cutMenuEl.parentNode.removeChild(cutMenuEl);
+    cutMenuEl = null;
+    document.removeEventListener('pointerdown', onCutMenuOutside, true);
+    document.removeEventListener('keydown', onCutMenuKey, true);
+    window.removeEventListener('scroll', onCutMenuScroll, true);
+  }
+  /* 画面がスクロールしたら閉じる（一覧の中をスクロールしたときは閉じない） */
+  function onCutMenuScroll(e){
+    if (cutMenuEl && e && e.target && e.target.nodeType === 1 && (e.target === cutMenuEl || cutMenuEl.contains(e.target))) return;
+    closeCutMenu();
+  }
+  function onCutMenuOutside(e){ if (cutMenuEl && !cutMenuEl.contains(e.target) && !(e.target.closest && e.target.closest('.cut-next'))) closeCutMenu(); }
+  function onCutMenuKey(e){ if (e.key === 'Escape') closeCutMenu(); }
+  function openCutMenu(anchor, K){
+    K = K || CUT_KINDS.plates;
+    if (cutMenuEl){ closeCutMenu(); return; }
+    var menu = el('div', {class:'cut-menu' + (K.labels ? ' cut-menu-long' : ''), role:'menu'});
+    var curPick = K.pick();
+    (K.labels ? K.labels() : CUT_LABELS).forEach(function(x){
+      var on = K.shown(x);
+      var it = el('button', {type:'button', role:'menuitemradio', class:'cut-menu-item' + (x === curPick ? ' is-current' : ''),
+        'aria-checked': x === curPick ? 'true' : 'false',
+        onclick: function(){
+          K.setPick(x);
+          closeCutMenu();
+          renderApp();
+        }});
+      it.appendChild(el('span', {class:'cut-menu-check', text: x === curPick ? '✓' : ''}));
+      it.appendChild(el('span', {class:'cut-menu-label', text: (K.fmt ? K.fmt(x) : x) + '↓'}));
+      it.appendChild(el('span', {class:'cut-menu-state' + (on ? ' is-on' : ''), text: on ? 'ON' : 'OFF'}));
+      menu.appendChild(it);
+    });
+    document.body.appendChild(menu);
+    var r = (anchor && anchor.getBoundingClientRect) ? anchor.getBoundingClientRect() : { left: 16, bottom: 60, right: 16 };
+    var w = menu.offsetWidth;
+    var left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w));
+    menu.style.left = left + 'px';
+    menu.style.top = (r.bottom + 6) + 'px';
+    cutMenuEl = menu;
+    setTimeout(function(){
+      document.addEventListener('pointerdown', onCutMenuOutside, true);
+      document.addEventListener('keydown', onCutMenuKey, true);
+      window.addEventListener('scroll', onCutMenuScroll, true);
+    }, 0);
+    var cur = menu.querySelector('.is-current');
+    if (cur) cur.focus({ preventScroll: true });
+  }
+
+  /* ---- 一覧の上に出すバージョン（3つまで。この端末に保存） ---- */
+  var PINNED_KEY = 'mmplate_pinned_versions_v1';
+  var PIN_MAX = 3;
+  var pinnedIds = (function(){
+    try{ var a = JSON.parse(localStorage.getItem(PINNED_KEY) || '[]'); return Array.isArray(a) ? a.slice(0, PIN_MAX) : []; }catch(e){ return []; }
+  })();
+  function setPinnedIds(a){
+    pinnedIds = a.slice(0, PIN_MAX);
+    try{ localStorage.setItem(PINNED_KEY, JSON.stringify(pinnedIds)); }catch(e){}
+  }
+  /* 選んだバージョンを選んだ順に先頭へ、残りはいつもの順 */
+  function listOrderedVersions(){
+    var all = sortedVersions(), head = [];
+    pinnedIds.forEach(function(id){
+      var v = all.filter(function(x){ return x.id === id; })[0];
+      if (v) head.push(v);
+    });
+    return head.concat(all.filter(function(x){ return head.indexOf(x) < 0; }));
+  }
+  function makePinButton(){
+    var n = pinnedIds.filter(function(id){ return !!findVersion(id); }).length;
+    var b = el('button', {type:'button', class:'btn btn-sm pin-btn', title:'一覧の上に出すバージョンを3つまで選ぶ', onclick: openPinPicker});
+    b.appendChild(iconNode('pin', 'pin-icon'));
+    b.appendChild(el('span', {text: n ? ('上に固定（' + n + '）') : '上に固定'}));
+    return b;
+  }
+  function openPinPicker(){
+    var picked = pinnedIds.filter(function(id){ return !!findVersion(id); });
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box pin-box', role:'dialog', 'aria-modal':'true'});
+    box.appendChild(el('div', {class:'pin-title', text:'上に固定するバージョン'}));
+    box.appendChild(el('div', {class:'pin-sub', text:'3つまで選べます。選んだ順に一覧の上に並びます。'}));
+    var list = el('div', {class:'pin-list'});
+    function paint(){
+      list.textContent = '';
+      sortedVersions().filter(function(v){ return v.docType !== 'jewel'; }).forEach(function(v){
+        var idx = picked.indexOf(v.id);
+        var full = picked.length >= PIN_MAX && idx < 0;
+        var row = el('button', {type:'button', class:'pin-row' + (idx >= 0 ? ' is-on' : '') + (full ? ' is-full' : ''),
+          'aria-pressed': idx >= 0 ? 'true' : 'false',
+          onclick: function(){
+            if (idx >= 0) picked.splice(idx, 1);
+            else if (picked.length < PIN_MAX) picked.push(v.id);
+            paint();
+          }});
+        row.appendChild(el('span', {class:'pin-num', text: idx >= 0 ? String(idx + 1) : ''}));
+        row.appendChild(el('span', {class:'pin-swatch', style:{background: v.docType === 'jewel' ? JEWEL_BAR_GRADIENT : (specVersionColor(v) || v.themeColor)}}));
+        row.appendChild(el('span', {class:'pin-name', text: v.versionName || '（名前のない表）'}));
+        list.appendChild(row);
+      });
+    }
+    paint();
+    box.appendChild(list);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'選択を外す', style:{marginRight:'auto'},
+      onclick: function(){ picked = []; paint(); }}));
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      setPinnedIds(picked); closeModal(backdrop); renderApp();
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
   function plateMarkKey(versionId, mode){ return mode ? versionId + '::' + mode : versionId; }
   function plateNameForMode(v, mode){
     var b = (v.badges || []).filter(function(x){ return plateCatOf(x.name) === mode; })[0];
@@ -2243,17 +2941,24 @@
       seedVersionsIfEmpty();
       renderApp();
     });
-    if (syncState.isAdmin){
-      if (syncState.unsubReviews) syncState.unsubReviews();
-      syncState.unsubReviews = syncState.db.collection(REVIEWS_COL).onSnapshot(function(snap){
-        allReviews = snap.docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
-        allReviews.sort(function(a,b){ return (b.submittedAt||0) - (a.submittedAt||0); });
-        renderApp();
-      }, function(err){
-        syncState.error = '同期エラー（レビュー一覧）: ' + err.message;
-        renderApp();
-      });
-    }
+    if (syncState.isAdmin) subscribeReviews();
+  }
+  function subscribeReviews(){
+    if (!syncState.db) return;
+    if (syncState.unsubReviews) syncState.unsubReviews();
+    reviewsState = { loaded: false, error: '' };
+    syncState.unsubReviews = syncState.db.collection(REVIEWS_COL).onSnapshot(function(snap){
+      /* 電波が悪いときに届く「手元の写しが空」の結果は、まだ受け取れていない扱いにする */
+      if (snap.metadata && snap.metadata.fromCache && snap.empty && !reviewsState.loaded) return;
+      allReviews = snap.docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
+      allReviews.sort(function(a,b){ return (b.submittedAt||0) - (a.submittedAt||0); });
+      reviewsState = { loaded: true, error: '' };
+      renderApp();
+    }, function(err){
+      reviewsState = { loaded: false, error: err.message || String(err) };
+      syncState.error = '同期エラー（レビュー一覧）: ' + reviewsState.error;
+      renderApp();
+    });
   }
 
   function connectSync(configObj, email, password, onDone){
@@ -3063,7 +3768,7 @@
   var allVersions = SYNC_EXPECTED ? loadSyncCache() : loadVersions();
   var allPlateTiers = loadPlateTiers();
 
-  var section = 'home';   // 'home' | 'plates' | 'plateTiers' | 'guide' | 'reviews'
+  var section = 'home';   // 'home' | 'plates' | 'plateTiers' | 'fill' | 'count' | 'guide' | 'reviews'
   var view = 'list';       // 'list' | 'detail' | 'edit'
   var currentId = null;
   var draft = null;
@@ -3313,7 +4018,7 @@
     return allPlateTiers.filter(function(t){ return t.id === id; })[0] || null;
   }
 
-  /* ---- 表示順：バージョン実装順 → 舞・覇者 → 実績フレーム表 ---- */
+  /* ---- 表示順：バージョン実装順（舞・覇者は輝の次）→ 実績フレーム表 ---- */
   function versionOrderIndex(v){
     if (v.docType === 'jewel') return 100000;              /* 常に最後 */
     var badges = v.badges || [];
@@ -3324,13 +4029,15 @@
         if (PLATE_MASTER_LIST[k].name === nm){
           var ver = PLATE_MASTER_LIST[k].ver;
           if (ver === '舞 ＆ 覇者対象Re:MASTER'){
-            /* 舞・覇者は2種類ある。
-               「Re:MASTER（上位）」→ 実績フレーム表の2つ前
-               「下位」            → 実績フレーム表の1つ前
+            /* 舞・覇者は輝（FiNALE）のすぐ後ろ（熊より前）。2種類あり、
+               「Re:MASTER（上位）」→ 輝の次、「下位」→ その次。
                タイトルや補足説明に「下位」「以下」が含まれていれば下位と判定する。 */
             var hint = (v.versionName || '') + ' ' + (v.subtitleText || '');
             var isLower = (hint.indexOf('下位') >= 0) || (hint.indexOf('以下') >= 0);
-            return isLower ? 99500 : 99000;
+            var fin = -1;
+            for (var q = 0; q < PLATE_MASTER_LIST.length; q++){ if (PLATE_MASTER_LIST[q].ver === 'maimai FiNALE'){ fin = q; break; } }
+            if (fin < 0) return isLower ? 99500 : 99000;
+            return fin + (isLower ? 0.6 : 0.5);
           }
           /* PLATE_MASTER_LIST は実装順に並んでいるので、その出現位置を順序に使う */
           for (var n = 0; n < PLATE_MASTER_LIST.length; n++){
@@ -3466,6 +4173,11 @@
     section = name;
     if (name === 'plates' && view !== 'edit'){ view = 'list'; currentId = null; }
     if (name === 'plateTiers' && plateTierView !== 'edit'){ plateTierView = 'list'; plateTierCurrentId = null; }
+    if (name === 'fill'){ fillView = 'list'; fillId = null; fillSelecting = false; }
+    if (name === 'frames'){ framesId = null; }
+    if (name === 'todo'){ todoKind = null; }
+    if (name === 'count'){ countView = 'list'; countId = null; }
+    if (name === 'sync'){ syncView = 'list'; syncId = null; }
     renderApp();
     scrollToTopNow();
   }
@@ -3777,30 +4489,9 @@
       if (viewerMode && !(level.songs || []).some(songShown)) return;
       if (opts.viewerHidden && isPvLevelHidden(v, level)) return;
       var block = el('div', {class:'pv-level'});
-      /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
-      var lvOff = interactive && isPvLevelHidden(v, level);
-      if (interactive){
-        var lvHead = el('div', {class:'pv-level-head'});
-        /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
-        lvHead.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
-        var lvBtn = makeOnOffButton('', !lvOff, function(){
-          togglePvLevel(v, level);
-          var holder = card.parentNode;
-          if (holder) holder.replaceChild(buildPreviewNode(v, opts), card);
-          return !isPvLevelHidden(v, level);
-        });
-        lvBtn.classList.add('pv-level-toggle');
-        lvHead.appendChild(lvBtn);
-        block.appendChild(lvHead);
-        if (lvOff){
-          /* 非表示のレベルはボタンだけ残す（画像保存にはボタンも写らない） */
-          block.classList.add('pv-level-off');
-          card.appendChild(block);
-          return;
-        }
-      } else {
-        block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
-      }
+      /* 詳細画面：表示する難易度の範囲（n〜n）の外のレベルは出さない */
+      if (interactive && isPvLevelHidden(v, level)) return;
+      block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
       var visibleSongs = level.songs.filter(songShown);
       if (visibleSongs.length === 0){
         block.appendChild(el('div', {class:'pv-empty', text:'（画像未追加）'}));
@@ -3928,9 +4619,11 @@
      保存ボタンが今どの要素を見ればよいかをここで共有する */
   var syncNodeRef = { node: null };
 
-  function buildSyncRecordNode(v){
-    var card = el('div', {id:'syncCard', class:'sync-card'});
-    syncNodeRef.node = card;
+  /* opts.preview：一覧の縮小表示用（入力欄やボタンを出さず、書いた名前だけ） */
+  function buildSyncRecordNode(v, opts){
+    opts = opts || {};
+    var card = el('div', opts.preview ? {class:'sync-card sync-preview'} : {id:'syncCard', class:'sync-card'});
+    if (!opts.preview) syncNodeRef.node = card;
     card.appendChild(el('div', {class:'sync-title', text:'シンクのお相手記録'}));
 
     var wrote = false;
@@ -3940,26 +4633,13 @@
       if (!songs.length) return;
       wrote = true;
 
+      /* 表示する難易度の範囲（n〜n）の外のレベルは出さない */
+      if (isSyncLevelHidden(v, level)) return;
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
-      var off = isSyncLevelHidden(v, level);
-
-      var head = el('div', {class:'sync-level-head' + (off ? ' sync-level-off' : '')});
-      /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
+      var head = el('div', {class:'sync-level-head'});
       head.appendChild(el('div', {class:'sync-level', text: level.label || '',
         style:{color: level.color || '#ffffff', '--lvc': level.color || '#ffffff'}}));
-      /* 印は必ずボタン自身に付ける（レベルの数字に付いてしまうと保存時に消えない） */
-      var lvToggle = makeOnOffButton('', !off, function(){
-        toggleSyncLevel(v, level);
-        var holder = card.parentNode;
-        var fresh = buildSyncRecordNode(v);
-        if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
-        return !isSyncLevelHidden(v, level);
-      });
-      lvToggle.classList.add('sync-level-toggle');
-      head.appendChild(lvToggle);
       card.appendChild(head);
-
-      if (off) return;   /* 非表示のレベルは楽曲を並べない */
 
       var list = el('div', {class:'sync-list'});
       songs.forEach(function(song){
@@ -4024,7 +4704,10 @@
   }
   function makeSaveGroup(onSave){
     var g = el('div', {class:'save-group', role:'group', 'aria-label':'画像として保存（PNG）'});
-    var saveBtn = el('button', {type:'button', class:'save-group-label', text:'画像として保存'});
+    /* 画像を保存するボタンだと一目で分かるよう、アイコン＋「画像保存」 */
+    var saveBtn = el('button', {type:'button', class:'save-group-label'});
+    saveBtn.appendChild(iconNode('save', 'save-icon'));
+    saveBtn.appendChild(el('span', {text:'画像保存'}));
     saveBtn.addEventListener('click', function(){ onSave(getExportBase(), saveBtn); });
     g.appendChild(saveBtn);
     var cur = getExportBase();
@@ -4037,7 +4720,7 @@
     });
     return g;
   }
-  function exportPNG(v, statusEl, btn, base){
+  function exportPNG(v, statusEl, btn, base, prepare){
     var node = document.getElementById('previewCard');
     var pmode = (v && v.id && v.docType !== 'jewel') ? getPlateMode(v) : '';
     var name = ((v && v.versionName) || 'plate').replace(/[\\/:*?"<>|]/g, '') + (pmode ? '_' + plateNameForMode(v, pmode) : '') + '.png';
@@ -4049,7 +4732,77 @@
       node.style.setProperty('--pv-cols', String(Math.min(12, maxSongs)));
     }
     /* 12曲で折り返す幅を確保してから描き込む */
-    captureNodePNG(node, name, statusEl, btn, 'pv-export', base);
+    captureNodePNG(node, name, statusEl, btn, 'pv-export', base, prepare);
+  }
+  /* シンクのお相手記録の保存画像：表示ONのレベルを半分くらいで左右に分け、真ん中に仕切り線を入れる。
+     レベルの途中では切らない。曲の段数で高さを見積もり、左右がなるべく同じ高さになる所で切る */
+  /* 保存画像を左右2列に分ける（シンクのお相手記録・回数と日付の記録で共通）。
+     左右の曲数がなるべく同じになる所で切る。レベルの途中で切れたときは、右の列の上にもそのレベルの見出しを出す。
+     曲が少ないとき（8曲以下）は分けない */
+  function splitBalancedShot(shot, o){
+    var units = [], cur = null;
+    Array.prototype.forEach.call(shot.children, function(c){
+      if (c.classList.contains(o.head)){
+        if (o.skipHead && c.classList.contains(o.skipHead)){ cur = null; return; }
+        cur = { head: c, list: null }; units.push(cur);
+      } else if (c.classList.contains(o.list) && cur){ cur.list = c; }
+    });
+    var total = 0;
+    units.forEach(function(u){ u.items = u.list ? Array.prototype.slice.call(u.list.children) : []; total += u.items.length; });
+    if (!units.length || total <= 8) return;
+    var leftCount = Math.ceil(total / 2);
+    var wrap = el('div', {class: o.cls + '-split'});
+    var left = el('div', {class: o.cls + '-col'}), right = el('div', {class: o.cls + '-col'});
+    shot.insertBefore(wrap, units[0].head);
+    var used = 0;
+    units.forEach(function(u){
+      var n = u.items.length;
+      if (used >= leftCount){ right.appendChild(u.head); if (u.list) right.appendChild(u.list); }
+      else if (used + n <= leftCount){ left.appendChild(u.head); if (u.list) left.appendChild(u.list); }
+      else {
+        /* このレベルの途中で左右に分ける */
+        var k = leftCount - used;
+        left.appendChild(u.head); left.appendChild(u.list);
+        var head2 = u.head.cloneNode(true); head2.classList.add('is-cont');
+        var list2 = u.list.cloneNode(false);
+        u.items.slice(k).forEach(function(it){ list2.appendChild(it); });
+        right.appendChild(head2); right.appendChild(list2);
+      }
+      used += n;
+    });
+    wrap.appendChild(left);
+    wrap.appendChild(el('div', {class: o.cls + '-split-line'}));
+    wrap.appendChild(right);
+  }
+  function splitSyncShot(shot){ splitBalancedShot(shot, { head: 'sync-level-head', skipHead: 'sync-level-off', list: 'sync-list', cls: 'sync' }); }
+  function splitCountShot(shot){ splitBalancedShot(shot, { head: 'count-level', list: 'count-list', cls: 'count' }); }
+  /* プレート難易度表の保存画像：ランクの並びを半分で切って左右に並べ、真ん中に仕切り線を入れる。
+     ランクの途中では切らない。高さは「プレートの段数」でおおよそ見積もって、左右がなるべく同じ高さになる所で切る */
+  function splitTierShot(shot){
+    var bands = Array.prototype.slice.call(shot.querySelectorAll(':scope > .ptier-band'));
+    if (bands.length < 2) return;
+    var weights = bands.map(function(b){
+      var w = 1;
+      Array.prototype.forEach.call(b.querySelectorAll('.tier-group'), function(g){
+        var n = g.querySelectorAll('.ptier-cell').length;
+        w += 0.6 + (n ? Math.ceil(n / 3) * 1.4 : 0.6);
+      });
+      return w;
+    });
+    var total = weights.reduce(function(a, b){ return a + b; }, 0);
+    var acc = 0, cut = 1, best = Infinity;
+    for (var i = 0; i < bands.length - 1; i++){
+      acc += weights[i];
+      var diff = Math.abs(acc - total / 2);
+      if (diff < best){ best = diff; cut = i + 1; }
+    }
+    var wrap = el('div', {class:'ptier-split'});
+    var left = el('div', {class:'ptier-col'}), right = el('div', {class:'ptier-col'});
+    bands[0].parentNode.insertBefore(wrap, bands[0]);
+    bands.forEach(function(b, i){ (i < cut ? left : right).appendChild(b); });
+    wrap.appendChild(left);
+    wrap.appendChild(el('div', {class:'ptier-split-line'}));
+    wrap.appendChild(right);
   }
 
   /* 指定した要素をPNGにして保存する。
@@ -4081,7 +4834,7 @@
     var go = function(){ ensureHtml2Canvas().catch(function(){}); };
     setTimeout(go, 0);
   }
-  function captureNodePNG(node, name, statusEl, btn, exportClass, base){
+  function captureNodePNG(node, name, statusEl, btn, exportClass, base, prepare){
     if (!node) return;
     btn.disabled = true;
     statusEl.textContent = '画像を生成中…';
@@ -4101,6 +4854,8 @@
     }
     if (exportClass) shot.classList.add(exportClass);
     if (base === 'white') shot.classList.add('export-white');
+    /* 保存画像だけの並べ替え（難易度表の左右分けなど） */
+    if (prepare){ try{ prepare(shot); }catch(e){} }
     shot.style.width = 'max-content';
     holder.appendChild(shot);
     /* 元の表と同じ場所（同じ親の中）に置くので、見た目の指定もそのまま効く */
@@ -4185,32 +4940,23 @@
   function makeMarkToggleBar(v){
     var bar = el('div', {class:'mark-toggle-bar'});
     if (!v){
-      /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外） */
-      ['13+', '13', '12+'].forEach(function(lb){
-        bar.appendChild(makeOnOffButton(lb + '↓', isCutShown(lb), function(){
-          var next = !isCutShown(lb);
-          setShownFrom(lb, next);
-          renderApp();
-          return next;
-        }));
-      });
+      /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外）。
+         「13+↓ ON/OFF | ▼」の1つにまとめ、▼で 13+ → 13 → 12+ と切り替える */
+      /* 1段目：上に固定・赤線削除（・？）／2段目：n〜n・達成済みを非表示・極・将・神・舞 */
+      bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
-      var lseg = el('div', {class:'plate-mode-seg list-mode-seg', role:'group', 'aria-label':'表示するプレート'});
-      var cur = commonListMode();
-      ['極', '将', '神', '舞舞'].forEach(function(m){
-        var b = el('button', {type:'button', text: PLATE_MODE_LABEL[m], class: cur === m ? 'is-active' : '',
-          onclick: function(){ setAllPlateModes(commonListMode() === m ? '' : m); renderApp(); }});
-        b.setAttribute('aria-pressed', cur === m ? 'true' : 'false');
-        lseg.appendChild(b);
-      });
-      bar.appendChild(makeHelpButton('help-btn-list'));
-      /* 13+↓などの下の段に「赤線楽曲の非表示」「赤線削除」を常に出す */
+      var lseg = makeWheelPicker({ title: '表示するプレート', cls: 'mode-picker list-mode-seg',
+        items: [['', 'なし'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
+        current: commonListMode() || '', onPick: function(m){ setAllPlateModes(m); renderApp(); } });
+      /* 「上に固定」の横に「赤線削除」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
       {
         var subRow = el('div', {class:'mark-sub-row'});
         /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
         subRow.appendChild(makeHideMarkedButton(function(){ renderApp(); }));
+        /* 表示する難易度（n〜n。全部の表まとめて。舞・覇者の表は別） */
+        subRow.appendChild(makeRangePicker('plates'));
         /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
-        subRow.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
+        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
           onclick: function(){
             var m = commonListMode();
             if (!m){ showAlert('極・将・神・舞のどれかを選んでから押してください。'); return; }
@@ -4223,26 +4969,12 @@
               renderApp();
             }, { yesText: '削除', oneLine: true });
           }}));
+        bar.appendChild(makeHelpButton('help-btn-list'));
         bar.appendChild(subRow);
       }
-      var modeRow = el('div', {class:'mode-row'});
-      var HINT_KEY = 'mmplate_hint_mode_closed_v1';
-      var hintClosed = false;
-      try{ hintClosed = localStorage.getItem(HINT_KEY) === '1'; }catch(e){}
-      if (!hintClosed){
-        var hint = el('div', {class:'mode-hint'});
-        hint.appendChild(el('span', {class:'mode-hint-text', text:'もう1度押すと赤線が消えます'}));
-        hint.appendChild(el('button', {class:'mode-hint-close', type:'button', 'aria-label':'閉じる', text:'×',
-          onclick: function(){
-            try{ localStorage.setItem(HINT_KEY, '1'); }catch(e){}
-            if (hint.parentNode) hint.parentNode.removeChild(hint);
-          }}));
-        modeRow.appendChild(lseg);
-        modeRow.appendChild(hint);
-      } else {
-        modeRow.appendChild(lseg);
-      }
-      bar.appendChild(modeRow);
+      var subRowRef = subRow;
+      /* 極・将・神・舞は「赤線楽曲の非表示」の右に詰めて並べる（説明の吹き出しは出さない） */
+      subRowRef.appendChild(lseg);
     }
     return bar;
   }
@@ -4287,7 +5019,6 @@
     if (canEdit()){
       var bar = el('div', {class:'view-topbar'});
       bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績プレート表を追加', onclick: goEditNew}));
-      bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: goEditNewJewelTemplate}));
       bar.appendChild(el('button', {class:'btn', text:'＋ 13〜10+の欄を全バージョンに追加', onclick: addLowerLevelsToAll}));
       bar.appendChild(el('button', {class:'btn', text:'＋ 新曲の追加・定数の反映', onclick: openAddMissingSongs}));
       bar.appendChild(el('button', {class:'btn', text: IS_TEST_ENV ? '並び順を整える（本番の13+〜15の順＋13以下）' : '13以下の並び順を整える', onclick: arrangeSongOrder}));
@@ -4308,7 +5039,8 @@
 
     var grid = el('div', {class:'versions-grid'});
     var anchorCard = null;
-    sortedVersions().forEach(function(v, idx){
+    /* 実績フレーム表はホームの「実績フレーム表」に分けた */
+    listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }).forEach(function(v, idx){
       var isJewel = (v.docType === 'jewel');
       var card = el('div', {class:'version-card', onclick: function(){ goDetail(v.id); }});
       card.appendChild(el('div', {class:'vc-swatch', style:{background: isJewel ? JEWEL_BAR_GRADIENT : (specVersionColor(v) || v.themeColor)}}));
@@ -4377,9 +5109,10 @@
     var pngBtn = makeSaveGroup(function(base, b){ exportPNG(v, statusEl, b, base); });
     if (canEdit()){
       var bar = el('div', {class:'view-topbar'});
-      bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goEditExisting(v.id); }}));
-      bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ goDuplicate(v.id); }}));
-      bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ deleteVersion(v.id); }}));
+      /* 編集は実績プレート表の画面で行う（実績フレーム表から開いたときも） */
+      bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ section = 'plates'; goEditExisting(v.id); }}));
+      bar.appendChild(el('button', {class:'btn', text:'複製', onclick: function(){ section = 'plates'; goDuplicate(v.id); }}));
+      bar.appendChild(el('button', {class:'btn btn-danger', text:'削除', onclick: function(){ section = 'plates'; deleteVersion(v.id); }}));
       root.appendChild(bar);
     }
     /* 実績フレーム表は極〜舞のボタンが無いので、画像保存だけの行にする */
@@ -4394,13 +5127,12 @@
     function redrawPreview(){
       pvHolder.textContent = '';
       pvHolder.appendChild(eagerImages(buildPreviewNode(v, pvOpts)));
-      if (!isJewelDoc) pvHolder.appendChild(makeHelpButton('help-btn-card'));
     }
-    var modeBtns = [];
+    var modePicker = null;
     var hideBtn = null;
     function paintModes(){
       var cur = getPlateMode(v);
-      modeBtns.forEach(function(b){ b.classList.toggle('is-active', b.__mode === cur); b.setAttribute('aria-pressed', b.__mode === cur ? 'true' : 'false'); });
+      if (modePicker) modePicker.__set(cur || '');
       var clr = (markBar || root).querySelector('.mark-clear');
       if (clr) clr.hidden = !cur;
     }
@@ -4416,21 +5148,16 @@
       markBar.insertBefore(pngBtn, markBar.firstChild);
       var modes = selectablePlateModes(v);
       if (modes.length){
-        /* 極・将・神・舞（・覇）。それぞれ別々に赤線を記録できる。選んでいるものをもう一度押すと解除 */
-        var seg = el('div', {class:'plate-mode-seg', role:'group', 'aria-label':'進捗を記録するプレート'});
-        modes.forEach(function(m){
-          var b = el('button', {type:'button', text: PLATE_MODE_LABEL[m],
-            title: plateNameForMode(v, m) + 'の進捗',
-            onclick: function(){ selectPlateMode(getPlateMode(v) === m ? '' : m); }});
-          b.__mode = m;
-          modeBtns.push(b);
-          seg.appendChild(b);
-        });
-        markBar.appendChild(seg);
-        /* 赤線楽曲の非表示（常に表示。シンクのお相手記録には関係しない） */
+        /* 極・将・神・舞（・覇）をスクロールで選ぶ。それぞれ別々に赤線を記録できる。「なし」で解除 */
+        modePicker = makeWheelPicker({ title: '進捗を記録するプレート', cls: 'mode-picker',
+          items: [['', 'なし']].concat(modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; })),
+          current: getPlateMode(v) || '', onPick: function(m){ selectPlateMode(m); } });
+        /* 画像保存の下の段：達成済みを非表示 → n〜n → なし・極・将・神・舞 */
         hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
         var hideRow = el('div', {class:'mark-sub-row'});
         hideRow.appendChild(hideBtn);
+        hideRow.appendChild(makeRangePicker(lvGroup('plates', v)));
+        hideRow.appendChild(modePicker);
         markBar.appendChild(hideRow);
         paintModes();
       }
@@ -4440,28 +5167,7 @@
     root.appendChild(pvHolder);
     root.appendChild(el('div', {class:'pv-caption', text:'最終更新: ' + fmtDate(v.updatedAt)}));
 
-    /* プレート表とは別枠の「シンクのお相手記録」。Jewel表には出さない */
-    if (!isJewelDoc){
-      var syncBar = el('div', {class:'view-topbar', style:{marginTop:'26px', marginBottom:'10px'}});
-      var syncStatus = el('span', {class:'save-toast', role:'status'});
-      var syncBtn = makeSaveGroup(function(base, b){
-        var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
-        captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, b, 'sync-export', base);
-      });
-      syncBar.appendChild(el('div', {class:'spacer', style:{flex:'1'}}));
-      syncBar.appendChild(syncStatus);
-      syncBar.appendChild(syncBtn);
-      root.appendChild(syncBar);
-
-      var syncHolder = el('div', {class:'preview-wide'});
-      var syncNode = buildSyncRecordNode(v);
-      syncHolder.appendChild(syncNode);
-      root.appendChild(syncHolder);
-
-
-      root.appendChild(el('div', {class:'pv-caption',
-        text:'書いた名前はこの端末の中にだけ残ります。'}));
-    }
+    /* シンクのお相手記録は、ホームの「シンクのお相手記録」に移した（書いた名前はそのまま使う） */
   }
 
   /* ========================= view: edit ========================= */
@@ -5003,7 +5709,7 @@
     if (!t){ goPlateTierList(); return; }
     var bar = el('div', {class:'view-topbar'});
     var statusEl = el('span', {class:'save-toast', role:'status'});
-    var pngBtn = makeSaveGroup(function(base, b){ exportPNG({versionName: t.title}, statusEl, b, base); });
+    var pngBtn = makeSaveGroup(function(base, b){ exportPNG({versionName: t.title}, statusEl, b, base, splitTierShot); });
     bar.appendChild(pngBtn);
     bar.appendChild(el('div', {style:{flex:'1'}}));
     bar.appendChild(el('button', {class:'btn', text:'編集', onclick: function(){ goPlateTierEditExisting(t.id); }}));
@@ -5239,6 +5945,19 @@
 
     if (syncState.connected && syncState.isAdmin){
       root.appendChild(el('div', {class:'note', style:{marginBottom:'14px'}, text:'このツールについて訪問者から届いた感想・要望の一覧です（開発者だけが見られます）。'}));
+      /* まだ受け取れていない／読み込みに失敗したときは「ありません」と出さない */
+      if (reviewsState.error){
+        var errBox = el('div', {class:'empty-state'});
+        errBox.appendChild(el('h3', {text:'レビューを読み込めませんでした'}));
+        errBox.appendChild(el('div', {class:'note', text: reviewsState.error}));
+        errBox.appendChild(el('button', {class:'btn btn-sm', style:{marginTop:'10px'}, text:'もう一度読み込む', onclick: function(){ subscribeReviews(); renderApp(); }}));
+        root.appendChild(errBox);
+        return;
+      }
+      if (!reviewsState.loaded){
+        root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text:'読み込み中…'}));
+        return;
+      }
       if (allReviews.length === 0){
         var empty = el('div', {class:'empty-state'});
         empty.appendChild(el('h3', {text:'届いているレビューはありません'}));
@@ -5334,6 +6053,7 @@
         syncState.isAdmin = false;
         if (syncState.unsubReviews){ syncState.unsubReviews(); syncState.unsubReviews = null; }
         allReviews = [];
+        reviewsState = { loaded: false, error: '' };
         goList();
       }}));
       box.appendChild(actionsA);
@@ -5438,6 +6158,7 @@
       para(['13～12+も楽曲定数順には並んでいますが、定数が同じ場合は、', el('br'),
             'POPS→ニコボカ→東方→ゲーバラ→オリジナル→ゲキチュウ', el('br'),
             '以上の優先度で並んでいます。それでも同じ場合は追加日が早いものを左側に配置しています。'], 'guide-p guide-p-tight'),
+      para(['未達成楽曲一覧も、13～12+と同じ決まりで並んでいます。'], 'guide-p guide-p-tight'),
       para(['（独断と偏見で軽く決めた左右差なので違和感があった場合はレビュー等へお願いします🙏）'], 'guide-p guide-p-soft')
     ]));
 
@@ -5686,6 +6407,7 @@
 
     renderSyncBar(root);
     renderViewModeBar(root);
+    renderImportReminder(root);
     renderPageBack(root);
 
     if (section === 'home'){
@@ -5702,6 +6424,16 @@
       renderGuideSection(root);
     } else if (section === 'import'){
       renderImportSection(root);
+    } else if (section === 'fill'){
+      renderFillSection(root);
+    } else if (section === 'count'){
+      renderCountSection(root);
+    } else if (section === 'sync'){
+      renderSyncSection(root);
+    } else if (section === 'frames'){
+      renderFramesSection(root);
+    } else if (section === 'todo'){
+      renderTodoSection(root);
     } else {
       renderReviewsSection(root);
     }
@@ -5718,8 +6450,18 @@
      その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
      内容を変えて再び出したいときは NOTICE_ID を変える。 */
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
-  var APP_VERSION = '2.0';
+  var APP_VERSION = '2.1';
   var CHANGELOG = [
+    { ver:'2.1', date:'2026/10/16', items:[
+      ['maimai NET 取り込み', '', 'importNote'],
+      ['新曲に対応', '10/16追加の新曲を追加しました。'],
+      ['ホーム画面を整理', '項目を内容ごとに分けました。'],
+      ['未達成楽曲一覧', 'FC・SSS・AP・FDXの未達成譜面を定数順に確認できます。'],
+      ['下埋め進捗', '残りの譜面数・時間・料金を確認できます。'],
+      ['回数と日付の記録', '達成までの回数と日付を記録できます。'],
+      ['UIの改善', 'UIを一部変更しました。'],
+      ['プレート表の固定', 'よく見るバージョンを3つまで上に固定できます。']
+    ]},
     { ver:'2.0', date:'2026/10/04', items:[
       ['新しいデザイン', '多数の新機能追加のためUIを一新しました。\nご迷惑をおかけします🙏'],
       ['maimai NET から取り込み', 'ブックマークを使いmaimaiネットの情報を取り込めます。'],
@@ -5759,9 +6501,13 @@
       items.forEach(function(it){
         var li = el('li');
         li.appendChild(el('div', {class:'notice-item-title', text: it[0]}));
-        li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
+        if (it[1]) li.appendChild(el('div', {class:'notice-item-text', text: it[1]}));
         if (it[2] === 'loadNote'){
           li.appendChild(el('div', {class:'notice-emph', text:'初回のみ楽曲の表示に時間がかかります。ご了承ください。'}));
+        }
+        if (it[2] === 'importNote'){
+          li.appendChild(el('div', {class:'notice-emph', text:'下埋め進捗機能を利用する場合は、ブックマークに登録した取り込みコードを、コピーし直して更新してください。'}));
+          li.appendChild(el('div', {class:'notice-emph', text:'取り込みには1分半〜2分程かかります🙏'}));
         }
         if (it[2] === 'modeNote'){
           /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
@@ -6012,12 +6758,15 @@
 
   /* ========================= maimai でらっくす NET から進捗を取り込む =========================
      ブックマークレット（ブックマークに保存して使う小さなプログラム）を maimai NET の画面で開くと、
-     MASTER と Re:MASTER の記録を読み取り、このサイトへ送ってくる。
+     import.js を読み込み、BASIC〜Re:MASTER の記録を読み取ってこのサイトへ送ってくる。
      受け取った記録で、極・将・神・舞（・覇）の赤線を付け直す（「全」は変えない）。
        極＝フルコンボ以上 ／ 将＝SSS（100.0000%）以上 ／ 神＝オールパーフェクト ／ 舞＝FULL SYNC DX 以上 ／ 覇＝クリア（80%）以上
      通常の表は MASTER、舞・覇者の表は Re:MASTER の記録を見る。 */
   var MAINET_ORIGIN = 'https://maimaidx.jp';
-  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';var O=new URL(T).origin;\nif(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}\nvar w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}\nvar box=document.createElement('div');box.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;background:#1d2a35;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.35)';box.textContent='maiプレート：記録を読み取り中…';document.body.appendChild(box);\nfunction ic(r,re){var m=r.querySelectorAll('img');for(var i=0;i<m.length;i++){var x=re.exec(String(m[i].src).replace(/[?#].*$/,''));if(x)return x[1];}return '';}\nfunction get(d){return fetch('/maimai-mobile/record/musicGenre/search/?genre=99&diff='+d,{credentials:'include'}).then(function(r){return r.text();}).then(function(t){var doc=new DOMParser().parseFromString(t,'text/html');var out=[],g='';\ndoc.querySelectorAll('.main_wrapper.t_c .m_15').forEach(function(r){if(r.classList.contains('screw_block')){g=r.textContent.trim();return;}\nvar sb=r.querySelectorAll('.music_score_block'),nm=r.querySelector('.music_name_block');if(!sb.length||!nm)return;\nvar n=nm.textContent.replace(/\\s+/g,' ').trim();if(n==='Link'&&/niconico/i.test(g))n='Link (Circle of friends)';\nvar k=r.querySelector('.music_kind_icon');var ty=r.id?(r.id.indexOf('sta_')>=0?'ST':'DX'):(k&&/_standard/.test(k.src)?'ST':'DX');\nout.push([n,ty,d,Math.round((parseFloat(sb[0].textContent)||0)*10000),ic(r,/music_icon_(fcp?|app?)\\.png$/),ic(r,/music_icon_(fsd?p?|fdxp?|fsp?|sync)\\.png$/)]);});return out;});}\nPromise.all([get(3),get(4)]).then(function(a){var rec=a[0].concat(a[1]);var p={type:'maiplate-import',v:1,at:Date.now(),records:rec};\nif(!rec.length)p.error='記録を読み取れませんでした。maimaiでらっくすNETにログインしているか確認してください。';\nvar ok=false,n=0;window.addEventListener('message',function(e){if(e.origin===O&&e.data==='maiplate-ack')ok=true;});\nbox.textContent='maiプレートへ送っています…（'+rec.length+'譜面）';\nvar t=setInterval(function(){if(ok){clearInterval(t);box.textContent='maiプレートへ送りました。maiプレートのタブで確認してください。';setTimeout(function(){box.remove();},6000);return;}\nif(n++>120){clearInterval(t);box.textContent='送れませんでした。もう一度お試しください。';return;}try{w.postMessage(p,O);}catch(e){}},500);}).catch(function(e){box.textContent='読み取りに失敗しました：'+e.message;});})();";
+  /* ブックマークには「maiプレートの import.js を読み込むだけ」の短いコードを入れる。
+     取り込みの中身（maimai NET の読み取り方など）は import.js にあるので、直してもブックマークの登録し直しはいらない。
+     タブを開くのはブックマークを押した瞬間でないとブロックされるので、ここで先に開いて import.js に渡す。 */
+  var BOOKMARKLET_SRC = "(function(){var T='__TARGET__';if(location.hostname!=='maimaidx.jp'){alert('maimaiでらっくすNETにログインした画面で開いてください。');return;}var w=window.open(T+'#/import','maiplate');if(!w){alert('新しいタブを開けませんでした。ポップアップを許可して、もう一度開いてください。');return;}window.__maiplateT=T;window.__maiplateW=w;var s=document.createElement('script');s.src=T.replace(/[^\\/]*$/,'')+'import.js?t='+Date.now();s.onerror=function(){var m='maiプレートの取り込みプログラムを読み込めませんでした。通信状況を確認して、もう一度開いてください。';var b=document.createElement('div');b.style.cssText='position:fixed;left:12px;right:12px;top:16px;z-index:99999;background:#7a1f1f;color:#fff;font:bold 14px sans-serif;padding:10px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)';b.textContent=m;document.body.appendChild(b);var O=new URL(T).origin,n=0,t=setInterval(function(){try{w.postMessage({type:'maiplate-progress',error:1,msg:m},O);}catch(e){}if(++n>20)clearInterval(t);},500);};document.body.appendChild(s);})();";
   function bookmarkletCode(){
     var target = location.origin + location.pathname;
     return 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC.replace('__TARGET__', target.replace(/'/g, '')));
@@ -6027,13 +6776,117 @@
   window.addEventListener('message', function(e){
     if (e.origin !== MAINET_ORIGIN) return;
     var d = e.data;
+    if (d && d.type === 'maiplate-progress'){ showImportProgress(d); return; }
     if (!d || d.type !== 'maiplate-import') return;
+    showImportProgress({ done: 1, total: 1, applying: true });
     try{ e.source.postMessage('maiplate-ack', e.origin); }catch(err){}
     if (d.at && d.at === lastImportAt) return;     /* 同じものを何度も受け取らない */
     lastImportAt = d.at || Date.now();
     pendingImport = d;
     maybeApplyImport();
   });
+  /* ---- 最後の取り込みから2週間たったら、もう一度取り込むよう案内する ----
+     1回も取り込んでいない人には出さない。×で閉じたら、そのタブを開いている間は出さない */
+  var IMPORT_REMIND_DAYS = 14;
+  var REMIND_CLOSED_KEY = 'mmplate_import_remind_closed_v1';
+  function renderImportReminder(root){
+    if (section === 'import') return;
+    var o = loadNetRecords();
+    if (!o || !o.at) return;
+    var days = Math.floor((Date.now() - o.at) / 86400000);
+    if (days < IMPORT_REMIND_DAYS) return;
+    try{ if (sessionStorage.getItem(REMIND_CLOSED_KEY) === String(o.at)) return; }catch(e){}
+    var box = el('div', {class:'import-remind', role:'status'});
+    box.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var body = el('div', {class:'import-remind-body'});
+    body.appendChild(el('p', {text:'最後に maimai NET から取り込んでから ' + days + '日たちました。'}));
+    body.appendChild(el('p', {text:'スコアを更新していたら、もう一度取り込んでください。'}));
+    body.appendChild(el('button', {type:'button', class:'btn btn-sm import-remind-go', text:'maimai NET から取り込む',
+      onclick: function(){ goSection('import'); }}));
+    box.appendChild(body);
+    box.appendChild(el('button', {type:'button', class:'import-remind-close', 'aria-label':'閉じる', text:'×',
+      onclick: function(){
+        try{ sessionStorage.setItem(REMIND_CLOSED_KEY, String(o.at)); }catch(e){}
+        if (box.parentNode) box.parentNode.removeChild(box);
+      }}));
+    root.appendChild(box);
+  }
+
+  /* 取り込み中：画面の上に「maimai NET から読み込み中… n%」を出す。
+     本当の進み具合（5ページ中いくつ読めたか）を目安にしつつ、表示は少しずつ滑らかに進める。
+     実際より先に進みすぎないよう「読めた分＋少し」で止め、読み終わったら100%まで進めて「取り込みました」 */
+  var importProgEl = null, importProgTimer = null, importProgLoop = null;
+  var importProg = { shown: 0, real: 0, phase: 'read' };   /* phase: read → apply → done */
+  function ensureImportProgEl(){
+    if (importProgEl) return;
+    importProgEl = el('div', {class:'import-progress', role:'status', 'aria-live':'polite'});
+    importProgEl.appendChild(el('div', {class:'import-progress-text'}));
+    var track = el('div', {class:'import-progress-track'});
+    track.appendChild(el('div', {class:'import-progress-fill'}));
+    importProgEl.appendChild(track);
+    document.body.appendChild(importProgEl);
+    importProg = { shown: 0, real: 0, phase: 'read' };
+  }
+  function paintImportProgress(){
+    if (!importProgEl) return;
+    var cap = importProg.phase === 'read' ? Math.min(95, importProg.real + 19) : 100;
+    if (importProg.shown < cap){
+      var step = importProg.phase === 'read' ? Math.max(0.12, (cap - importProg.shown) * 0.035) : Math.max(1.5, (100 - importProg.shown) * 0.25);
+      importProg.shown = Math.min(cap, importProg.shown + step);
+    }
+    var n = Math.floor(importProg.shown);
+    var text = importProg.phase === 'done' ? '✓ 取り込みました'
+      : importProg.phase === 'apply' ? ('maiプレートに反映中… ' + n + '%')
+      : ('maimai NET から読み込み中… ' + n + '%');
+    /* NET のタブが裏に回ると、スマホでは読み取りが止められることがある。しばらく届かなければ戻るよう案内する */
+    if (importProg.phase === 'read' && importProg.last && Date.now() - importProg.last > 5000)
+      text += '\n止まっているときは maimai NET のタブに戻ってください';
+    importProgEl.querySelector('.import-progress-text').textContent = text;
+    importProgEl.querySelector('.import-progress-fill').style.width = importProg.shown + '%';
+    importProgEl.classList.toggle('is-done', importProg.phase === 'done');
+  }
+  function startImportProgLoop(){
+    if (importProgLoop) return;
+    importProgLoop = setInterval(paintImportProgress, 60);
+  }
+  var importErrShownAt = 0;
+  function showImportProgress(d){
+    if (d && d.error){
+      hideImportProgress();
+      /* 読み込めなかった理由が届いたら、こちらのタブにも1回だけ出す */
+      if (d.msg && Date.now() - importErrShownAt > 15000){ importErrShownAt = Date.now(); showAlert(String(d.msg)); }
+      return;
+    }
+    ensureImportProgEl();
+    importProg.last = Date.now();
+    if (d && d.applying){
+      importProg.phase = 'apply';
+    } else {
+      var total = Math.max(1, +(d && d.total) || 1), done = Math.min(total, Math.max(0, +(d && d.done) || 0));
+      importProg.real = Math.max(importProg.real, Math.round(done / total * 100));
+    }
+    startImportProgLoop();
+    paintImportProgress();
+    /* しばらく何も届かなければ消す（途中で止まったときに出たままにしない） */
+    clearTimeout(importProgTimer);
+    importProgTimer = setTimeout(hideImportProgress, 180000);
+  }
+  /* 反映が終わったら100%にして「取り込みました」を出し、少ししてから消す */
+  function finishImportProgress(){
+    ensureImportProgEl();
+    importProg.phase = 'done';
+    importProg.shown = 100;
+    paintImportProgress();
+    clearInterval(importProgLoop); importProgLoop = null;
+    clearTimeout(importProgTimer);
+    importProgTimer = setTimeout(hideImportProgress, 3000);
+  }
+  function hideImportProgress(){
+    clearTimeout(importProgTimer);
+    clearInterval(importProgLoop); importProgLoop = null;
+    if (importProgEl && importProgEl.parentNode) importProgEl.parentNode.removeChild(importProgEl);
+    importProgEl = null;
+  }
   function tableSongType(v, s, mai){
     var t = s.srcType || (s.chartType ? String(s.chartType).toUpperCase() : '');
     if (t) return t;
@@ -6056,13 +6909,7 @@
       if (!Array.isArray(r) || r.length < 6) return;
       idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
     });
-    var COND = {
-      '極':   function(x){ return /^(fc|fcp|ap|app)$/.test(x.fc); },
-      '将':   function(x){ return x.ach >= 100; },
-      '神':   function(x){ return /^(ap|app)$/.test(x.fc); },
-      '舞舞': function(x){ return /^(fdx|fdxp|fsd|fsdp)$/.test(x.sync); },
-      '覇者': function(x){ return x.ach >= 80; }
-    };
+    var COND = PLATE_COND;
     var plan = [], matched = 0, total = 0;
     allVersions.forEach(function(v){
       if (v.docType === 'jewel') return;
@@ -6149,7 +6996,7 @@
     if (!allVersions.length || !SONG_DATA_FULL) return;
     var d = pendingImport;
     pendingImport = null;
-    if (d.error || !Array.isArray(d.records)){ showAlert(d.error || '記録を受け取れませんでした。'); return; }
+    if (d.error || !Array.isArray(d.records)){ hideImportProgress(); showAlert(d.error || '記録を受け取れませんでした。'); return; }
     var p = buildImportPlan(d.records.slice(0, 20000));
     saveNetRecords(d.records.slice(0, 20000));
     /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
@@ -6161,6 +7008,7 @@
     });
     persistSongMarks();
     renderApp();
+    finishImportProgress();
     showAlert('取り込みました。');
   }
 
@@ -6171,7 +7019,7 @@
     [
       ['コピー', '下のボタンで取り込み用のコードをコピー'],
       ['ブックマーク', 'ブックマークを1つ作り、URLをコピーしたコードに書き換える'],
-      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く']
+      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
     ].forEach(function(s, i){
       var li = el('li', {class:'step'});
       li.appendChild(el('span', {class:'step-num', text: String(i + 1)}));
@@ -6218,6 +7066,946 @@
     root.appendChild(wrap);
   }
 
+  /* ========================= 下埋め進捗 =========================
+     maimai NET から取り込んだ記録（BASIC〜EXPERT など）から、プレートごとの下埋めの残りを出す。
+     対象の難易度は表の「下埋め料金」の色（例：緑〜赤）。曲は表の曲ではなく、そのバージョンの全譜面 */
+  var PLATE_COND = {
+    '極':   function(x){ return /^(fc|fcp|ap|app)$/.test(x.fc); },
+    '将':   function(x){ return x.ach >= 100; },
+    '神':   function(x){ return /^(ap|app)$/.test(x.fc); },
+    '舞舞': function(x){ return /^(fdx|fdxp|fsd|fsdp)$/.test(x.sync); },
+    '覇者': function(x){ return x.ach >= 80; }
+  };
+  var DIFF_INFO = [
+    { name:'BASIC',     color:'#3fbf5f', ink:'#ffffff' },
+    { name:'ADVANCED',  color:'#f2b705', ink:'#2a2000' },
+    { name:'EXPERT',    color:'#e0463f', ink:'#ffffff' },
+    { name:'MASTER',    color:'#9b4fd6', ink:'#ffffff' },
+    { name:'Re:MASTER', color:'#d9c2f7', ink:'#3a2560' }
+  ];
+  var FILL_MODES = ['極', '将', '神', '舞舞'];
+  var fillView = 'list', fillId = null;
+  var FILL_MODE_KEY = 'mmplate_fill_mode_v1';
+  var fillMode = (function(){ try{ var x = sessionStorage.getItem(FILL_MODE_KEY); return FILL_MODES.indexOf(x) >= 0 ? x : '極'; }catch(e){ return '極'; } })();
+  function setFillMode(m){ fillMode = m; try{ sessionStorage.setItem(FILL_MODE_KEY, m); }catch(e){} }
+
+  /* 表の「緑〜赤」から、下埋めの難易度（0:BASIC〜4:Re:MASTER）を高い順に */
+  function fillDiffsFor(v){
+    var found = [];
+    String(v.priceRange || '').split('').forEach(function(ch){ var i = COLOR_ORDER.indexOf(ch); if (i >= 0) found.push(i); });
+    if (!found.length) found = [0, 2];
+    var lo = Math.min.apply(null, found), hi = Math.max.apply(null, found), out = [];
+    for (var d = hi; d >= lo; d--) out.push(d);
+    return out;
+  }
+  function fillChartsFor(v){
+    var vers = docSongVersions(v);
+    return SONG_MASTER_LIST.filter(function(s){
+      if (!vers.some(function(x){ return songInVer(s, x); })) return false;
+      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世 */
+      return true;
+    });
+  }
+  function netRecordIndex(){
+    var o = loadNetRecords();
+    if (!o || !Array.isArray(o.records)) return null;
+    var idx = {}, lower = false;
+    o.records.forEach(function(r){
+      if (!Array.isArray(r) || r.length < 6) return;
+      if (+r[2] < 3) lower = true;
+      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
+    });
+    return { idx: idx, hasLower: lower, at: o.at };
+  }
+  function fillDocs(){
+    return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel' && !isMaiHashaDoc(v); });
+  }
+  function computeFill(v, mode, rec){
+    var charts = fillChartsFor(v), cond = PLATE_COND[mode];
+    var rows = fillDiffsFor(v).map(function(d){
+      var pool = d === 4 ? charts.filter(function(s){ return !!s.remas; }) : charts;
+      var left = 0;
+      pool.forEach(function(s){
+        var x = rec.idx[normSongName(s.name) + '|' + s.type + '|' + d];
+        if (!(x && cond && cond(x))) left++;
+      });
+      return { diff: d, total: pool.length, left: left };
+    });
+    var total = 0, left = 0;
+    rows.forEach(function(r){ total += r.total; left += r.left; });
+    return { rows: rows, total: total, left: left, done: total - left };
+  }
+  /* 分の1の位は四捨五入（表の下埋め時間と同じ書き方） */
+  function fmtHourMin(sec){
+    var m = Math.round(Math.round(sec / 60) / 10) * 10, h = Math.floor(m / 60);
+    if (sec > 0 && m === 0) return '10分未満';   /* 残りが少しだけあるのに「0分」と出さない */
+    return h > 0 ? (h + '時間' + (m % 60) + '分') : ((m % 60) + '分');
+  }
+
+  var fillAnchor = null;
+  function goFill(id){ if (id) fillAnchor = id; section = 'fill'; fillView = id ? 'detail' : 'list'; fillId = id || null; renderApp(); scrollToTopNow(); }
+
+  /* 一覧：プレート表のプレビューなし版 */
+  /* anchorId：さっき開いていたバージョン。一覧に戻ったら、その位置まで戻す */
+  /* バージョン名を短く（「maimai でらっくす BUDDiES」→「BUDDiES」など）。合計の一覧で使う */
+  function shortVerName(name){
+    var n = String(name || '').replace(/〈.*〉/, '').trim();
+    if (/^maimai\s*でらっくす/.test(n)){
+      var r = n.replace(/^maimai\s*でらっくす\s*/, '');
+      return !r ? 'でらっくす' : (r === 'PLUS' ? 'でらっくす PLUS' : r);
+    }
+    if (/^maimai\s*＆\s*maimai\s*PLUS$/.test(n)) return 'maimai ＆ PLUS';
+    return n.replace(/^maimai\s+/, '') || n;
+  }
+  /* バージョンの色の点＋短い名前のチップを並べる */
+  function verChips(docs, cls){
+    var box = el('div', {class:'ver-chips' + (cls ? ' ' + cls : '')});
+    docs.forEach(function(x){
+      var c = el('span', {class:'ver-chip', title: x.versionName});
+      c.appendChild(el('i', {class:'ver-chip-dot', style:{background: x.swatch || specVersionColor(x) || x.themeColor || '#888'}}));
+      c.appendChild(document.createTextNode(shortVerName(x.versionName)));
+      box.appendChild(c);
+    });
+    return box;
+  }
+  function renderSimpleVersionList(root, docs, onOpen, anchorId){
+    var grid = el('div', {class:'versions-grid simple-grid'});
+    var anchor = null;
+    docs.forEach(function(v){
+      var card = el('button', {type:'button', class:'version-card simple-card', onclick: function(){ onOpen(v.id); }});
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: v.swatch || specVersionColor(v) || v.themeColor}}));
+      card.appendChild(el('div', {class:'vc-title', text: v.versionName}));
+      if (v.id === anchorId) anchor = card;
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+    if (anchor) setTimeout(function(){ if (anchor.isConnected){ try{ anchor.scrollIntoView({ block: 'center' }); anchor.focus({ preventScroll: true }); }catch(e){} } }, 30);
+  }
+  /* 極・将・神・舞（・覇）をスクロールで選ぶボタン */
+  function makeModeSeg(modes, cur, onPick, label){
+    return makeWheelPicker({ title: label || 'プレート', cls: 'mode-picker',
+      items: modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; }),
+      current: modes.indexOf(cur) >= 0 ? cur : modes[0], onPick: onPick });
+  }
+  function needImportNote(root, text){
+    var box = el('div', {class:'import-caution fill-note', role:'note'});
+    box.appendChild(el('span', {class:'import-caution-mark', 'aria-hidden':'true', text:'⚠'}));
+    var body = el('div');
+    String(text).split('\n').forEach(function(t){ body.appendChild(el('p', {text: t})); });
+    var go = el('button', {type:'button', class:'btn btn-sm fill-import-btn', text:'maimai NET から取り込む', onclick: function(){ goSection('import'); }});
+    body.appendChild(go);
+    box.appendChild(body);
+    root.appendChild(box);
+  }
+
+  /* 舞・覇者：真〜輝（maimai〜FiNALE）の表をまとめて数える */
+  var MAI_FILL_ID = '__mai_hasha__';
+  var OLD_SONG_VERS = ['maimai', 'maimai PLUS', 'maimai GreeN', 'maimai GreeN PLUS', 'maimai ORANGE', 'maimai ORANGE PLUS',
+    'maimai PiNK', 'maimai PiNK PLUS', 'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'maimai MiLK PLUS', 'maimai FiNALE'];
+  function MAI_FILL_DOC(){ return { id: MAI_FILL_ID, versionName: '舞・覇者（真〜輝の合計）', swatch: 'linear-gradient(90deg,#c9a227,#f2d46b)' }; }
+  function maiFillDocs(){
+    return fillDocs().filter(function(v){ return docSongVersions(v).some(function(x){ return OLD_SONG_VERS.indexOf(x) >= 0; }); });
+  }
+  var MAI_FILL_MODES = ['極', '将', '神', '舞舞', '覇者'];
+  var MAI_PLATE_NAME = { '極':'舞極', '将':'舞将', '神':'舞神', '舞舞':'舞舞舞', '覇者':'覇者' };
+  function computeFillMany(docs, mode, rec){
+    var byDiff = {}, order = [];
+    docs.forEach(function(v){
+      computeFill(v, mode, rec).rows.forEach(function(r){
+        if (!byDiff[r.diff]){ byDiff[r.diff] = { diff: r.diff, total: 0, left: 0 }; order.push(r.diff); }
+        byDiff[r.diff].total += r.total; byDiff[r.diff].left += r.left;
+      });
+    });
+    var rows = order.sort(function(a, b){ return b - a; }).map(function(d){ return byDiff[d]; });
+    var total = 0, left = 0;
+    rows.forEach(function(r){ total += r.total; left += r.left; });
+    return { rows: rows, total: total, left: left, done: total - left };
+  }
+
+  /* 選んだバージョンの合計（この端末のこのタブで覚える） */
+  var SUM_FILL_ID = '__sum__';
+  var FILL_SUM_KEY = 'mmplate_fill_sum_v1';
+  var fillSumIds = (function(){ try{ var a = JSON.parse(sessionStorage.getItem(FILL_SUM_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } })();
+  var fillSelecting = false;
+  function setFillSumIds(a){ fillSumIds = a.slice(); try{ sessionStorage.setItem(FILL_SUM_KEY, JSON.stringify(fillSumIds)); }catch(e){} }
+  function fillSumDocs(){ var docs = fillDocs(); return fillSumIds.map(findVersion).filter(function(v){ return v && docs.indexOf(v) >= 0; }); }
+  function SUM_FILL_DOC(){ return { id: SUM_FILL_ID, versionName: '選んだバージョンの合計' }; }
+
+  function renderFillSection(root){
+    var docs = fillDocs();
+    if (fillView === 'detail' && fillId === MAI_FILL_ID){ renderFillDetail(root, MAI_FILL_DOC()); return; }
+    if (fillView === 'detail' && fillId === SUM_FILL_ID){
+      if (fillSumDocs().length){ renderFillDetail(root, SUM_FILL_DOC()); return; }
+      fillView = 'list'; fillId = null;
+    }
+    if (fillView === 'detail'){
+      var v = findVersion(fillId);
+      if (!v || docs.indexOf(v) < 0){ fillView = 'list'; fillId = null; }
+      else { renderFillDetail(root, v); return; }
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'下埋め進捗'}));
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    /* 舞・覇者（真〜輝の合計）は輝（FiNALE）の表のすぐ後ろに。輝が無ければ最後 */
+    var withMai = docs.slice(), at = -1;
+    withMai.forEach(function(v, i){ if (docSongVersions(v).indexOf('maimai FiNALE') >= 0) at = i; });
+    withMai.splice(at >= 0 ? at + 1 : withMai.length, 0, MAI_FILL_DOC());
+
+    /* 合計：バージョンを選んで、その合計の下埋めを見る */
+    var sumBar = el('div', {class:'fill-sum-bar'});
+    if (!fillSelecting){
+      sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'選んだバージョンの合計を見る',
+        onclick: function(){ fillSelecting = true; renderApp(); }}));
+      root.appendChild(sumBar);
+      renderSimpleVersionList(root, withMai, goFill, fillAnchor);
+      fillAnchor = null;
+      return;
+    }
+    var picked = fillSumIds.filter(function(id){ return !!findVersion(id) && docs.indexOf(findVersion(id)) >= 0; });
+    sumBar.appendChild(el('span', {class:'fill-sum-hint', text:'合計に入れるバージョンを選んでください（' + picked.length + '個選択中）'}));
+    var goBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text:'合計を見る',
+      onclick: function(){ if (!picked.length) return; fillSelecting = false; goFill(SUM_FILL_ID); }});
+    goBtn.disabled = !picked.length;
+    sumBar.appendChild(goBtn);
+    sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'すべて外す', onclick: function(){ setFillSumIds([]); renderApp(); }}));
+    sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm btn-ghost', text:'やめる', onclick: function(){ fillSelecting = false; renderApp(); }}));
+    root.appendChild(sumBar);
+    var grid = el('div', {class:'versions-grid simple-grid'});
+    docs.forEach(function(v){
+      var on = picked.indexOf(v.id) >= 0;
+      var card = el('button', {type:'button', class:'version-card simple-card fill-pick' + (on ? ' is-on' : ''), 'aria-pressed': on ? 'true' : 'false',
+        onclick: function(){
+          var a = picked.slice(), i = a.indexOf(v.id);
+          if (i >= 0) a.splice(i, 1); else a.push(v.id);
+          setFillSumIds(a); renderApp();
+        }});
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
+      var row = el('div', {class:'fill-pick-row'});
+      row.appendChild(el('span', {class:'fill-pick-check', text: on ? '✓' : ''}));
+      row.appendChild(el('span', {class:'vc-title', text: v.versionName}));
+      card.appendChild(row);
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+  }
+
+  function renderFillDetail(root, v){
+    var isMai = (v.id === MAI_FILL_ID);
+    var isSum = (v.id === SUM_FILL_ID);
+    var modes = isMai ? MAI_FILL_MODES : FILL_MODES;
+    if (!isMai && !isSum && isShinDoc(v)) modes = modes.filter(function(m){ return m !== '将'; });   /* 真将は無い */
+    var mode = modes.indexOf(fillMode) >= 0 ? fillMode : modes[0];
+    root.appendChild(el('h2', {class:'page-title fill-title', text: v.versionName}));
+    var bar = el('div', {class:'detail-actions fill-actions'});
+    var fillStatus = el('span', {class:'save-toast', role:'status'});
+    var fillCardRef = null;
+    bar.appendChild(makeSaveGroup(function(base, b){
+      if (!fillCardRef){ return; }
+      var nm = String(v.versionName || '下埋め').replace(/[\\/:*?"<>|]/g, '') + '_' + fillPlateName() + '_下埋め.png';
+      captureNodePNG(fillCardRef, nm, fillStatus, b, 'fill-export', base);
+    }));
+    bar.appendChild(makeModeSeg(modes, mode, function(m){ setFillMode(m); renderApp(); }, '下埋めを見るプレート'));
+    bar.appendChild(fillStatus);
+    root.appendChild(bar);
+    function fillPlateName(){ return isMai ? MAI_PLATE_NAME[mode] : isSum ? PLATE_MODE_LABEL[mode] : (plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode)); }
+    var sumNames = isSum ? fillSumDocs().map(function(x){ return String(x.versionName || '').replace(/〈.*〉/, '').trim() || x.versionName; }) : [];
+    if (isSum){
+      var chosen = el('div', {class:'fill-sum-list'});
+      var chosenHead = el('div', {class:'fill-sum-list-head'});
+      chosenHead.appendChild(el('span', {class:'fill-sum-list-label', text:'選んだバージョン（' + sumNames.length + '個）'}));
+      chosenHead.appendChild(el('button', {type:'button', class:'btn btn-sm fill-sum-edit', text:'選び直す',
+        onclick: function(){ fillSelecting = true; section = 'fill'; fillView = 'list'; fillId = null; renderApp(); scrollToTopNow(); }}));
+      chosen.appendChild(chosenHead);
+      chosen.appendChild(verChips(fillSumDocs()));
+      root.appendChild(chosen);
+    }
+
+    if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
+    var rec = netRecordIndex();
+    if (!rec){
+      needImportNote(root, 'maimai NET から記録を取り込むと、下埋めの残りが表示されます。');
+      return;
+    }
+    if (!rec.hasLower){
+      needImportNote(root, '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
+      return;
+    }
+    var r = isMai ? computeFillMany(maiFillDocs(), mode, rec) : isSum ? computeFillMany(fillSumDocs(), mode, rec) : computeFill(v, mode, rec);
+    var pct = r.total ? Math.floor(r.done / r.total * 100) : 0;
+
+    var card = el('div', {class:'fill-card'});
+    fillCardRef = card;
+    var plateName = fillPlateName();
+    /* 保存画像にだけ出すバージョン名 */
+    card.appendChild(el('div', {class:'export-only-title', text: isSum ? ('合計（' + sumNames.length + 'バージョン）') : v.versionName}));
+    if (isSum) card.appendChild(verChips(fillSumDocs(), 'export-only-sub'));
+    card.appendChild(el('div', {class:'fill-plate', text: plateName + 'の下埋め'}));
+    /* 保存画像では「〜の下埋め」の代わりに実績プレートの画像を出す（画像が無いプレートは名前） */
+    var hasPlate = !isSum && (isMai || plateNameForMode(v, mode) !== mode);
+    var plateBox = el('div', {class:'export-only-plate'});
+    if (hasPlate){
+      var pimg = makePlateImg(plateName, getCachedPlateBadge(plateName), function(){
+        plateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateName}));
+      });
+      /* 画面には出さないが、保存のときすぐ使えるよう先に読んでおく（.webp が無ければ .png に切り替わってから写す） */
+      pimg.loading = 'eager';
+      plateBox.appendChild(pimg);
+    } else {
+      plateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateName}));
+    }
+    card.appendChild(plateBox);
+    /* 帯：赤（EXPERT）・黄（ADVANCED）・緑（BASIC）の残り → 白（達成済み） */
+    var row = el('div', {class:'fill-bar-row'});
+    var barEl = el('div', {class:'fill-bar', role:'img', 'aria-label': '進捗' + pct + '%'});
+    r.rows.forEach(function(x){
+      if (!x.left) return;
+      var info = DIFF_INFO[x.diff];
+      barEl.appendChild(el('div', {class:'fill-seg', title: info.name + ' 残り' + x.left,
+        style:{flexGrow: String(x.left), background: info.color}, text: String(x.left)}));
+    });
+    if (r.done){
+      barEl.appendChild(el('div', {class:'fill-seg fill-seg-done', title:'達成 ' + r.done, style:{flexGrow: String(r.done)}, text: String(r.done)}));
+    }
+    row.appendChild(barEl);
+    var pctEl = el('div', {class:'fill-pct'});
+    pctEl.appendChild(el('span', {class:'fill-pct-label', text:'進捗'}));
+    pctEl.appendChild(el('span', {class:'fill-pct-num', text: pct + '%'}));
+    row.appendChild(pctEl);
+    card.appendChild(row);
+
+    /* 1行目：赤・黄・緑の残り（必ず1行）、2行目：達成 */
+    var legend = el('div', {class:'fill-legend'});
+    var lrow = el('div', {class:'fill-legend-row fill-legend-left'});
+    /* EXPERT → ADVANCED → BASIC の順（帯と同じ並び）。「EXPERT 残り n」 */
+    r.rows.forEach(function(x){
+      var info = DIFF_INFO[x.diff];
+      var it = el('span', {class:'fill-legend-item'});
+      it.appendChild(el('i', {style:{background: info.color}}));
+      it.appendChild(el('span', {class:'fill-legend-name', text: info.name + '残り'}));
+      it.appendChild(el('b', {class:'fill-legend-count', text: String(x.left)}));
+      lrow.appendChild(it);
+    });
+    legend.appendChild(lrow);
+    /* 画面の幅に入りきらないときは、1行に収まるまで文字を少しずつ小さくする */
+    function fitLegendRow(){
+      if (!lrow.isConnected) return;
+      lrow.style.fontSize = '';
+      var fs = parseFloat(getComputedStyle(lrow).fontSize) || 13;
+      for (var k = 0; k < 30 && lrow.scrollWidth > lrow.clientWidth + 1 && fs > 8; k++){
+        fs -= 0.25; lrow.style.fontSize = fs + 'px';
+      }
+    }
+    setTimeout(fitLegendRow, 0);
+    if (!window.__fillLegendResize){
+      window.__fillLegendResize = true;
+      window.addEventListener('resize', function(){
+        Array.prototype.forEach.call(document.querySelectorAll('.fill-legend-left'), function(r){ if (r.__fit) r.__fit(); });
+      });
+    }
+    lrow.__fit = fitLegendRow;
+    var drow = el('div', {class:'fill-legend-row'});
+    var it2 = el('span', {class:'fill-legend-item'});
+    it2.appendChild(el('i', {class:'fill-legend-done'}));
+    it2.appendChild(el('span', {class:'fill-legend-name', text:'達成'}));
+    it2.appendChild(el('b', {class:'fill-legend-count', text: r.done + ' / ' + r.total}));
+    drow.appendChild(it2);
+    legend.appendChild(drow);
+    card.appendChild(legend);
+
+    var stats = el('div', {class:'fill-stats'});
+    function stat(label, value, sub){
+      var s = el('div', {class:'fill-stat'});
+      s.appendChild(el('div', {class:'fill-stat-label', text: label}));
+      s.appendChild(el('div', {class:'fill-stat-value', text: value}));
+      if (sub) s.appendChild(el('div', {class:'fill-stat-sub', text: sub}));
+      stats.appendChild(s);
+    }
+    stat('残り譜面', r.left + '譜面');
+    stat('残り時間', fmtHourMin(r.left * SEC_PER_CHART));
+    /* 料金は1人・2人とも大きく */
+    var ps = el('div', {class:'fill-stat fill-stat-price'});
+    ps.appendChild(el('div', {class:'fill-stat-label', text:'残り料金'}));
+    [['1人', Math.ceil(r.left / 3) * 100], ['2人', roundUpToHundred(Math.round(r.left * 100 / 4))]].forEach(function(x){
+      var line = el('div', {class:'fill-price-line'});
+      line.appendChild(el('span', {class:'fill-price-who', text: x[0]}));
+      line.appendChild(el('span', {class:'fill-stat-value', text: yen(x[1])}));
+      ps.appendChild(line);
+    });
+    stats.appendChild(ps);
+    card.appendChild(stats);
+    card.appendChild(el('div', {class:'export-only-note', text:'取り込んだ日: ' + fmtDate(rec.at)}));
+    root.appendChild(card);
+    root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+  }
+
+  /* ========================= シンクのお相手記録（ホームから） =========================
+     書いた名前は今までと同じ場所（この端末の mmplate_sync_partners_v1）に保存している。
+     画面の場所を移しただけなので、今まで書いた名前はそのまま出る */
+  var syncView = 'list', syncId = null, syncAnchor = null;
+  function goSync(id){ if (id) syncAnchor = id; section = 'sync'; syncView = id ? 'detail' : 'list'; syncId = id || null; renderApp(); scrollToTopNow(); }
+  function syncDocs(){ return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }); }
+  function renderSyncSection(root){
+    var docs = syncDocs();
+    if (syncView === 'detail'){
+      var v = findVersion(syncId);
+      if (v && docs.indexOf(v) >= 0){ renderSyncDetail(root, v); return; }
+      syncView = 'list'; syncId = null;
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'シンクのお相手記録'}));
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    /* 13+↓ などのON/OFF（シンクのお相手記録の表示。詳細画面の各レベルのON/OFFにも反映） */
+    var cutRow = el('div', {class:'mark-toggle-bar sync-cut-row'});
+    cutRow.appendChild(makeRangePicker('sync'));
+    root.appendChild(cutRow);
+    /* 一覧はバージョン名だけ（プレビューは出さない） */
+    renderSimpleVersionList(root, docs, goSync, syncAnchor);
+    syncAnchor = null;
+  }
+  function renderSyncDetail(root, v){
+    prefetchHtml2Canvas();
+    root.appendChild(el('h2', {class:'page-title', text: v.versionName}));
+    var bar = el('div', {class:'detail-actions'});
+    var syncStatus = el('span', {class:'save-toast', role:'status'});
+    bar.appendChild(makeSaveGroup(function(base, b){
+      var fname = ((v.versionName || 'plate').replace(/[\\/:*?"<>|]/g, '')) + '_シンクのお相手記録.png';
+      captureNodePNG(syncNodeRef.node || syncNode, fname, syncStatus, b, 'sync-export', base, splitSyncShot);
+    }));
+    bar.appendChild(syncStatus);
+    root.appendChild(bar);
+    /* 表示する難易度（n〜n。一覧と共通。舞・覇者は別） */
+    var cutRow = el('div', {class:'mark-toggle-bar sync-cut-row'});
+    cutRow.appendChild(makeRangePicker(lvGroup('sync', v)));
+    root.appendChild(cutRow);
+    var syncHolder = el('div', {class:'preview-wide'});
+    var syncNode = buildSyncRecordNode(v);
+    syncHolder.appendChild(syncNode);
+    root.appendChild(syncHolder);
+    root.appendChild(el('div', {class:'pv-caption', text:'書いた名前はこの端末の中にだけ残ります。'}));
+  }
+
+  /* ========================= 未達成楽曲一覧 =========================
+     取り込んだ記録から、FC／SSS／AP／AP+（理論値）／FDX／FDX+ をまだ取れていない譜面を、楽曲定数ごとにまとめて出す。
+     ・MASTER全譜面：全曲の MASTER
+     ・舞・覇者：舞・覇者の対象曲の Re:MASTER
+     並び順は実績プレート表の 13以下と同じ（定数 → ジャンル → 追加日） */
+  var TODO_KINDS = {
+    master: { label: 'MASTER全譜面', color: '#b38cf2', diff: 3 },
+    mai:    { label: '舞・覇者',     color: '', diff: 4 }
+  };
+  function todoMaiColor(){
+    var v = allVersions.filter(function(x){ return isMaiHashaDoc(x); })[0];
+    return (v && (specVersionColor(v) || v.themeColor)) || VERSION_COLOR_SPEC['舞 ＆ 覇者対象Re:MASTER'] || '#999999';
+  }
+  var TODO_MODES = [
+    { key: 'FC',  cond: '極' },
+    { key: 'SSS', cond: '将' },
+    { key: 'AP',  cond: '神' },
+    /* 理論値（AP+ ＝ 101.0000%） */
+    { key: 'AP+', test: function(x){ return x.fc === 'app' || x.ach >= 101; } },
+    { key: 'FDX', cond: '舞舞' },
+    /* FDX+（FULL SYNC DX+） */
+    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } }
+  ];
+  var todoKind = null;
+  var TODO_MODE_KEY = 'mmplate_todo_mode_v1';
+  var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
+  function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
+  function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
+  /* 定数の「↓ ON/OFF」：ON＝すべて表示／OFF＝その定数とそれより下をすべて隠す
+     （▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
+  var TODO_CUT_KEY = 'mmplate_todo_cut_v4';
+  var todoCut = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_CUT_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function saveTodoCut(){ try{ localStorage.setItem(TODO_CUT_KEY, JSON.stringify(todoCut)); }catch(e){} }
+  function todoKonstList(kind){
+    var seen = {}, out = [];
+    todoCharts(kind).forEach(function(x){ if (x.k >= 0){ var v = Math.round(x.k * 10) / 10; if (!seen[v]){ seen[v] = true; out.push(v); } } });
+    return out.sort(function(a, b){ return b - a; });
+  }
+  /* pick＝▼で選んでいる定数、hidden＝隠している定数の一覧 */
+  function todoCutFor(kind){
+    var list = todoKonstList(kind);
+    var c = todoCut[kind] || {};
+    var pick = list.indexOf(c.pick) >= 0 ? c.pick : list[list.length - 1];
+    var hidden = Array.isArray(c.hidden) ? c.hidden : [];
+    return { pick: pick, hidden: hidden };
+  }
+  /* 表示する定数の範囲（n〜n。MASTER と 舞・覇者で別々に覚える。初めはすべて） */
+  var TODO_RANGE_KEY = 'mmplate_todo_range_v1';
+  var todoRanges = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_RANGE_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function todoRangeFor(kind){
+    var list = todoKonstList(kind);
+    var r = todoRanges[kind] || {};
+    var from = list.indexOf(r.from) >= 0 ? r.from : list[0];
+    var to = list.indexOf(r.to) >= 0 ? r.to : list[list.length - 1];
+    return { from: from, to: to };
+  }
+  function todoRangeKind(kind){
+    return {
+      labels: function(){ return todoKonstList(kind); },
+      fmt: function(x){ return Number(x).toFixed(1); },
+      get: function(){ return todoRangeFor(kind); },
+      set: function(from, to){ todoRanges[kind] = { from: from, to: to }; try{ localStorage.setItem(TODO_RANGE_KEY, JSON.stringify(todoRanges)); }catch(e){} }
+    };
+  }
+  /* その定数が今表示されているか */
+  function todoKonstShown(kind, k){
+    if (!(k >= 0)) return true;
+    var v = Math.round(k * 10) / 10;
+    var r = todoRangeFor(kind);
+    if (r.from == null) return true;
+    return v <= r.from && v >= r.to;
+  }
+  function todoCutKind(kind){
+    return {
+      labels: function(){ return todoKonstList(kind); },
+      fmt: function(x){ return Number(x).toFixed(1); },
+      pick: function(){ return todoCutFor(kind).pick; },
+      setPick: function(x){ var c = todoCutFor(kind); todoCut[kind] = { pick: x, hidden: c.hidden }; saveTodoCut(); },
+      shown: function(x){ return todoKonstShown(kind, x); },
+      set: function(x, on){
+        /* ON：上も下もすべて出す／OFF：その定数以下をすべて隠し、上は出す（プレート表と同じ） */
+        var hidden = [];
+        if (!on) todoKonstList(kind).forEach(function(v){ if (v <= x) hidden.push(v); });
+        todoCut[kind] = { pick: x, hidden: hidden };
+        saveTodoCut();
+      }
+    };
+  }
+
+  /* 定数から「14+」などのレベル名（x.6〜x.9 は x+） */
+  function konstLevelLabel(k){
+    if (!(k >= 0)) return '';
+    var n = Math.floor(k + 1e-9), dec = Math.round((k - n) * 10);
+    return dec >= 6 ? (n + '+') : String(n);
+  }
+  function konstColor(k){ return specLevelColor(konstLevelLabel(k)) || 'var(--text-dim)'; }
+
+  function todoCharts(kind){
+    if (kind === 'mai'){
+      var maiSet = {};
+      MAI_HASHA_SONGS.forEach(function(n){ maiSet[n] = true; });
+      return SONG_MASTER_LIST.filter(function(s){ return s.type === 'ST' && !!s.remas && maiSet[s.name]; })
+        .map(function(s){ return { s: s, k: s.remasKonst }; });
+    }
+    return SONG_MASTER_LIST.map(function(s){ return { s: s, k: s.konst }; });
+  }
+  function todoCmp(a, b){
+    var ka = a.k >= 0 ? a.k : -1, kb = b.k >= 0 ? b.k : -1;
+    if (kb !== ka) return kb - ka;
+    var ga = a.s.genre, gb = b.s.genre;
+    if (ga !== gb) return ga - gb;
+    if (a.s.added !== b.s.added) return a.s.added - b.s.added;
+    return a.s.name < b.s.name ? -1 : (a.s.name > b.s.name ? 1 : 0);
+  }
+
+  function renderTodoSection(root){
+    if (todoKind && TODO_KINDS[todoKind]){ renderTodoDetail(root, todoKind); return; }
+    todoKind = null;
+    root.appendChild(el('h2', {class:'page-title', text:'未達成楽曲一覧'}));
+    var grid = el('div', {class:'versions-grid simple-grid'});
+    ['master', 'mai'].forEach(function(kind){
+      var col = kind === 'mai' ? todoMaiColor() : TODO_KINDS[kind].color;
+      var card = el('button', {type:'button', class:'version-card simple-card todo-card', onclick: function(){ goTodo(kind); }});
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: col}}));
+      card.appendChild(el('div', {class:'vc-title todo-card-title', style:{color: col}, text: TODO_KINDS[kind].label}));
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+  }
+
+  function renderTodoDetail(root, kind){
+    var K = TODO_KINDS[kind];
+    var col = kind === 'mai' ? todoMaiColor() : K.color;
+    root.appendChild(el('h2', {class:'page-title', style:{color: col}, text: K.label}));
+    var bar = el('div', {class:'detail-actions'});
+    /* FC・SSS・AP・AP+・FDX・FDX+ をスクロールで選ぶ */
+    var seg = makeWheelPicker({ title: '見る条件', cls: 'mode-picker todo-mode-seg',
+      items: TODO_MODES.map(function(m){ return [m.key, m.key]; }),
+      current: todoMode, onPick: function(k){ setTodoMode(k); renderApp(); } });
+    var tStatus = el('span', {class:'save-toast', role:'status'});
+    var cardRef = null;
+    bar.appendChild(makeSaveGroup(function(base, b){
+      if (!cardRef) return;
+      var nm = K.label.replace(/[\\/:*?"<>|・]/g, '') + '_' + todoMode + '未達成.png';
+      captureNodePNG(cardRef, nm, tStatus, b, 'todo-export', base);
+    }));
+    bar.appendChild(tStatus);
+    root.appendChild(bar);
+
+    if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
+    /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
+    var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
+    cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
+    /* n〜n の右に FC・SSS・AP・AP+・FDX・FDX+ */
+    cutRow.appendChild(seg);
+    root.appendChild(cutRow);
+    var rec = netRecordIndex();
+    if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
+
+    var mode = TODO_MODES.filter(function(m){ return m.key === todoMode; })[0] || TODO_MODES[0];
+    var cond = mode.test || PLATE_COND[mode.cond];
+    var all = todoCharts(kind);
+    var left = all.filter(function(x){
+      var r = rec.idx[normSongName(x.s.name) + '|' + x.s.type + '|' + K.diff];
+      return !(r && cond(r));
+    }).sort(todoCmp);
+
+    /* 両方の譜面がある曲には DX／ST の印を付ける */
+    var types = {};
+    SONG_MASTER_LIST.forEach(function(s){ (types[s.name] = types[s.name] || {})[s.type] = true; });
+
+    var sum = el('div', {class:'todo-summary'});
+    sum.appendChild(el('span', {class:'todo-summary-label', text: mode.key + ' 未達成'}));
+    sum.appendChild(el('b', {class:'todo-summary-count', text: left.length + ' / ' + all.length}));
+    sum.appendChild(el('span', {class:'todo-summary-unit', text:'譜面'}));
+    var shownLeft = left.filter(function(x){ return todoKonstShown(kind, x.k); });
+    if (shownLeft.length !== left.length) sum.appendChild(el('span', {class:'todo-summary-shown', text:'（表示中 ' + shownLeft.length + '）'}));
+    root.appendChild(sum);
+
+    if (!left.length){
+      root.appendChild(el('div', {class:'empty-state', text:'すべて達成しています！'}));
+      return;
+    }
+    if (!shownLeft.length){
+      root.appendChild(el('div', {class:'empty-state', text:'表示する定数がありません。上の「↓ ON/OFF」で表示する定数を選んでください。'}));
+      return;
+    }
+    left = shownLeft;
+    var card = el('div', {class:'todo-card-body'});
+    cardRef = card;
+    /* 保存画像にだけ出す見出し */
+    var et = el('div', {class:'export-only-title todo-export-title'});
+    et.appendChild(el('span', {style:{color: col}, text: K.label}));
+    et.appendChild(el('span', {class:'todo-export-sub', text:'　' + mode.key + ' 未達成 ' + left.length + '譜面'}));
+    card.appendChild(et);
+    var curKey = null, grid = null;
+    left.forEach(function(x){
+      var key = x.k >= 0 ? x.k.toFixed(1) : '?';
+      if (key !== curKey){
+        curKey = key;
+        var cnt = left.filter(function(y){ return (y.k >= 0 ? y.k.toFixed(1) : '?') === key; }).length;
+        var head = el('div', {class:'todo-konst'});
+        head.appendChild(el('span', {class:'todo-konst-num', style:{color: x.k >= 0 ? konstColor(x.k) : 'var(--text-dim)'}, text: key === '?' ? '定数不明' : key}));
+        head.appendChild(el('span', {class:'todo-konst-count', text: cnt + '譜面'}));
+        card.appendChild(head);
+        grid = el('div', {class:'todo-grid'});
+        card.appendChild(grid);
+      }
+      var t = el('div', {class:'pv-thumb todo-thumb', title: x.s.name});
+      t.appendChild(makeSongImg(x.s.name, resolveSongImage(x.s.name), getCachedSongImage(x.s.name), function(){
+        t.classList.add('no-img');
+        t.appendChild(el('div', {class:'placeholder-text', text: x.s.name}));
+      }));
+      if (kind === 'master' && types[x.s.name] && types[x.s.name].ST && types[x.s.name].DX){
+        t.appendChild(makeChartTypeMark(String(x.s.type).toLowerCase()));
+      }
+      grid.appendChild(t);
+    });
+    root.appendChild(card);
+    root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+  }
+
+  /* ========================= 実績フレーム表（ホームから） =========================
+     中身は今までの実績フレーム表（Jewel の表）と同じ。実績プレート表の一覧から分けただけ */
+  var framesId = null;
+  function frameDocs(){ return sortedVersions().filter(function(v){ return v.docType === 'jewel'; }); }
+  function goFrames(id){ section = 'frames'; framesId = id || null; renderApp(); scrollToTopNow(); }
+  function renderFramesSection(root){
+    var docs = frameDocs();
+    /* 表が1つだけなら一覧を挟まずにそのまま開く */
+    var v = framesId ? findVersion(framesId) : (docs.length === 1 && !canEdit() ? docs[0] : null);
+    if (v && v.docType === 'jewel'){ renderDetailView(root, v); return; }
+    framesId = null;
+    root.appendChild(el('h2', {class:'page-title', text:'実績フレーム表'}));
+    if (canEdit()){
+      var bar = el('div', {class:'view-topbar'});
+      bar.appendChild(el('button', {class:'btn btn-primary', text:'＋ 実績フレーム表を追加', onclick: function(){ section = 'plates'; goEditNewJewelTemplate(); }}));
+      root.appendChild(bar);
+    }
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    var grid = el('div', {class:'versions-grid simple-grid'});
+    docs.forEach(function(d){
+      var card = el('button', {type:'button', class:'version-card simple-card', onclick: function(){ goFrames(d.id); }});
+      card.appendChild(el('div', {class:'vc-swatch', style:{background: JEWEL_BAR_GRADIENT}}));
+      card.appendChild(el('div', {class:'vc-title', text: d.versionName || '実績フレーム表'}));
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+  }
+
+  /* ========================= 回数と日付の記録 =========================
+     プレートごとに、その曲を達成するまでのプレイ回数と、達成した日を書いておく（この端末に保存） */
+  var countView = 'list', countId = null;
+  var COUNT_MODES = ['極', '将', '神', '舞舞', '覇者'];
+  var COUNT_MODE_KEY = 'mmplate_count_mode_v1';
+  var countMode = (function(){ try{ var x = sessionStorage.getItem(COUNT_MODE_KEY); return COUNT_MODES.indexOf(x) >= 0 ? x : '極'; }catch(e){ return '極'; } })();
+  function setCountMode(m){ countMode = m; try{ sessionStorage.setItem(COUNT_MODE_KEY, m); }catch(e){} }
+  var COUNT_REC_KEY = 'mmplate_count_records_v1';
+  var countRecords = (function(){ try{ var o = JSON.parse(localStorage.getItem(COUNT_REC_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function persistCountRecords(){ try{ localStorage.setItem(COUNT_REC_KEY, JSON.stringify(countRecords)); }catch(e){} }
+  function getCountRec(vid, mode, sid){
+    var a = countRecords[vid], b = a && a[mode];
+    return (b && b[sid]) || null;
+  }
+  function setCountRec(vid, mode, sid, patch){
+    var a = countRecords[vid] || (countRecords[vid] = {});
+    var b = a[mode] || (a[mode] = {});
+    var cur = b[sid] || {};
+    Object.keys(patch).forEach(function(k){ if (patch[k]) cur[k] = patch[k]; else delete cur[k]; });
+    if (Object.keys(cur).length) b[sid] = cur; else delete b[sid];
+    if (!Object.keys(b).length) delete a[mode];
+    if (!Object.keys(a).length) delete countRecords[vid];
+    persistCountRecords();
+  }
+  function countDocs(){ return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel'; }); }
+  function countModesFor(v){ return selectablePlateModes(v); }
+  var countAnchor = null;
+  function goCount(id){ if (id) countAnchor = id; section = 'count'; countView = id ? 'detail' : 'list'; countId = id || null; renderApp(); scrollToTopNow(); }
+
+  function renderCountSection(root){
+    var docs = countDocs();
+    if (countView === 'detail'){
+      var v = findVersion(countId);
+      if (!v || docs.indexOf(v) < 0){ countView = 'list'; countId = null; }
+      else { renderCountDetail(root, v); return; }
+    }
+    root.appendChild(el('h2', {class:'page-title', text:'回数と日付の記録'}));
+    if (!docs.length){
+      root.appendChild(el('div', {class:'note', style:{textAlign:'center', padding:'40px 0'}, text: (SYNC_EXPECTED && !firstSnapshotDone) ? '読み込み中…' : '表がありません。'}));
+      return;
+    }
+    /* 13+↓ などのON/OFF と 極・将・神・舞（開いた先の詳細画面と共通） */
+    var cutRow = el('div', {class:'mark-toggle-bar count-cut-row'});
+    cutRow.appendChild(makeRangePicker('plates'));
+    cutRow.appendChild(makeModeSeg(['極', '将', '神', '舞舞'], countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    root.appendChild(cutRow);
+    renderSimpleVersionList(root, docs, goCount, countAnchor);
+    countAnchor = null;
+  }
+
+  function fmtYmd(s){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? (+m[1]) + '/' + (+m[2]) + '/' + (+m[3]) : ''; }
+
+  function renderCountDetail(root, v){
+    root.appendChild(el('h2', {class:'page-title', text: v.versionName}));
+    var modes = countModesFor(v);
+    var mode = modes.indexOf(countMode) >= 0 ? countMode : modes[0];
+    var bar = el('div', {class:'detail-actions'});
+    var cStatus = el('span', {class:'save-toast', role:'status'});
+    var card = el('div', {class:'count-card'});
+    bar.appendChild(makeSaveGroup(function(base, b){
+      var pn = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
+      var nm = String(v.versionName || '記録').replace(/[\\/:*?"<>|]/g, '') + '_' + pn + '_回数と日付.png';
+      captureNodePNG(card, nm, cStatus, b, 'count-export', base, splitCountShot);
+    }));
+    bar.appendChild(cStatus);
+    root.appendChild(bar);
+    /* 画像保存の下に「n〜n」、その右に 極・将・神・舞 */
+    var cutRow = el('div', {class:'mark-toggle-bar count-cut-row'});
+    cutRow.appendChild(makeRangePicker(lvGroup('plates', v)));
+    cutRow.appendChild(makeModeSeg(modes, mode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
+    root.appendChild(cutRow);
+
+    var plateLabel = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
+    card.appendChild(el('div', {class:'export-only-title', text: v.versionName}));
+    /* プレートの確定日・獲得日（例：超将確定日／超将獲得日）。保存画像には書いた方だけ出す */
+    var pdBox = el('div', {class:'count-plate-dates'});
+    var pdRec = getCountRec(v.id, mode, '__plate') || {};
+    function paintPdBox(){ pdBox.classList.toggle('all-empty', !pdRec.kt && !pdRec.kg); }
+    [['kt', '確定日'], ['kg', '獲得日']].forEach(function(f){
+      var row = el('div', {class:'count-pd-row' + (pdRec[f[0]] ? '' : ' is-empty')});
+      row.appendChild(el('span', {class:'count-pd-label', text: plateLabel + f[1]}));
+      var btn = el('button', {type:'button', class:'count-pd-date' + (pdRec[f[0]] ? '' : ' is-empty'),
+        text: pdRec[f[0]] ? fmtYmd(pdRec[f[0]]) : '日付を選ぶ', 'aria-label': plateLabel + f[1]});
+      var pr = el('span', {class:'count-pd-print', text: pdRec[f[0]] ? fmtYmd(pdRec[f[0]]) : ''});
+      btn.addEventListener('click', function(){
+        openDateWheel(pdRec[f[0]] || '', function(val){
+          var patch = {}; patch[f[0]] = val;
+          setCountRec(v.id, mode, '__plate', patch);
+          pdRec = getCountRec(v.id, mode, '__plate') || {};
+          btn.textContent = val ? fmtYmd(val) : '日付を選ぶ';
+          btn.classList.toggle('is-empty', !val);
+          row.classList.toggle('is-empty', !val);
+          pr.textContent = val ? fmtYmd(val) : '';
+          paintPdBox();
+        });
+      });
+      row.appendChild(btn);
+      row.appendChild(pr);
+      pdBox.appendChild(row);
+    });
+    paintPdBox();
+    card.appendChild(pdBox);
+    var wrote = false;
+    (v.levels || []).forEach(function(level){
+      if (level.hidden || isPvLevelHidden(v, level)) return;
+      var songs = (level.songs || []).filter(function(s){ return !s.hidden; });
+      if (!songs.length) return;
+      wrote = true;
+      card.appendChild(el('div', {class:'sync-level count-level', text: level.label || '',
+        style:{color: level.color || 'var(--text)', '--lvc': level.color || '#ffffff'}}));
+      var list = el('div', {class:'count-list'});
+      songs.forEach(function(song){
+        var item = el('div', {class:'count-item'});
+        var thumb = el('div', {class:'sync-thumb count-thumb'});
+        var src = song.img || resolveSongImage(song.name);
+        if (src){
+          thumb.appendChild(makeSongImg(song.name, src, getCachedSongImage(song.name), function(){
+            thumb.classList.add('no-img');
+            thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+          }));
+        } else {
+          thumb.classList.add('no-img');
+          thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
+        }
+        var ct = chartTypeFor(v, song, level.label);
+        if (ct && CHART_TYPE_SOURCES[ct]) thumb.appendChild(makeChartTypeMark(ct));
+        item.appendChild(thumb);
+
+        var rec = getCountRec(v.id, mode, song.id) || {};
+        var fields = el('div', {class:'count-fields'});
+        var nRow = el('label', {class:'count-n'});
+        var inp = el('input', {type:'number', inputmode:'numeric', min:'1', class:'count-input', 'aria-label': (song.name || '') + 'の回数'});
+        inp.value = rec.n || '';
+        /* 保存画像には入力欄ではなく文字で写す */
+        var nPrint = el('span', {class:'count-print count-print-n', text: rec.n || ''});
+        inp.addEventListener('input', function(){
+          var x = String(inp.value || '').replace(/[^0-9]/g, '').slice(0, 5);
+          setCountRec(v.id, mode, song.id, { n: x });
+          nPrint.textContent = x;
+          nRow.classList.toggle('no-n', !x);
+        });
+        if (!rec.n) nRow.classList.add('no-n');
+        nRow.appendChild(inp);
+        nRow.appendChild(nPrint);
+        nRow.appendChild(el('span', {class:'count-unit', text:'回'}));
+        fields.appendChild(nRow);
+        var dBtn = el('button', {type:'button', class:'count-date' + (rec.d ? '' : ' is-empty'), text: rec.d ? fmtYmd(rec.d) : '日付'});
+        var dPrint = el('span', {class:'count-print count-print-d', text: rec.d ? fmtYmd(rec.d) : ''});
+        dBtn.addEventListener('click', function(){
+          var cur = (getCountRec(v.id, mode, song.id) || {}).d || '';
+          openDateWheel(cur, function(val){
+            setCountRec(v.id, mode, song.id, { d: val });
+            dBtn.textContent = val ? fmtYmd(val) : '日付';
+            dBtn.classList.toggle('is-empty', !val);
+            dPrint.textContent = val ? fmtYmd(val) : '';
+          });
+        });
+        fields.appendChild(dBtn);
+        fields.appendChild(dPrint);
+        item.appendChild(fields);
+        list.appendChild(item);
+      });
+      card.appendChild(list);
+    });
+    if (!wrote) card.appendChild(el('div', {class:'pv-empty', text:'（楽曲が登録されていません）'}));
+    /* 保存画像の一番下に、選んでいるプレートを大きめに出す（画像が無いプレートは名前） */
+    var cPlateBox = el('div', {class:'export-only-plate count-plate-img'});
+    if (plateNameForMode(v, mode) !== mode){
+      var cpimg = makePlateImg(plateLabel, getCachedPlateBadge(plateLabel), function(){
+        cPlateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateLabel}));
+      });
+      cpimg.loading = 'eager';
+      cPlateBox.appendChild(cpimg);
+    } else {
+      cPlateBox.appendChild(el('div', {class:'export-only-plate-name', text: plateLabel}));
+    }
+    card.appendChild(cPlateBox);
+    root.appendChild(card);
+    root.appendChild(el('div', {class:'pv-caption', text:'書いた内容はこの端末の中にだけ残ります。'}));
+  }
+
+  /* 日付をスクロールで選ぶ（年・月・日の3列） */
+  function openDateWheel(initial, onDone){
+    var now = new Date();
+    var m0 = /^(\d{4})-(\d{2})-(\d{2})$/.exec(initial || '');
+    var sel = m0 ? { y: +m0[1], m: +m0[2], d: +m0[3] } : { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+    var Y0 = 2012, Y1 = now.getFullYear() + 1;
+    if (sel.y < Y0) sel.y = Y0;
+    if (sel.y > Y1) sel.y = Y1;
+    var H = 40;
+    function daysIn(y, m){ return new Date(y, m, 0).getDate(); }
+    function range(a, b){ var o = []; for (var i = a; i <= b; i++) o.push(i); return o; }
+
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box wheel-box', role:'dialog', 'aria-modal':'true', 'aria-label':'日付を選ぶ'});
+    box.appendChild(el('div', {class:'pin-title', text:'日付を選ぶ'}));
+    var wheels = el('div', {class:'wheels'});
+    wheels.appendChild(el('div', {class:'wheel-band', 'aria-hidden':'true'}));
+    function makeCol(values, unit, key){
+      var col = el('div', {class:'wheel-col', tabindex:'0'});
+      col.__values = values; col.__key = key;
+      function fill(vals){
+        col.textContent = '';
+        col.__values = vals;
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        vals.forEach(function(x, i){
+          col.appendChild(el('div', {class:'wheel-item', text: x + unit, onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+        });
+        col.appendChild(el('div', {class:'wheel-pad'}));
+        col.appendChild(el('div', {class:'wheel-pad'}));
+      }
+      col.__fill = fill;
+      fill(values);
+      var t = null;
+      col.addEventListener('scroll', function(){
+        clearTimeout(t);
+        t = setTimeout(function(){
+          var i = Math.max(0, Math.min(col.__values.length - 1, Math.round(col.scrollTop / H)));
+          sel[key] = col.__values[i];
+          if (key !== 'd') fixDays();
+        }, 90);
+      });
+      col.addEventListener('keydown', function(e){
+        var i = col.__values.indexOf(sel[key]);
+        if (e.key === 'ArrowDown'){ e.preventDefault(); col.scrollTo({ top: Math.min(col.__values.length - 1, i + 1) * H }); }
+        if (e.key === 'ArrowUp'){ e.preventDefault(); col.scrollTo({ top: Math.max(0, i - 1) * H }); }
+      });
+      return col;
+    }
+    var colY = makeCol(range(Y0, Y1), '年', 'y');
+    var colM = makeCol(range(1, 12), '月', 'm');
+    var colD = makeCol(range(1, daysIn(sel.y, sel.m)), '日', 'd');
+    function fixDays(){
+      var n = daysIn(sel.y, sel.m);
+      if (colD.__values.length === n) return;
+      if (sel.d > n) sel.d = n;
+      colD.__fill(range(1, n));
+      colD.scrollTop = (sel.d - 1) * H;
+    }
+    wheels.appendChild(colY); wheels.appendChild(colM); wheels.appendChild(colD);
+    box.appendChild(wheels);
+
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'消す', style:{marginRight:'auto'},
+      onclick: function(){ closeModal(backdrop); onDone(''); }}));
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'今日',
+      onclick: function(){
+        sel = { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+        colY.scrollTop = (sel.y - Y0) * H; colM.scrollTop = (sel.m - 1) * H; fixDays(); colD.scrollTop = (sel.d - 1) * H;
+      }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      function p2(n){ return (n < 10 ? '0' : '') + n; }
+      closeModal(backdrop);
+      onDone(sel.y + '-' + p2(sel.m) + '-' + p2(sel.d));
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    colY.scrollTop = (sel.y - Y0) * H;
+    colM.scrollTop = (sel.m - 1) * H;
+    colD.scrollTop = (sel.d - 1) * H;
+  }
+
   /* ========================= ホーム／メニュー =========================
      ホームから各ページへ飛ぶ。右上の「メニュー」からも同じ所へ行ける。 */
   function svgIcon(paths){
@@ -6234,6 +8022,12 @@
     backup:  svgIcon('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l2.6-2.6a4.5 4.5 0 0 0-6.4-6.4L11.4 6.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0L5 12.6a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>'),
     notice:  svgIcon('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'),
     import:  svgIcon('<path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>'),
+    save:    svgIcon('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.5l-4.8-4.8L8 19"/>'),
+    fill:    svgIcon('<rect x="2.9" y="7.9" width="5.4" height="8.2" fill="#e0463f" stroke="none"/><rect x="8.3" y="7.9" width="4.6" height="8.2" fill="#f2b705" stroke="none"/><rect x="12.9" y="7.9" width="3.8" height="8.2" fill="#3fbf5f" stroke="none"/><rect x="2" y="7" width="20" height="10" rx="2.4" stroke-width="1.8"/>'),
+    count:   svgIcon('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8 14h3M8 17h6"/>'),
+    todo:    svgIcon('<rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/><circle cx="17.2" cy="16.6" r="0.1" stroke-width="2.6" stroke="#e0463f"/>'),
+    frame:   svgIcon('<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18"/><path d="M9.5 4 8 9l4 11 4-11-1.5-5"/><path d="M12 4v5" opacity=".0"/>'),
+    pin:     svgIcon('<path d="M9 3.5h6l-1 5 3 3v1.5H7V11.5l3-3z"/><path d="M12 13v7.5"/>'),
     review:  svgIcon('<path d="M12 3.8l2.5 5.1 5.6.8-4.05 3.95.96 5.6L12 16.6l-5.01 2.65.96-5.6L3.9 9.7l5.6-.8z"/>')
   };
   function iconNode(name, cls){
@@ -6243,13 +8037,19 @@
   }
   var MENU_ITEMS = [
     { key:'home',       icon:'home',   label:'ホーム' },
-    { key:'plates',     icon:'plates', label:'実績プレート表' },
-    { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー' },
-    { key:'import',     icon:'import', label:'maimai NET 取り込み' },
-    { key:'guide',      icon:'guide',  label:'表の解説' },
-    { key:'notice',     icon:'notice', label:'更新情報' },
-    { key:'reviews',    icon:'review', label:'レビュー' }
+    { key:'plates',     icon:'table',  label:'実績プレート表',       group:'楽曲表' },
+    { key:'frames',     icon:'frame',  label:'実績フレーム表',       group:'楽曲表' },
+    { key:'todo',       icon:'todo',   label:'未達成楽曲一覧',       group:'記録・進捗' },
+    { key:'fill',       icon:'fill',   label:'下埋め進捗',           group:'記録・進捗' },
+    { key:'sync',       icon:'sync',   label:'シンクのお相手記録',   group:'記録・進捗' },
+    { key:'count',      icon:'count',  label:'回数と日付の記録',     group:'記録・進捗' },
+    { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー', group:'記録・進捗' },
+    { key:'import',     icon:'import', label:'maimai NET 取り込み',  group:'その他' },
+    { key:'guide',      icon:'guide',  label:'表の解説',             group:'その他' },
+    { key:'notice',     icon:'notice', label:'更新情報',             group:'その他' },
+    { key:'reviews',    icon:'review', label:'レビュー',             group:'その他' }
   ];
+  var MENU_GROUPS = ['楽曲表', '記録・進捗', 'その他'];
   function runMenuItem(key){
     if (key === 'backup'){ openBackupModal(); return; }
     if (key === 'notice'){ maybeShowUpdateNotice(true); return; }
@@ -6275,7 +8075,13 @@
     head.appendChild(el('button', {class:'menu-close', type:'button', 'aria-label':'メニューを閉じる', text:'×', onclick: closeSiteMenu}));
     panel.appendChild(head);
     var list = el('div', {class:'menu-list'});
+    var lastGroup = null;
     MENU_ITEMS.forEach(function(it){
+      /* 内容ごとに小さな見出しを入れる */
+      if (it.group && it.group !== lastGroup){
+        lastGroup = it.group;
+        list.appendChild(el('div', {class:'menu-group', text: it.group}));
+      }
       var cur = (it.key === section);
       var b = el('button', {class:'menu-item' + (cur ? ' is-current' : ''), type:'button',
         onclick: function(){ closeSiteMenu(); runMenuItem(it.key); }});
@@ -6300,11 +8106,14 @@
 
   /* ---- ホーム画面 ---- */
   var HOME_FEATURES = [
-    ['table',  '実績プレート、実績フレーム表を確認'],
+    ['table',  '実績プレート表・実績フレーム表を確認'],
     ['mark',   '取り込みやタップで赤線をつけ進捗管理'],
-    ['import', 'maimai NET から取り込み'],
+    ['todo',   '未達成楽曲の一覧'],
+    ['fill',   '下埋めの進捗管理'],
     ['sync',   'シンクのお相手を記録'],
-    ['tiers',  'プレート難易度表作成']
+    ['count',  '回数と日付の記録'],
+    ['tiers',  'プレート難易度表作成'],
+    ['import', 'maimai NET から取り込み']
   ];
   var THEME_KEY = 'mmplate_theme_v1';
   var THEME_COLOR_KEY = 'mmplate_theme_color_v1';
@@ -6421,16 +8230,20 @@
     hero.appendChild(colors);
     wrap.appendChild(hero);
 
-    wrap.appendChild(el('h3', {class:'home-h', text:'メニュー'}));
-    var grid = el('div', {class:'home-cards'});
-    MENU_ITEMS.forEach(function(it){
-      if (it.key === 'home') return;
-      var c = el('button', {class:'home-card', type:'button', onclick: function(){ runMenuItem(it.key); }});
-      c.appendChild(iconNode(it.icon, 'home-card-icon'));
-      c.appendChild(el('span', {class:'home-card-label', text: it.label}));
-      grid.appendChild(c);
+    /* 内容ごとに分けて並べる：楽曲表／記録・進捗／その他 */
+    MENU_GROUPS.forEach(function(g){
+      var items = MENU_ITEMS.filter(function(it){ return it.group === g; });
+      if (!items.length) return;
+      wrap.appendChild(el('h3', {class:'home-h', text: g}));
+      var grid = el('div', {class:'home-cards'});
+      items.forEach(function(it){
+        var c = el('button', {class:'home-card', type:'button', onclick: function(){ runMenuItem(it.key); }});
+        c.appendChild(iconNode(it.icon, 'home-card-icon'));
+        c.appendChild(el('span', {class:'home-card-label', text: it.label}));
+        grid.appendChild(c);
+      });
+      wrap.appendChild(grid);
     });
-    wrap.appendChild(grid);
 
     var feat = el('section', {class:'home-features'});
     feat.appendChild(el('h3', {class:'home-h', text:'このツールでできること'}));
@@ -6464,6 +8277,11 @@
       if (plateTierView === 'detail' && plateTierCurrentId) return '#/tiers/' + encodeURIComponent(plateTierCurrentId);
       return '#/tiers';
     }
+    if (section === 'fill') return (fillView === 'detail' && fillId) ? '#/fill/' + encodeURIComponent(fillId) : '#/fill';
+    if (section === 'count') return (countView === 'detail' && countId) ? '#/count/' + encodeURIComponent(countId) : '#/count';
+    if (section === 'sync') return (syncView === 'detail' && syncId) ? '#/sync/' + encodeURIComponent(syncId) : '#/sync';
+    if (section === 'frames') return framesId ? '#/frames/' + encodeURIComponent(framesId) : '#/frames';
+    if (section === 'todo') return todoKind ? '#/todo/' + todoKind : '#/todo';
     if (section === 'guide') return '#/guide';
     if (section === 'import') return '#/import';
     if (section === 'reviews') return '#/review';
@@ -6480,6 +8298,11 @@
   function backTargetLabel(){
     if (section === 'plates' && view === 'detail') return '実績プレート表';
     if (section === 'plateTiers' && plateTierView === 'detail') return 'プレート難易度メーカー';
+    if (section === 'fill' && fillView === 'detail') return '下埋め進捗';
+    if (section === 'count' && countView === 'detail') return '回数と日付の記録';
+    if (section === 'sync' && syncView === 'detail') return 'シンクのお相手記録';
+    if (section === 'frames' && framesId) return '実績フレーム表';
+    if (section === 'todo' && todoKind) return '未達成楽曲一覧';
     return 'ホーム';
   }
   /* ---- スクロールしても使える操作バー ----
@@ -6488,35 +8311,82 @@
   var stickyObserver = null;
   function mountStickyTools(root){
     if (stickyObserver){ stickyObserver.disconnect(); stickyObserver = null; }
-    if (section !== 'plates' || (view !== 'list' && view !== 'detail')) return;
-    var bar = root.querySelector('.mark-toggle-bar');
-    if (!bar || !('IntersectionObserver' in window)) return;
+    /* どのページのどの操作を上に残すか */
+    var bar = null, generic = false, skipSel = '', extraSeg = null, backOnly = false;
     var back = root.querySelector('#pageBackBtn');
-    var toggles = Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn)'));
-    var help = root.querySelector('.help-btn');
-    var seg = bar.querySelector('.plate-mode-seg');
+    if (section === 'plates' && (view === 'list' || view === 'detail')) bar = root.querySelector('.mark-toggle-bar');
+    else if (section === 'sync'){ bar = root.querySelector('.sync-cut-row'); generic = true; }
+    else if (section === 'fill' && fillView === 'detail'){ bar = root.querySelector('.fill-actions'); generic = true; skipSel = '.save-group, .save-toast'; }
+    else if (section === 'fill'){ bar = root.querySelector('.fill-sum-bar'); generic = true; }
+    else if (section === 'todo' && todoKind){ bar = root.querySelector('.todo-cut-row'); generic = true; }
+    else if (section === 'count' && countView !== 'detail'){ bar = root.querySelector('.count-cut-row'); generic = true; }
+    else if (section === 'count' && countView === 'detail'){ bar = root.querySelector('.count-cut-row'); generic = true; }
+    /* それ以外のページは「＜ 戻る場所」だけを上に残す */
+    if (!bar && back){ bar = back; generic = true; backOnly = true; }
+    if (!bar || !('IntersectionObserver' in window)) return;
+    var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker, :scope > .mark-sub-row > .cut-picker'));
+    var help = generic ? null : root.querySelector('.help-btn');
+    var seg = generic ? null : bar.querySelector('.plate-mode-seg');
 
     var dock = el('div', {class:'sticky-tools', 'aria-hidden':'true'});
     var inner = el('div', {class:'sticky-inner'});
     dock.appendChild(inner);
     function mirror(orig, after){
+      /* 「13+↓ ON/OFF | ▼」のようにボタンが2つ入ったものは、中のボタンごとに元を押す */
+      if (orig.classList.contains('cut-picker')){
+        var g = orig.cloneNode(true);
+        var ob = orig.querySelectorAll('button'), cb = g.querySelectorAll('button');
+        Array.prototype.forEach.call(cb, function(x, i){
+          x.addEventListener('click', function(e){
+            e.preventDefault(); e.stopPropagation();
+            if (ob[i] && ob[i].__openMenu){ ob[i].__openMenu(x); return; }   /* ▼の一覧は押した所の下に出す */
+            if (ob[i]) ob[i].click();
+            if (after) after();
+          });
+        });
+        return g;
+      }
       var c = orig.cloneNode(true);
       c.removeAttribute('id');
       c.addEventListener('click', function(e){ e.preventDefault(); orig.click(); if (after) after(); });
       return c;
     }
+    function mirrorSeg(sg){
+      var c = sg.cloneNode(false);
+      c.classList.remove('list-mode-seg');
+      Array.prototype.forEach.call(sg.children, function(b){ c.appendChild(mirror(b, build)); });
+      return c;
+    }
+    /* シンク・下埋め：バーの中身を順に写す（ボタンは元を押す、文字はそのまま） */
+    function buildGeneric(){
+      if (backOnly) return;
+      /* ボタン類（n〜n・極将神舞・合計を見る など）は右側に寄せる：最初のボタンの前に1回だけすき間を入れる */
+      var spaced = false;
+      function pushRight(){ if (!spaced){ inner.appendChild(el('div', {class:'sticky-spacer'})); spaced = true; } }
+      Array.prototype.forEach.call(bar.children, function(ch){
+        if (skipSel && ch.matches(skipSel)) return;
+        if (ch.classList.contains('cut-picker')){ pushRight(); inner.appendChild(mirror(ch, build)); }
+        else if (ch.classList.contains('plate-mode-seg')){ pushRight(); inner.appendChild(mirrorSeg(ch)); }
+        else if (ch.tagName === 'BUTTON'){ pushRight(); var m = mirror(ch, build); m.disabled = ch.disabled; inner.appendChild(m); }
+        else if (ch.textContent){
+          var t = ch.cloneNode(true); t.classList.add('sticky-text');
+          /* 合計の選択中は「n個選択中」だけにして1行に収める */
+          var m = /(\d+個選択中)/.exec(ch.textContent);
+          if (ch.classList.contains('fill-sum-hint') && m) t.textContent = m[1];
+          inner.appendChild(t);
+        }
+      });
+      if (extraSeg && extraSeg.isConnected){ pushRight(); inner.appendChild(mirrorSeg(extraSeg)); }
+    }
     function build(){
       inner.textContent = '';
       if (back && back.isConnected) inner.appendChild(mirror(back));
-      toggles.forEach(function(t){ if (t.isConnected) inner.appendChild(mirror(t, build)); });
+      if (generic){ buildGeneric(); return; }
+      /* 「？」は出さない。n〜n は 極・将・神・舞 と一緒に右側へ */
+      toggles.forEach(function(t){ if (t.isConnected && !t.classList.contains('cut-picker')) inner.appendChild(mirror(t, build)); });
       inner.appendChild(el('div', {class:'sticky-spacer'}));
-      if (help) inner.appendChild(mirror(help));
-      if (seg && seg.isConnected){
-        var s = seg.cloneNode(false);
-        s.classList.remove('list-mode-seg');
-        Array.prototype.forEach.call(seg.children, function(b){ s.appendChild(mirror(b, build)); });
-        inner.appendChild(s);
-      }
+      toggles.forEach(function(t){ if (t.isConnected && t.classList.contains('cut-picker')) inner.appendChild(mirror(t, build)); });
+      if (seg && seg.isConnected) inner.appendChild(mirrorSeg(seg));
     }
     build();
     root.appendChild(dock);
@@ -6549,10 +8419,15 @@
     var parent = '';
     if (section === 'plates' && view === 'detail') parent = '#/plates';
     else if (section === 'plateTiers' && plateTierView === 'detail') parent = '#/tiers';
+    else if (section === 'fill' && fillView === 'detail'){ parent = '#/fill'; fillAnchor = fillId; }
+    else if (section === 'count' && countView === 'detail'){ parent = '#/count'; countAnchor = countId; }
+    else if (section === 'sync' && syncView === 'detail'){ parent = '#/sync'; syncAnchor = syncId; }
+    else if (section === 'frames' && framesId){ parent = '#/frames'; }
+    else if (section === 'todo' && todoKind){ parent = '#/todo'; }
     var wasDetail = (section === 'plates' && view === 'detail');
     applyRoute(parent);
-    renderApp();
     if (!(wasDetail && section === 'plates' && view === 'list')) scrollToTopNow();
+    renderApp();
   }
   function syncRoute(){
     updateHeaderBack();
@@ -6575,6 +8450,26 @@
       section = 'plateTiers'; plateTierView = 'detail'; plateTierCurrentId = decodeURIComponent(m[1]);
     } else if (hs === '#/tiers'){
       section = 'plateTiers'; plateTierView = 'list'; plateTierCurrentId = null;
+    } else if ((m = /^#\/fill\/(.+)$/.exec(hs))){
+      section = 'fill'; fillView = 'detail'; fillId = decodeURIComponent(m[1]);
+    } else if (hs === '#/fill'){
+      section = 'fill'; fillView = 'list'; fillId = null;
+    } else if ((m = /^#\/count\/(.+)$/.exec(hs))){
+      section = 'count'; countView = 'detail'; countId = decodeURIComponent(m[1]);
+    } else if (hs === '#/count'){
+      section = 'count'; countView = 'list'; countId = null;
+    } else if ((m = /^#\/sync\/(.+)$/.exec(hs))){
+      section = 'sync'; syncView = 'detail'; syncId = decodeURIComponent(m[1]);
+    } else if (hs === '#/sync'){
+      section = 'sync'; syncView = 'list'; syncId = null;
+    } else if ((m = /^#\/frames\/(.+)$/.exec(hs))){
+      section = 'frames'; framesId = decodeURIComponent(m[1]);
+    } else if (hs === '#/frames'){
+      section = 'frames'; framesId = null;
+    } else if ((m = /^#\/todo\/(master|mai)$/.exec(hs))){
+      section = 'todo'; todoKind = m[1];
+    } else if (hs === '#/todo'){
+      section = 'todo'; todoKind = null;
     } else if (hs === '#/guide'){
       section = 'guide';
     } else if (hs === '#/import'){
@@ -6643,6 +8538,12 @@
 
   if (!isBackupHash(location.hash)) applyRoute(currentRouteHash());
   routeReady = true;
+  /* アプリとして使うための裏方（sw.js）を登録。対応していないブラウザ・手元のファイルでは何もしない */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
+    });
+  }
   loadSongsJson();
   renderApp();
   /* バックアップのURLから開いたときは、復元の確認を先に出す（お知らせは次に開いたとき） */
