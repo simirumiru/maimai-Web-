@@ -1955,13 +1955,12 @@
      古い版で保存したデータや、途中で項目が増える前のデータには
      項目そのものが無いことがある。1か所でも undefined があると
      描画の途中で止まり、一覧全体が真っ白になるので、ここで既定値を入れておく。 */
-  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）、MAGiCALのCan Do（ST・復活曲）。表に入っていても出さない */
+  /* プレートの対象外の曲：真のジングルベル（ST）、菫の前前前世（ST）。表に入っていても出さない（MAGiCALのCan Doは表・下埋めに入れる） */
   function excludedSongsFor(v){
     if (!v || v.docType === 'jewel' || isMaiHashaDoc(v)) return [];
     var list = [
       { name: 'ジングルベル', ver: 'maimai' },
-      { name: '前前前世', ver: 'maimai MURASAKi PLUS' },
-      { name: 'Can Do', ver: 'maimai でらっくす MAGiCAL' }      /* 復活曲（初収録は橙PLUS）。プレートの対象外 */
+      { name: '前前前世', ver: 'maimai MURASAKi PLUS' }
     ];
     var vers = docSongVersions(v);
     return list.filter(function(e){ return vers.indexOf(e.ver) >= 0; }).map(function(e){ return e.name; });
@@ -3143,8 +3142,7 @@
   /* 収録曲数から除く曲（真：ジングルベル、菫：前前前世） */
   var SEED_EXCLUDED_SONGS = {
     'maimai ＆ maimai PLUS': [{ name: 'ジングルベル', type: 'ST' }],
-    'maimai MURASAKi PLUS': [{ name: '前前前世', type: 'ST' }],
-    'maimai でらっくす MAGiCAL': [{ name: 'Can Do', type: 'ST' }]
+    'maimai MURASAKi PLUS': [{ name: '前前前世', type: 'ST' }]
   };
   /* 表に書く時間：譜面数 × 3分24秒 を、分の1の位で四捨五入（表の解説の書き方と同じ） */
   function computeSeedTime(songCount, tiers){
@@ -6957,7 +6955,7 @@
     var vers = docSongVersions(v);
     return SONG_MASTER_LIST.filter(function(s){
       if (!vers.some(function(x){ return songInVer(s, x); })) return false;
-      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世・MAGiCALのCan Do */
+      if (s.type === 'ST' && isExcludedSong(v, s.name)) return false;   /* 真のジングルベル・菫の前前前世 */
       return true;
     });
   }
