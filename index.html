@@ -1277,13 +1277,17 @@
   .count-date.is-empty{color:var(--text-faint);}
   @media (max-width:420px){ .count-list{grid-template-columns:repeat(2,minmax(0,1fr));} .count-thumb{width:52px;height:52px;} }
   .wheel-box{max-width:340px;}
+  .wheels.range-wheels{grid-template-columns:1fr auto 1fr;}
+  .range-tilde{align-self:center;font-size:20px;font-weight:800;color:var(--text-dim);padding:0 4px;}
+  .range-btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap;}
+  .range-caret{font-size:10px;color:var(--accent);}
   .wheels{position:relative;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;height:200px;margin:12px 0 18px;}
   .wheel-band{position:absolute;left:0;right:0;top:80px;height:40px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-line);pointer-events:none;}
   .wheel-col{position:relative;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;outline:none;
     -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);}
   .wheel-col::-webkit-scrollbar{display:none;}
   .wheel-pad{height:40px;}
-  .wheel-item{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;font-size:17px;font-weight:700;cursor:pointer;}
+  .wheel-item{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:17px;font-weight:700;cursor:pointer;}
   /* 13+↓ ON/OFF | ▼ */
   .cut-picker{display:inline-flex;align-items:stretch;flex:none;}
   .cut-picker .cut-onoff{border-top-right-radius:0;border-bottom-right-radius:0;}
@@ -2313,7 +2317,8 @@
     if (!map[v.id]) map[v.id] = {};
     map[v.id][level.id] = !now;
   }
-  function isSyncLevelHidden(v, level){ return readHiddenFlag(syncHidden, v, level); }
+  /* 表示するレベルは「n〜n」の範囲で決める（下の lvRange…）。範囲の外のレベルは出さない */
+  function isSyncLevelHidden(v, level){ return !levelInRange(lvGroup('sync', v), level && level.label); }
   /* 詳細画面のプレート表で、閲覧者が自分で隠したレベル（端末ごと） */
   var PV_LEVEL_HIDDEN_KEY = 'mmplate_pv_level_hidden_v1';
   var pvLevelHidden = (function(){
@@ -2321,7 +2326,115 @@
     try{ var raw = localStorage.getItem(PV_LEVEL_HIDDEN_KEY); return raw ? JSON.parse(raw) : {}; }
     catch(e){ return {}; }
   })();
-  function isPvLevelHidden(v, level){ return readHiddenFlag(pvLevelHidden, v, level); }
+  function isPvLevelHidden(v, level){ return !levelInRange(lvGroup('plates', v), level && level.label); }
+
+  /* ---- 表示する難易度の範囲「15〜13+」など（この端末に保存） ----
+     plates … 実績プレート表・回数と日付の記録 ／ sync … シンクのお相手記録
+     舞・覇者の表は別に覚える（platesMai / syncMai。初めはすべて表示） */
+  var LV_RANGE_ORDER = ['15', '14+', '14', '13+', '13', '12+', '12', '11+', '11', '10+'];
+  var LV_RANGE_KEY = 'mmplate_level_range_v1';
+  var lvRanges = (function(){ try{ var o = JSON.parse(localStorage.getItem(LV_RANGE_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function saveLvRanges(){ try{ localStorage.setItem(LV_RANGE_KEY, JSON.stringify(lvRanges)); }catch(e){} }
+  function lvGroup(base, v){ return base + (isMaiHashaDoc(v) ? 'Mai' : ''); }
+  function lvRangeGet(g){
+    var r = lvRanges[g];
+    if (r && LV_RANGE_ORDER.indexOf(r.from) >= 0 && LV_RANGE_ORDER.indexOf(r.to) >= 0) return r;
+    if (/Mai$/.test(g)) return { from: '15', to: '10+' };
+    /* 初めて：今までの「13+↓ ON/OFF」で出していた一番下のレベルまでを範囲にする */
+    var low = LV_RANGE_ORDER.indexOf('13+');
+    if (allVersions.length){
+      var map = g === 'sync' ? syncHidden : pvLevelHidden;
+      allVersions.forEach(function(v){
+        if (v.docType === 'jewel' || isMaiHashaDoc(v)) return;
+        (v.levels || []).forEach(function(l){
+          var i = LV_RANGE_ORDER.indexOf(l.label);
+          if (i > low && !l.hidden && readHiddenFlag(map, v, l) === false) low = i;
+        });
+      });
+      lvRanges[g] = { from: '15', to: LV_RANGE_ORDER[low] };
+      saveLvRanges();
+    }
+    return { from: '15', to: LV_RANGE_ORDER[low] };
+  }
+  function levelInRange(g, label){
+    var i = LV_RANGE_ORDER.indexOf(String(label || ''));
+    if (i < 0) return true;
+    var r = lvRangeGet(g);
+    return i >= LV_RANGE_ORDER.indexOf(r.from) && i <= LV_RANGE_ORDER.indexOf(r.to);
+  }
+  function lvRangeKind(g){
+    return {
+      labels: function(){ return LV_RANGE_ORDER.slice(); },
+      fmt: function(x){ return String(x); },
+      get: function(){ return lvRangeGet(g); },
+      set: function(from, to){ lvRanges[g] = { from: from, to: to }; saveLvRanges(); }
+    };
+  }
+  /* 「15〜13+ ▼」のボタン。押すと上と下をスクロールで選ぶ画面が出る */
+  function makeRangePicker(kind){
+    var R = (typeof kind === 'object' && kind) ? kind : lvRangeKind(kind || 'plates');
+    var r = R.get();
+    var wrap = el('div', {class:'cut-picker range-picker', role:'group', 'aria-label':'表示する難易度'});
+    var b = el('button', {type:'button', class:'btn btn-sm range-btn', 'aria-haspopup':'dialog', title:'表示する難易度の範囲を選ぶ'});
+    b.appendChild(el('span', {class:'range-label', text: (r.from == null ? '―' : R.fmt(r.from)) + '〜' + (r.to == null ? '―' : R.fmt(r.to))}));
+    b.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
+    b.addEventListener('click', function(){ openRangeWheel(R); });
+    wrap.appendChild(b);
+    return wrap;
+  }
+  function openRangeWheel(R){
+    var labels = R.labels();
+    if (!labels.length) return;
+    var cur = R.get();
+    var sel = { from: labels.indexOf(cur.from) >= 0 ? cur.from : labels[0], to: labels.indexOf(cur.to) >= 0 ? cur.to : labels[labels.length - 1] };
+    var H = 40;
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box wheel-box', role:'dialog', 'aria-modal':'true', 'aria-label':'表示する難易度'});
+    box.appendChild(el('div', {class:'pin-title', text:'表示する難易度'}));
+    var wheels = el('div', {class:'wheels range-wheels'});
+    wheels.appendChild(el('div', {class:'wheel-band', 'aria-hidden':'true'}));
+    function makeCol(key){
+      var col = el('div', {class:'wheel-col', tabindex:'0'});
+      col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+      labels.forEach(function(x, i){
+        col.appendChild(el('div', {class:'wheel-item', text: R.fmt(x), onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+      });
+      col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
+      var t = null;
+      col.addEventListener('scroll', function(){
+        clearTimeout(t);
+        t = setTimeout(function(){ sel[key] = labels[Math.max(0, Math.min(labels.length - 1, Math.round(col.scrollTop / H)))]; }, 90);
+      });
+      col.addEventListener('keydown', function(e){
+        var i = labels.indexOf(sel[key]);
+        if (e.key === 'ArrowDown'){ e.preventDefault(); col.scrollTo({ top: Math.min(labels.length - 1, i + 1) * H }); }
+        if (e.key === 'ArrowUp'){ e.preventDefault(); col.scrollTo({ top: Math.max(0, i - 1) * H }); }
+      });
+      return col;
+    }
+    var colF = makeCol('from'), colT = makeCol('to');
+    wheels.appendChild(colF);
+    wheels.appendChild(el('div', {class:'range-tilde', 'aria-hidden':'true', text:'〜'}));
+    wheels.appendChild(colT);
+    box.appendChild(wheels);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'すべて', style:{marginRight:'auto'},
+      onclick: function(){ sel.from = labels[0]; sel.to = labels[labels.length - 1]; colF.scrollTop = 0; colT.scrollTop = (labels.length - 1) * H; }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', type:'button', text:'決定', onclick: function(){
+      /* 上下を逆に選んだときは入れ替える */
+      var a = labels.indexOf(sel.from), z = labels.indexOf(sel.to);
+      if (a > z){ var tmp = sel.from; sel.from = sel.to; sel.to = tmp; }
+      closeModal(backdrop);
+      R.set(sel.from, sel.to);
+      renderApp();
+    }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    colF.scrollTop = labels.indexOf(sel.from) * H;
+    colT.scrollTop = labels.indexOf(sel.to) * H;
+  }
   function togglePvLevel(v, level){
     flipHiddenFlag(pvLevelHidden, v, level);
     if (!storageOK) return;
@@ -4308,30 +4421,9 @@
       if (viewerMode && !(level.songs || []).some(songShown)) return;
       if (opts.viewerHidden && isPvLevelHidden(v, level)) return;
       var block = el('div', {class:'pv-level'});
-      /* 詳細画面では、レベルごとに「このレベル ON/OFF」で表示を切り替えられる（この端末だけ） */
-      var lvOff = interactive && isPvLevelHidden(v, level);
-      if (interactive){
-        var lvHead = el('div', {class:'pv-level-head'});
-        /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
-        lvHead.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
-        var lvBtn = makeOnOffButton('', !lvOff, function(){
-          togglePvLevel(v, level);
-          var holder = card.parentNode;
-          if (holder) holder.replaceChild(buildPreviewNode(v, opts), card);
-          return !isPvLevelHidden(v, level);
-        });
-        lvBtn.classList.add('pv-level-toggle');
-        lvHead.appendChild(lvBtn);
-        block.appendChild(lvHead);
-        if (lvOff){
-          /* 非表示のレベルはボタンだけ残す（画像保存にはボタンも写らない） */
-          block.classList.add('pv-level-off');
-          card.appendChild(block);
-          return;
-        }
-      } else {
-        block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
-      }
+      /* 詳細画面：表示する難易度の範囲（n〜n）の外のレベルは出さない */
+      if (interactive && isPvLevelHidden(v, level)) return;
+      block.appendChild(el('div', {class:'pv-level-label', style:{color: level.color, '--lvc': level.color}, text: level.label}));
       var visibleSongs = level.songs.filter(songShown);
       if (visibleSongs.length === 0){
         block.appendChild(el('div', {class:'pv-empty', text:'（画像未追加）'}));
@@ -4473,26 +4565,13 @@
       if (!songs.length) return;
       wrote = true;
 
+      /* 表示する難易度の範囲（n〜n）の外のレベルは出さない */
+      if (isSyncLevelHidden(v, level)) return;
       /* 数字の色はプレート表で設定したレベルの色をそのまま使う */
-      var off = isSyncLevelHidden(v, level);
-
-      var head = el('div', {class:'sync-level-head' + (off ? ' sync-level-off' : '')});
-      /* OFFでも画面ではレベルの数字を残す（保存画像ではレベルごと写らない） */
+      var head = el('div', {class:'sync-level-head'});
       head.appendChild(el('div', {class:'sync-level', text: level.label || '',
         style:{color: level.color || '#ffffff', '--lvc': level.color || '#ffffff'}}));
-      /* 印は必ずボタン自身に付ける（レベルの数字に付いてしまうと保存時に消えない） */
-      var lvToggle = makeOnOffButton('', !off, function(){
-        toggleSyncLevel(v, level);
-        var holder = card.parentNode;
-        var fresh = buildSyncRecordNode(v);
-        if (holder){ holder.replaceChild(fresh, card); syncNodeRef.node = fresh; }
-        return !isSyncLevelHidden(v, level);
-      });
-      lvToggle.classList.add('sync-level-toggle');
-      head.appendChild(lvToggle);
       card.appendChild(head);
-
-      if (off) return;   /* 非表示のレベルは楽曲を並べない */
 
       var list = el('div', {class:'sync-list'});
       songs.forEach(function(song){
@@ -4795,7 +4874,7 @@
     if (!v){
       /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外）。
          「13+↓ ON/OFF | ▼」の1つにまとめ、▼で 13+ → 13 → 12+ と切り替える */
-      bar.appendChild(makeCutPicker());
+      bar.appendChild(makeRangePicker('plates'));
       /* 一覧の上に出すバージョンを3つまで選ぶ */
       bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
@@ -5020,6 +5099,8 @@
         /* 赤線楽曲の非表示（常に表示。シンクのお相手記録には関係しない） */
         hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
         var hideRow = el('div', {class:'mark-sub-row'});
+        /* 表示する難易度（n〜n）を「達成済みを非表示」の左に */
+        hideRow.appendChild(makeRangePicker(lvGroup('plates', v)));
         hideRow.appendChild(hideBtn);
         markBar.appendChild(hideRow);
         paintModes();
@@ -7326,7 +7407,7 @@
     }
     /* 13+↓ などのON/OFF（シンクのお相手記録の表示。詳細画面の各レベルのON/OFFにも反映） */
     var cutRow = el('div', {class:'mark-toggle-bar sync-cut-row'});
-    cutRow.appendChild(makeCutPicker('sync'));
+    cutRow.appendChild(makeRangePicker('sync'));
     root.appendChild(cutRow);
     /* 一覧はバージョン名だけ（プレビューは出さない） */
     renderSimpleVersionList(root, docs, goSync, syncAnchor);
@@ -7343,9 +7424,9 @@
     }));
     bar.appendChild(syncStatus);
     root.appendChild(bar);
-    /* 13+↓ などのON/OFF（一覧と共通） */
+    /* 表示する難易度（n〜n。一覧と共通。舞・覇者は別） */
     var cutRow = el('div', {class:'mark-toggle-bar sync-cut-row'});
-    cutRow.appendChild(makeCutPicker('sync'));
+    cutRow.appendChild(makeRangePicker(lvGroup('sync', v)));
     root.appendChild(cutRow);
     var syncHolder = el('div', {class:'preview-wide'});
     var syncNode = buildSyncRecordNode(v);
@@ -7400,11 +7481,31 @@
     var hidden = Array.isArray(c.hidden) ? c.hidden : [];
     return { pick: pick, hidden: hidden };
   }
+  /* 表示する定数の範囲（n〜n。MASTER と 舞・覇者で別々に覚える。初めはすべて） */
+  var TODO_RANGE_KEY = 'mmplate_todo_range_v1';
+  var todoRanges = (function(){ try{ var o = JSON.parse(localStorage.getItem(TODO_RANGE_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; } })();
+  function todoRangeFor(kind){
+    var list = todoKonstList(kind);
+    var r = todoRanges[kind] || {};
+    var from = list.indexOf(r.from) >= 0 ? r.from : list[0];
+    var to = list.indexOf(r.to) >= 0 ? r.to : list[list.length - 1];
+    return { from: from, to: to };
+  }
+  function todoRangeKind(kind){
+    return {
+      labels: function(){ return todoKonstList(kind); },
+      fmt: function(x){ return Number(x).toFixed(1); },
+      get: function(){ return todoRangeFor(kind); },
+      set: function(from, to){ todoRanges[kind] = { from: from, to: to }; try{ localStorage.setItem(TODO_RANGE_KEY, JSON.stringify(todoRanges)); }catch(e){} }
+    };
+  }
   /* その定数が今表示されているか */
   function todoKonstShown(kind, k){
     if (!(k >= 0)) return true;
     var v = Math.round(k * 10) / 10;
-    return todoCutFor(kind).hidden.indexOf(v) < 0;
+    var r = todoRangeFor(kind);
+    if (r.from == null) return true;
+    return v <= r.from && v >= r.to;
   }
   function todoCutKind(kind){
     return {
@@ -7490,7 +7591,7 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
     var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
-    cutRow.appendChild(makeCutPicker(todoCutKind(kind)));
+    cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
     root.appendChild(cutRow);
     var rec = netRecordIndex();
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
@@ -7632,7 +7733,7 @@
     }
     /* 13+↓ などのON/OFF と 極・将・神・舞（開いた先の詳細画面と共通） */
     var cutRow = el('div', {class:'mark-toggle-bar count-cut-row'});
-    cutRow.appendChild(makeCutPicker());
+    cutRow.appendChild(makeRangePicker('plates'));
     cutRow.appendChild(makeModeSeg(['極', '将', '神', '舞舞'], countMode, function(m){ setCountMode(m); renderApp(); }, '記録するプレート'));
     root.appendChild(cutRow);
     renderSimpleVersionList(root, docs, goCount, countAnchor);
@@ -7658,7 +7759,7 @@
     root.appendChild(bar);
     /* 13+↓ などのON/OFF（実績プレート表と共通） */
     var cutRow = el('div', {class:'mark-toggle-bar count-cut-row'});
-    cutRow.appendChild(makeCutPicker());
+    cutRow.appendChild(makeRangePicker(lvGroup('plates', v)));
     root.appendChild(cutRow);
 
     var plateLabel = plateNameForMode(v, mode) === mode ? PLATE_MODE_LABEL[mode] : plateNameForMode(v, mode);
@@ -8172,7 +8273,7 @@
     /* それ以外のページは「＜ 戻る場所」だけを上に残す */
     if (!bar && back){ bar = back; generic = true; backOnly = true; }
     if (!bar || !('IntersectionObserver' in window)) return;
-    var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker'));
+    var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker, :scope > .mark-sub-row > .cut-picker'));
     var help = generic ? null : root.querySelector('.help-btn');
     var seg = generic ? null : bar.querySelector('.plate-mode-seg');
 
