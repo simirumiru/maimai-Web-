@@ -3553,6 +3553,12 @@
       for (var k = 0; k < lv.songs.length; k++){
         var c = konstOf(lv.songs[k]);
         if (c >= 0 && c < s.konst){ pos = k; break; }
+        /* 同じ定数の中では追加日が古い順。追加日が分からない曲よりは前に入れる */
+        if (c === s.konst){
+          var mk = masterOfTableSong(lv.songs[k], lv.label);
+          var dk = mk ? mk.added : 99999999;
+          if (dk > s.added){ pos = k; break; }
+        }
       }
     }
     var entry = { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '',
