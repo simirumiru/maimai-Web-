@@ -1128,7 +1128,7 @@
   .todo-cut-row{margin:-4px 0 12px;}
   /* n〜n の右にすぐ並べる（未達成楽曲一覧の FC〜FDX+、回数と日付の 極・将・神・舞） */
   .todo-cut-row, .count-cut-row{gap:8px;}
-  /* 実績プレート表の一覧：2段目（達成済みを表示・n〜n・極将神舞）をスマホ幅でも1行に収める */
+  /* 実績プレート表の一覧：2段目（n〜n・達成済みを非表示・極将神舞）をスマホ幅でも1行に収める */
   @media (max-width:480px){
     .mark-toggle-bar > .mark-sub-row{gap:5px;}
     .mark-toggle-bar > .mark-sub-row > *{flex:none;white-space:nowrap;}
@@ -1160,15 +1160,6 @@
   .todo-export .todo-grid{display:grid;grid-template-columns:repeat(12, 80px);gap:6px;}
   .todo-export .todo-thumb{width:80px;height:80px;}
   .todo-thumb{width:64px;height:64px;}
-  /* ジャケットの下の曲名：黒い帯に白い文字、1行で収まらない分は切る */
-  .todo-title{position:absolute;left:0;right:0;bottom:0;height:13px;background:rgba(0,0,0,.85);color:#fff;
-    font-size:9.5px;font-weight:500;line-height:13px;white-space:nowrap;overflow:hidden;padding:0 2px;pointer-events:none;}
-  .todo-thumb.no-img .todo-title{display:none;}
-  .todo-export .todo-title{height:16px;line-height:16px;font-size:11.5px;}
-  /* 達成済み（「達成済みを表示」のとき）は薄く */
-  .todo-thumb.is-done > img{opacity:.3;filter:grayscale(.7);}
-  .todo-thumb.is-done.no-img{opacity:.45;}
-  .todo-thumb.is-done .todo-title{background:rgba(0,0,0,.5);color:rgba(255,255,255,.75);}
   @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
   .sync-card-preview{max-height:240px;position:relative;}
@@ -2563,13 +2554,12 @@
     hideMarkedSongs = !!on;
     try{ localStorage.setItem(HIDE_MARKED_KEY, hideMarkedSongs ? '1' : '0'); }catch(e){}
   }
-  /* 「達成済みを表示 ON/OFF」ボタン（未達成楽曲一覧と同じ表記）。ON＝赤線の曲も出す／OFF＝赤線の曲を隠す。
-     押したら onChange で表を描き直す */
+  /* 「赤線楽曲の非表示 ON/OFF」ボタン。押したら onChange で表を描き直す */
   function makeHideMarkedButton(onChange){
-    var b = makeOnOffButton('達成済みを表示', !hideMarkedSongs, function(){
+    var b = makeOnOffButton('達成済みを非表示', hideMarkedSongs, function(){
       setHideMarkedSongs(!hideMarkedSongs);
       if (onChange) onChange();
-      return !hideMarkedSongs;
+      return hideMarkedSongs;
     });
     b.classList.add('hide-marked-btn');
     return b;
@@ -3563,12 +3553,6 @@
       for (var k = 0; k < lv.songs.length; k++){
         var c = konstOf(lv.songs[k]);
         if (c >= 0 && c < s.konst){ pos = k; break; }
-        /* 同じ定数の中では追加日が古い順。追加日が分からない曲よりは前に入れる */
-        if (c === s.konst){
-          var mk = masterOfTableSong(lv.songs[k], lv.label);
-          var dk = mk ? mk.added : 99999999;
-          if (dk > s.added){ pos = k; break; }
-        }
       }
     }
     var entry = { id: uid(), name: s.name, img: resolveSongImage(s.name), srcType: s.type || '',
@@ -5168,7 +5152,7 @@
         modePicker = makeWheelPicker({ title: '進捗を記録するプレート', cls: 'mode-picker',
           items: [['', 'なし']].concat(modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; })),
           current: getPlateMode(v) || '', onPick: function(m){ selectPlateMode(m); } });
-        /* 画像保存の下の段：達成済みを表示 → n〜n → なし・極・将・神・舞 */
+        /* 画像保存の下の段：達成済みを非表示 → n〜n → なし・極・将・神・舞 */
         hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
         var hideRow = el('div', {class:'mark-sub-row'});
         hideRow.appendChild(hideBtn);
@@ -6466,12 +6450,8 @@
      その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
      内容を変えて再び出したいときは NOTICE_ID を変える。 */
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
-  var APP_VERSION = '2.2';
+  var APP_VERSION = '2.1';
   var CHANGELOG = [
-    { ver:'2.2', date:'2026/10/31', items:[
-      ['新曲に対応', '10/29追加の新曲を追加しました。'],
-      ['未達成楽曲一覧', 'ジャケットの下に曲名を表示するようにしました。\n「達成済みを表示」で達成済みの楽曲も確認できます。']
-    ]},
     { ver:'2.1', date:'2026/10/17', items:[
       ['maimai NET 取り込み', '', 'importNote'],
       ['新曲に対応', '10/16追加の新曲を追加しました。'],
@@ -7535,10 +7515,6 @@
   var TODO_MODE_KEY = 'mmplate_todo_mode_v1';
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
   function setTodoMode(m){ todoMode = m; try{ sessionStorage.setItem(TODO_MODE_KEY, m); }catch(e){} }
-  /* 達成済みの譜面も並べて表示する（薄く表示。この端末に保存） */
-  var TODO_SHOWDONE_KEY = 'mmplate_todo_showdone_v1';
-  var todoShowDone = (function(){ try{ return localStorage.getItem(TODO_SHOWDONE_KEY) === '1'; }catch(e){ return false; } })();
-  function setTodoShowDone(on){ todoShowDone = !!on; try{ localStorage.setItem(TODO_SHOWDONE_KEY, on ? '1' : '0'); }catch(e){} }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
   /* 定数の「↓ ON/OFF」：ON＝すべて表示／OFF＝その定数とそれより下をすべて隠す
      （▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
@@ -7667,10 +7643,6 @@
     cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
     /* n〜n の右に FC・SSS・AP・AP+・FDX・FDX+ */
     cutRow.appendChild(seg);
-    /* 達成済みの譜面も表示する（ON/OFF） */
-    var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; });
-    doneBtn.classList.add('todo-done-btn');
-    cutRow.appendChild(doneBtn);
     root.appendChild(cutRow);
     var rec = netRecordIndex();
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
@@ -7695,15 +7667,12 @@
     if (shownLeft.length !== left.length) sum.appendChild(el('span', {class:'todo-summary-shown', text:'（表示中 ' + shownLeft.length + '）'}));
     root.appendChild(sum);
 
-    if (!left.length && !todoShowDone){
+    if (!left.length){
       root.appendChild(el('div', {class:'empty-state', text:'すべて達成しています！'}));
       return;
     }
-    /* 達成済みも表示するときは、全譜面を同じ並び順で出す（達成済みは薄く） */
-    var leftSet = new Set(left);
-    var list = (todoShowDone ? all.slice().sort(todoCmp) : left).filter(function(x){ return todoKonstShown(kind, x.k); });
-    if (!list.length){
-      root.appendChild(el('div', {class:'empty-state', text:'表示する定数がありません。上のボタンで表示する定数の範囲を選んでください。'}));
+    if (!shownLeft.length){
+      root.appendChild(el('div', {class:'empty-state', text:'表示する定数がありません。上の「↓ ON/OFF」で表示する定数を選んでください。'}));
       return;
     }
     left = shownLeft;
@@ -7715,29 +7684,23 @@
     et.appendChild(el('span', {class:'todo-export-sub', text:'　' + mode.key + ' 未達成 ' + left.length + '譜面'}));
     card.appendChild(et);
     var curKey = null, grid = null;
-    var keyOf = function(y){ return y.k >= 0 ? y.k.toFixed(1) : '?'; };
-    list.forEach(function(x){
-      var key = keyOf(x);
+    left.forEach(function(x){
+      var key = x.k >= 0 ? x.k.toFixed(1) : '?';
       if (key !== curKey){
         curKey = key;
-        var inKey = list.filter(function(y){ return keyOf(y) === key; });
-        var cntLeft = inKey.filter(function(y){ return leftSet.has(y); }).length;
+        var cnt = left.filter(function(y){ return (y.k >= 0 ? y.k.toFixed(1) : '?') === key; }).length;
         var head = el('div', {class:'todo-konst'});
         head.appendChild(el('span', {class:'todo-konst-num', style:{color: x.k >= 0 ? konstColor(x.k) : 'var(--text-dim)'}, text: key === '?' ? '定数不明' : key}));
-        head.appendChild(el('span', {class:'todo-konst-count', text: todoShowDone ? ('未達成 ' + cntLeft + ' / ' + inKey.length + '譜面') : (cntLeft + '譜面')}));
+        head.appendChild(el('span', {class:'todo-konst-count', text: cnt + '譜面'}));
         card.appendChild(head);
         grid = el('div', {class:'todo-grid'});
         card.appendChild(grid);
       }
-      var t = el('div', {class:'pv-thumb todo-thumb' + (leftSet.has(x) ? '' : ' is-done'), title: x.s.name});
+      var t = el('div', {class:'pv-thumb todo-thumb', title: x.s.name});
       t.appendChild(makeSongImg(x.s.name, resolveSongImage(x.s.name), getCachedSongImage(x.s.name), function(){
         t.classList.add('no-img');
         t.appendChild(el('div', {class:'placeholder-text', text: x.s.name}));
       }));
-      /* ジャケットの下に曲名（長い曲名は途中で切る） */
-      var tt = el('div', {class:'todo-title'});
-      tt.appendChild(el('span', {text: x.s.name}));
-      t.appendChild(tt);
       if (kind === 'master' && types[x.s.name] && types[x.s.name].ST && types[x.s.name].DX){
         t.appendChild(makeChartTypeMark(String(x.s.type).toLowerCase()));
       }
