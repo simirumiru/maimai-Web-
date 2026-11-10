@@ -4981,9 +4981,31 @@
     var go = function(){ ensureHtml2Canvas().catch(function(){}); };
     setTimeout(go, 0);
   }
+  /* 画面の外でまだ読み込まれていない画像（loading=lazy）や、綴り違いの別ファイルに切り替え中の画像があると、
+     写しを作った時点の「読めない場所」がそのまま保存画像に入って、ジャケットが抜ける。
+     先に元の画像をすべて読み込み終わらせて（読めない画像は別のファイルに切り替え終わるまで待って）から写す */
+  function settleImages(node, maxMs){
+    var imgs = Array.prototype.slice.call(node.querySelectorAll('img'));
+    imgs.forEach(function(im){ try{ im.loading = 'eager'; }catch(e){} });
+    return new Promise(function(resolve){
+      var start = Date.now();
+      function done(im){ return !im.isConnected || (im.complete && im.naturalWidth > 0); }
+      (function tick(){
+        imgs = imgs.filter(function(im){ return !done(im); });
+        if (!imgs.length || Date.now() - start > maxMs){ resolve(); return; }
+        setTimeout(tick, 120);
+      })();
+    });
+  }
   function captureNodePNG(node, name, statusEl, btn, exportClass, base, prepare){
     if (!node) return;
     btn.disabled = true;
+    statusEl.textContent = '画像を読み込み中…';
+    settleImages(node, 90000).then(function(){
+      captureNodePNGNow(node, name, statusEl, btn, exportClass, base, prepare);
+    });
+  }
+  function captureNodePNGNow(node, name, statusEl, btn, exportClass, base, prepare){
     statusEl.textContent = '画像を生成中…';
 
     /* 画面に出ている表はそのままにして、見えない所に写しを作ってから描き込む。
@@ -5027,7 +5049,7 @@
     ensureHtml2Canvas().then(function(){
       /* 保存画像はテーマに関係なく、押したボタンの色（黒＝今までどおり／白）の表 */
       return window.html2canvas(shot, { scale: 2, backgroundColor: base === 'white' ? '#ffffff' : '#1e1e1e',
-        ignoreElements: skipForShot, logging: false });
+        ignoreElements: skipForShot, logging: false, imageTimeout: 60000 });
     }).then(function(canvas){
       restoreLayout();
       function finish(msg){
