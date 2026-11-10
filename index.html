@@ -1187,17 +1187,21 @@
   .todo-export .todo-grid{display:grid;grid-template-columns:repeat(12, 80px);gap:6px;}
   .todo-export .todo-thumb{width:80px;height:80px;}
   .todo-thumb{width:64px;height:64px;}
-  /* 定数表の Re:MASTER：細いグレー→薄紫のフレーム。外側に1px広げて、中の画像は MASTER と同じ大きさ */
-  .todo-thumb.konst-remas{width:66px;height:66px;margin:-1px;border:0;padding:2px;
-    background:linear-gradient(135deg, #9d9da8 0%, #c4c4cc 35%, #d3c1ff 70%, #b8a3ee 100%);}
-  .todo-thumb.konst-remas > img{border-radius:6px;}
-  .todo-thumb.konst-remas .song-title{left:2px;right:2px;bottom:2px;border-radius:0 0 6px 6px;}
-  .todo-export .todo-thumb.konst-remas{width:82px;height:82px;}
+  /* 定数表の Re:MASTER：グレー→薄紫のフレーム（3px）＋薄紫の光。
+     外側に2px広げて、中の画像は MASTER と同じ大きさ。フレーム同士がくっつかないよう、定数表だけ曲の間を少し広げる */
+  .konst-card-body .todo-grid{gap:8px;}
+  .todo-thumb.konst-remas{width:68px;height:68px;margin:-2px;border:0;padding:3px;border-radius:10px;
+    background:linear-gradient(135deg, #7f7f8c 0%, #c8c8d2 30%, #c7a6ff 65%, #9b6ff2 100%);
+    box-shadow:0 0 6px rgba(155,111,242,.75);}
+  .todo-thumb.konst-remas > img{border-radius:7px;}
+  .todo-thumb.konst-remas .song-title{left:3px;right:3px;bottom:3px;border-radius:0 0 7px 7px;}
+  .todo-export .konst-card-body .todo-grid, .todo-export.konst-card-body .todo-grid{gap:8px;}
+  .todo-export .todo-thumb.konst-remas{width:84px;height:84px;}
   /* 達成済み（「達成済みを表示」のとき）は薄く */
   .todo-thumb.is-done > img{opacity:.3;filter:grayscale(.7);}
   .todo-thumb.is-done.no-img{opacity:.45;}
   .todo-thumb.is-done .song-title{background:rgba(0,0,0,.5);color:rgba(255,255,255,.75);}
-  @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} .todo-thumb.konst-remas{width:58px;height:58px;} }
+  @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} .konst-card-body .todo-grid{gap:7px;} .todo-thumb.konst-remas{width:60px;height:60px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
   .sync-card-preview{max-height:240px;position:relative;}
   .sync-card-preview::after{content:"";position:absolute;left:0;right:0;bottom:0;height:36px;pointer-events:none;
