@@ -713,6 +713,8 @@
   html:not(.hide-song-titles) .sync-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 2px);}
   /* ホームの「曲名を表示」 */
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
+  .title-toggle-btn .onoff-switch{margin-left:6px;}
+  .title-toggle-btn[aria-pressed="false"] .onoff-active{color:var(--text-dim);}
   /* 画像保存中のお知らせ。画面の並びを動かさないよう、下に浮かせて出す */
   .save-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;
     background:var(--panel-3);color:var(--text);border:1px solid var(--border-strong);
@@ -4991,7 +4993,7 @@
       bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
       var lseg = makeWheelPicker({ title: '表示するプレート', cls: 'mode-picker list-mode-seg',
-        items: [['', 'なし'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
+        items: [['', '未選択'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
         current: commonListMode() || '', onPick: function(m){ setAllPlateModes(m); renderApp(); } });
       /* 「上に固定」の横に「赤線削除」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
       {
@@ -6497,8 +6499,7 @@
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
   var APP_VERSION = '2.2';
   var CHANGELOG = [
-    { ver:'2.2', date:'2026/10/31', items:[
-      ['新曲に対応', '10/29追加の新曲を追加しました。'],
+    { ver:'2.2', date:'2026/11/10', items:[
       ['曲名の表示', 'ジャケットの下に曲名を表示するようにしました。\nホームの「ジャケットに曲名を表示」でON/OFFできます。'],
       ['未達成楽曲一覧', '「達成済みを表示」で達成済みの楽曲も確認できます。']
     ]},
@@ -8295,7 +8296,17 @@
     hero.appendChild(colors);
     /* ジャケットの下に曲名を出す（全部の画面まとめて） */
     var ttRow = el('div', {class:'home-title-toggle'});
-    ttRow.appendChild(makeOnOffButton('ジャケットに曲名を表示', showSongTitles, function(){ setShowSongTitles(!showSongTitles); return showSongTitles; }));
+    /* 今の状態（ON か OFF）だけを出す。押すと切り替わる */
+    var ttBtn = el('button', {type:'button', class:'btn btn-sm onoff-btn title-toggle-btn'});
+    function paintTt(){
+      ttBtn.textContent = '';
+      ttBtn.appendChild(el('span', {class:'onoff-label', text:'ジャケットに曲名を表示'}));
+      ttBtn.appendChild(el('span', {class:'onoff-switch'}, [el('span', {class:'onoff-active', text: showSongTitles ? 'ON' : 'OFF'})]));
+      ttBtn.setAttribute('aria-pressed', showSongTitles ? 'true' : 'false');
+    }
+    ttBtn.addEventListener('click', function(){ setShowSongTitles(!showSongTitles); paintTt(); });
+    paintTt();
+    ttRow.appendChild(ttBtn);
     hero.appendChild(ttRow);
     wrap.appendChild(hero);
 
