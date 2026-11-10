@@ -711,10 +711,13 @@
   /* 曲名の帯があるときは、DX／ST の印を帯の上にずらす */
   html:not(.hide-song-titles) .pv-thumb:not(.no-img) img.chart-type-mark,
   html:not(.hide-song-titles) .sync-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 2px);}
+  /* 保存画像には曲名を入れない（ON のときも）。DX／ST の印も元の位置に戻す */
+  .pv-export .song-title, .sync-export .song-title, .count-export .song-title, .todo-export .song-title{display:none !important;}
+  .pv-export img.chart-type-mark, .sync-export img.chart-type-mark, .count-export img.chart-type-mark, .todo-export img.chart-type-mark{bottom:4% !important;}
   /* ホームの「曲名を表示」 */
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
-  .title-toggle-btn .onoff-switch{margin-left:6px;}
-  .title-toggle-btn[aria-pressed="false"] .onoff-active{color:var(--text-dim);}
+  .title-toggle-btn .onoff-switch, .onoff-single .onoff-switch{margin-left:6px;}
+  .title-toggle-btn[aria-pressed="false"] .onoff-active, .onoff-single[aria-pressed="false"] .onoff-active{color:var(--text-dim);}
   /* 画像保存中のお知らせ。画面の並びを動かさないよう、下に浮かせて出す */
   .save-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;
     background:var(--panel-3);color:var(--text);border:1px solid var(--border-strong);
@@ -1034,7 +1037,7 @@
   .help-btn:hover{border-color:var(--accent);color:var(--accent);}
   .help-btn-list{margin-left:auto;}
   .mark-toggle-bar .help-btn-list + .mode-row{margin-left:0;flex-basis:100%;}
-  /* 13+↓などの下の段（赤線楽曲の非表示・赤線削除） */
+  /* 13+↓などの下の段（赤線楽曲の非表示・赤線リセット） */
   .mark-sub-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-basis:100%;}
   .mark-toggle-bar .mark-sub-row + .mode-row{margin-left:0;flex-basis:100%;}
   .hide-marked-btn[hidden], .mark-sub-row[hidden]{display:none;}
@@ -1286,7 +1289,7 @@
   .import-progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
   .import-progress-fill{height:100%;width:0;border-radius:999px;background:#4fc3f7;transition:width .12s linear;}
   .import-progress.is-done .import-progress-fill{background:#81c995;}
-  /* 極・将・神・舞を「赤線削除」の横に（説明の吹き出しはその下） */
+  /* 極・将・神・舞を「赤線リセット」の横に（説明の吹き出しはその下） */
   .mark-sub-row{align-items:flex-start;}
   .mark-sub-row .mode-row{margin-left:0;align-items:flex-start;flex-basis:auto;}
   .mark-sub-row .list-mode-seg{margin-left:0;}
@@ -1386,6 +1389,19 @@
   .sticky-tools.no-anim{transition:none;}
   .sticky-inner .sticky-text{flex-basis:auto;font-size:12px;margin:0;}
   .sticky-inner .btn-sm{min-height:30px;padding:4px 10px;font-size:12px;}
+  /* 未達成楽曲一覧：スマホ幅では1行に収める（戻るを「未達成楽曲」に短く、文字と余白を少し小さく） */
+  .sticky-inner .back-short{display:none;}
+  @media (max-width:480px){
+    .sticky-todo .back-full{display:none;}
+    .sticky-todo .back-short{display:inline;}
+    .sticky-todo .sticky-inner{gap:4px;padding:6px 6px;}
+    .sticky-todo .sticky-inner .page-back{padding:3px 6px 3px 1px;font-size:11px;min-height:30px;}
+    .sticky-todo .sticky-inner .page-back svg{width:14px;height:14px;}
+    .sticky-todo .sticky-inner .btn-sm.onoff-btn{padding:4px 6px;font-size:10.5px;}
+    .sticky-todo .sticky-inner .onoff-single .onoff-switch{margin-left:3px;}
+    .sticky-todo .sticky-inner .range-btn{padding:4px 5px;gap:3px;font-size:11px;}
+    .sticky-todo .sticky-inner .cut-picker button{font-size:11px;}
+  }
 </style>
 </head>
 <body>
@@ -1773,16 +1789,20 @@
   }
   /* 「<見出し>ON/OFF」の形のボタン。
      いま効いている側を先に出し、緑の太字にする。反対側は白のまま。 */
-  function makeOnOffButton(prefix, isOn, onToggle, stacked){
-    var btn = el('button', {class:'btn btn-sm onoff-btn' + (stacked ? ' onoff-stacked' : '')});
+  /* single … ON のときは「ON」だけ、OFF のときは「OFF」だけを出す（ホームの「ジャケットに曲名を表示」と同じ形） */
+  function makeOnOffButton(prefix, isOn, onToggle, stacked, single){
+    var btn = el('button', {class:'btn btn-sm onoff-btn' + (stacked ? ' onoff-stacked' : '') + (single ? ' onoff-single' : '')});
     function paint(on){
       btn.textContent = '';
       if (prefix) btn.appendChild(el('span', {class:'onoff-label', text: prefix}));
       var sw = el('span', {class:'onoff-switch'});
       sw.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
-      sw.appendChild(el('span', {class:'onoff-slash', text:'/'}));
-      sw.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+      if (!single){
+        sw.appendChild(el('span', {class:'onoff-slash', text:'/'}));
+        sw.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+      }
       btn.appendChild(sw);
+      if (single) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     paint(isOn);
     btn.addEventListener('click', function(){
@@ -2599,7 +2619,7 @@
       setHideMarkedSongs(!hideMarkedSongs);
       if (onChange) onChange();
       return !hideMarkedSongs;
-    });
+    }, false, true);
     b.classList.add('hide-marked-btn');
     return b;
   }
@@ -4983,19 +5003,19 @@
 
   /* ========================= view: list ========================= */
   /* 赤線の表示ON/OFFボタン（押すと画面を描き直す） */
-  /* v を渡したとき（バージョン詳細）だけ「赤線削除」ボタンも付ける */
+  /* v を渡したとき（バージョン詳細）だけ「赤線リセット」ボタンも付ける */
   function makeMarkToggleBar(v){
     var bar = el('div', {class:'mark-toggle-bar'});
     if (!v){
       /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外）。
          「13+↓ ON/OFF | ▼」の1つにまとめ、▼で 13+ → 13 → 12+ と切り替える */
-      /* 1段目：上に固定・赤線削除（・？）／2段目：n〜n・達成済みを非表示・極・将・神・舞 */
+      /* 1段目：上に固定・赤線リセット（・？）／2段目：n〜n・達成済みを非表示・極・将・神・舞 */
       bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
       var lseg = makeWheelPicker({ title: '表示するプレート', cls: 'mode-picker list-mode-seg',
         items: [['', '未選択'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
         current: commonListMode() || '', onPick: function(m){ setAllPlateModes(m); renderApp(); } });
-      /* 「上に固定」の横に「赤線削除」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
+      /* 「上に固定」の横に「赤線リセット」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
       {
         var subRow = el('div', {class:'mark-sub-row'});
         /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
@@ -5003,7 +5023,7 @@
         /* 表示する難易度（n〜n。全部の表まとめて。舞・覇者の表は別） */
         subRow.appendChild(makeRangePicker('plates'));
         /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
-        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線削除',
+        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線リセット',
           onclick: function(){
             var m = commonListMode();
             if (!m){ showAlert('極・将・神・舞のどれかを選んでから押してください。'); return; }
@@ -6500,7 +6520,7 @@
   var APP_VERSION = '2.2';
   var CHANGELOG = [
     { ver:'2.2', date:'2026/11/10', items:[
-      ['曲名の表示', 'ジャケットの下に曲名を表示するようにしました。\nホームの「ジャケットに曲名を表示」でON/OFFできます。'],
+      ['曲名の表示', 'ジャケットの下に曲名を表示するようにしました（保存画像には入りません）。\nホームの「ジャケットに曲名を表示」でON/OFFできます。'],
       ['未達成楽曲一覧', '「達成済みを表示」で達成済みの楽曲も確認できます。']
     ]},
     { ver:'2.1', date:'2026/10/17', items:[
@@ -7695,13 +7715,12 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
     var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
-    cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
-    /* n〜n の右に FC・SSS・AP・AP+・FDX・FDX+ */
-    cutRow.appendChild(seg);
-    /* 達成済みの譜面も表示する（ON/OFF） */
-    var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; });
+    /* 左から：達成済みを表示 → n〜n → FC・SSS・AP・AP+・FDX・FDX+ */
+    var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; }, false, true);
     doneBtn.classList.add('todo-done-btn');
     cutRow.appendChild(doneBtn);
+    cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
+    cutRow.appendChild(seg);
     root.appendChild(cutRow);
     var rec = netRecordIndex();
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
@@ -8408,7 +8427,7 @@
     var help = generic ? null : root.querySelector('.help-btn');
     var seg = generic ? null : bar.querySelector('.plate-mode-seg');
 
-    var dock = el('div', {class:'sticky-tools', 'aria-hidden':'true'});
+    var dock = el('div', {class:'sticky-tools' + (section === 'todo' && todoKind ? ' sticky-todo' : ''), 'aria-hidden':'true'});
     var inner = el('div', {class:'sticky-inner'});
     dock.appendChild(inner);
     function mirror(orig, after){
@@ -8460,7 +8479,15 @@
     }
     function build(){
       inner.textContent = '';
-      if (back && back.isConnected) inner.appendChild(mirror(back));
+      if (back && back.isConnected){
+        var bm = mirror(back);
+        /* 未達成楽曲一覧：スマホ幅では「＜ 未達成楽曲」と短くして1行に収める */
+        if (section === 'todo' && todoKind){
+          var bl = bm.querySelector('.page-back-label');
+          if (bl){ bl.classList.add('back-full'); bl.after(el('span', {class:'page-back-label back-short', text:'未達成楽曲'})); }
+        }
+        inner.appendChild(bm);
+      }
       if (generic){ buildGeneric(); return; }
       /* 「？」は出さない。n〜n は 極・将・神・舞 と一緒に右側へ */
       toggles.forEach(function(t){ if (t.isConnected && !t.classList.contains('cut-picker')) inner.appendChild(mirror(t, build)); });
