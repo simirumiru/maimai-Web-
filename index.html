@@ -1220,6 +1220,16 @@
   .konst-card-body .todo-grid{gap:8px;}
   .konst-asof{font-size:.62em;font-weight:700;color:var(--text-dim);white-space:pre;}
   .todo-export .konst-asof{color:inherit;opacity:.75;}
+  .todo-export .konst-export-head{display:flex !important;align-items:center;flex-wrap:wrap;}
+  /* 保存画像の見出しの左に付けるマーク（文字の大きさに合わせる） */
+  img.export-mark{display:inline-block;width:1.15em;height:1.15em;vertical-align:-0.2em;margin-right:.32em;flex:none;}
+  .has-export-mark{display:flex !important;align-items:center;}
+  /* 見出しの文字は見た目が少し下寄りなので、マークもその分下げる */
+  .has-export-mark > img.export-mark{margin-top:.2em;}
+  .konst-brand{display:inline-flex;align-items:center;gap:6px;margin-right:18px;}
+  .konst-brand-mark{width:34px;height:34px;flex:none;display:block;}
+  .konst-brand-text{font-family:'M PLUS Rounded 1c', var(--font-body);font-weight:900;font-size:27px;line-height:1;white-space:nowrap;}
+  .konst-brand-pl{font-weight:800;color:var(--text);margin-left:.1em;}
   /* 定数表の n〜n は少しだけ大きく（まわりとの間隔はそのまま） */
   .konst-cut-row .range-btn{padding:7px 12px;font-size:13.5px;}
   .konst-cut-row .range-caret{font-size:11.5px;}
@@ -5005,6 +5015,31 @@
       captureNodePNGNow(node, name, statusEl, btn, exportClass, base, prepare);
     });
   }
+  /* 保存画像のいちばん左上の文字（バージョン名・見出し）の左に、maiプレートのマークを入れる。
+     定数表は「マーク＋maiプレート」のロゴが入っているので入れない */
+  var _logoMarkUrl = null;
+  function logoMarkDataUrl(){
+    if (_logoMarkUrl) return _logoMarkUrl;
+    var lm = document.querySelector('#homeLogo svg');
+    if (!lm) return null;
+    var c = lm.cloneNode(true);
+    c.removeAttribute('aria-hidden');
+    c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    c.setAttribute('width', '88'); c.setAttribute('height', '88');
+    _logoMarkUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(c));
+    return _logoMarkUrl;
+  }
+  function addExportMark(shot){
+    if (shot.classList.contains('konst-export')) return;
+    var target = shot.querySelector('.pv-title') || shot.querySelector('.sync-title') || shot.querySelector('.export-only-title');
+    var src = logoMarkDataUrl();
+    if (!target || !src) return;
+    /* 画像保存の仕組みは <svg> をそのまま置くと位置がずれて欠けるので、画像（img）にして置く */
+    var mk = el('img', {class:'export-mark', src: src, alt:''});
+    target.insertBefore(mk, target.firstChild);
+    /* 大きい見出し（バージョン名・シンク）は、マークと文字の高さの真ん中をそろえる */
+    if (target.classList.contains('pv-title') || target.classList.contains('sync-title')) target.classList.add('has-export-mark');
+  }
   function captureNodePNGNow(node, name, statusEl, btn, exportClass, base, prepare){
     statusEl.textContent = '画像を生成中…';
 
@@ -5025,6 +5060,7 @@
     if (base === 'white') shot.classList.add('export-white');
     /* 保存画像だけの並べ替え（難易度表の左右分けなど） */
     if (prepare){ try{ prepare(shot); }catch(e){} }
+    addExportMark(shot);
     shot.style.width = 'max-content';
     holder.appendChild(shot);
     /* 元の表と同じ場所（同じ親の中）に置くので、見た目の指定もそのまま効く */
@@ -7953,6 +7989,19 @@
     var KONST_AS_OF = '2026/11/11時点';
     function konstTitle(cls){
       var h = el(cls === 'page-title' ? 'h2' : 'div', {class: cls});
+      /* 保存画像だけ、定数表の左にいつものロゴ（マーク＋maiプレート）を入れる */
+      if (cls !== 'page-title'){
+        h.classList.add('konst-export-head');
+        var brand = el('span', {class:'konst-brand'});
+        var lm = document.querySelector('#homeLogo svg');
+        if (lm){ var mk = lm.cloneNode(true); mk.setAttribute('class', 'konst-brand-mark'); mk.setAttribute('width', '34'); mk.setAttribute('height', '34'); brand.appendChild(mk); }
+        /* 保存画像（html2canvas）は文字のグラデーションを描けないので、mai は1文字ずつ色を付ける */
+        var bt = el('span', {class:'konst-brand-text'});
+        [['m','#ff55cf'],['a','#ff7fa6'],['i','#ffab66']].forEach(function(c){ bt.appendChild(el('span', {style:{color:c[1]}, text:c[0]})); });
+        bt.appendChild(el('span', {class:'konst-brand-pl', text:'プレート'}));
+        brand.appendChild(bt);
+        h.appendChild(brand);
+      }
       h.appendChild(el('span', {text:'定数表'}));
       h.appendChild(el('span', {class:'konst-asof', text:' ' + KONST_AS_OF}));
       return h;
