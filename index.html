@@ -714,6 +714,9 @@
   /* 保存画像には曲名を入れない（ON のときも）。DX／ST の印も元の位置に戻す */
   .pv-export .song-title, .sync-export .song-title, .count-export .song-title, .todo-export .song-title{display:none !important;}
   .pv-export img.chart-type-mark, .sync-export img.chart-type-mark, .count-export img.chart-type-mark, .todo-export img.chart-type-mark{bottom:4% !important;}
+  /* 定数表だけは、曲名を ON にしていれば保存画像にも入れる */
+  html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) .song-title{display:block !important;}
+  html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 2px) !important;}
   /* ホームの「曲名を表示」 */
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
   .title-toggle-btn .onoff-switch, .onoff-single .onoff-switch{margin-left:6px;}
@@ -1184,11 +1187,17 @@
   .todo-export .todo-grid{display:grid;grid-template-columns:repeat(12, 80px);gap:6px;}
   .todo-export .todo-thumb{width:80px;height:80px;}
   .todo-thumb{width:64px;height:64px;}
+  /* 定数表の Re:MASTER：細いグレー→薄紫のフレーム。外側に1px広げて、中の画像は MASTER と同じ大きさ */
+  .todo-thumb.konst-remas{width:66px;height:66px;margin:-1px;border:0;padding:2px;
+    background:linear-gradient(135deg, #9d9da8 0%, #c4c4cc 35%, #d3c1ff 70%, #b8a3ee 100%);}
+  .todo-thumb.konst-remas > img{border-radius:6px;}
+  .todo-thumb.konst-remas .song-title{left:2px;right:2px;bottom:2px;border-radius:0 0 6px 6px;}
+  .todo-export .todo-thumb.konst-remas{width:82px;height:82px;}
   /* 達成済み（「達成済みを表示」のとき）は薄く */
   .todo-thumb.is-done > img{opacity:.3;filter:grayscale(.7);}
   .todo-thumb.is-done.no-img{opacity:.45;}
   .todo-thumb.is-done .song-title{background:rgba(0,0,0,.5);color:rgba(255,255,255,.75);}
-  @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} }
+  @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} .todo-thumb.konst-remas{width:58px;height:58px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
   .sync-card-preview{max-height:240px;position:relative;}
   .sync-card-preview::after{content:"";position:absolute;left:0;right:0;bottom:0;height:36px;pointer-events:none;
@@ -1391,15 +1400,15 @@
   .sticky-inner .btn-sm{min-height:30px;padding:4px 10px;font-size:12px;}
   /* 未達成楽曲一覧：スマホ幅では1行に収める（戻るを「未達成楽曲」に短く、文字と余白を少し小さく） */
   .sticky-inner .back-short{display:none;}
-  @media (max-width:480px){
+  @media (max-width:620px){
     .sticky-todo .back-full{display:none;}
     .sticky-todo .back-short{display:inline;}
-    .sticky-todo .sticky-inner{gap:4px;padding:6px 6px;}
+    .sticky-todo .sticky-inner{gap:3px;padding:6px 5px;}
     .sticky-todo .sticky-inner .page-back{padding:3px 6px 3px 1px;font-size:11px;min-height:30px;}
     .sticky-todo .sticky-inner .page-back svg{width:14px;height:14px;}
     .sticky-todo .sticky-inner .btn-sm.onoff-btn{padding:4px 6px;font-size:10.5px;}
     .sticky-todo .sticky-inner .onoff-single .onoff-switch{margin-left:3px;}
-    .sticky-todo .sticky-inner .range-btn{padding:4px 5px;gap:3px;font-size:11px;}
+    .sticky-todo .sticky-inner .range-btn{padding:4px 4px;gap:2px;font-size:11px;}
     .sticky-todo .sticky-inner .cut-picker button{font-size:11px;}
   }
 </style>
@@ -6501,6 +6510,8 @@
       renderFramesSection(root);
     } else if (section === 'todo'){
       renderTodoSection(root);
+    } else if (section === 'konst'){
+      renderKonstSection(root);
     } else {
       renderReviewsSection(root);
     }
@@ -7667,14 +7678,24 @@
       return SONG_MASTER_LIST.filter(function(s){ return s.type === 'ST' && !!s.remas && maiSet[s.name]; })
         .map(function(s){ return { s: s, k: s.remasKonst }; });
     }
-    return SONG_MASTER_LIST.map(function(s){ return { s: s, k: s.konst }; });
+    var mas = SONG_MASTER_LIST.map(function(s){ return { s: s, k: s.konst }; });
+    if (kind === 'konst'){
+      /* 定数表：MASTER 全譜面 ＋ Re:MASTER 全譜面（rm＝Re:MASTER の印） */
+      SONG_MASTER_LIST.forEach(function(s){ if (s.remas && s.remasKonst >= 0) mas.push({ s: s, k: s.remasKonst, rm: true }); });
+    }
+    return mas;
   }
+  /* 並び順：定数の高い順 → （定数表は）MASTER の後に Re:MASTER → 追加日の古い順 → ジャンル順 → 曲名順
+     追加日は曲の追加日（MASTER 譜面の追加日）。Re:MASTER も Re:MASTER が増えた日ではなくこの日で並べる。
+     追加日が分からない曲は、その定数のいちばん後ろ */
   function todoCmp(a, b){
     var ka = a.k >= 0 ? a.k : -1, kb = b.k >= 0 ? b.k : -1;
     if (kb !== ka) return kb - ka;
+    var ra = a.rm ? 1 : 0, rb = b.rm ? 1 : 0;
+    if (ra !== rb) return ra - rb;
+    if (a.s.added !== b.s.added) return a.s.added - b.s.added;
     var ga = a.s.genre, gb = b.s.genre;
     if (ga !== gb) return ga - gb;
-    if (a.s.added !== b.s.added) return a.s.added - b.s.added;
     return a.s.name < b.s.name ? -1 : (a.s.name > b.s.name ? 1 : 0);
   }
 
@@ -7792,6 +7813,68 @@
     });
     root.appendChild(card);
     root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+  }
+
+  /* ========================= 定数表 =========================
+     MASTER と Re:MASTER の全譜面を定数ごとに並べる（未達成楽曲一覧と同じ見た目。取り込みは不要） */
+  function renderKonstSection(root){
+    root.appendChild(el('h2', {class:'page-title', text:'定数表'}));
+    var bar = el('div', {class:'detail-actions'});
+    var tStatus = el('span', {class:'save-toast', role:'status'});
+    var cardRef = null;
+    bar.appendChild(makeSaveGroup(function(base, b){
+      if (!cardRef) return;
+      /* 定数表だけは、曲名の表示（ホームの設定）が保存画像にも出る */
+      captureNodePNG(cardRef, '定数表.png', tStatus, b, 'todo-export', base, function(shot){ shot.classList.add('konst-export'); });
+    }));
+    bar.appendChild(tStatus);
+    root.appendChild(bar);
+
+    if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
+    /* 表示する定数の範囲（n〜n）だけ */
+    var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row konst-cut-row'});
+    cutRow.appendChild(makeRangePicker(todoRangeKind('konst')));
+    root.appendChild(cutRow);
+
+    var list = todoCharts('konst').filter(function(x){ return todoKonstShown('konst', x.k); }).sort(todoCmp);
+    if (!list.length){
+      root.appendChild(el('div', {class:'empty-state', text:'表示する定数がありません。上のボタンで表示する定数の範囲を選んでください。'}));
+      return;
+    }
+    /* 両方の譜面がある曲には DX／ST の印を付ける */
+    var types = {};
+    SONG_MASTER_LIST.forEach(function(s){ (types[s.name] = types[s.name] || {})[s.type] = true; });
+
+    var card = el('div', {class:'todo-card-body konst-card-body'});
+    cardRef = card;
+    /* 保存画像にだけ出す見出し */
+    var et = el('div', {class:'export-only-title todo-export-title'});
+    et.appendChild(el('span', {text:'定数表'}));
+    card.appendChild(et);
+    var curKey = null, grid = null;
+    var keyOf = function(y){ return y.k >= 0 ? y.k.toFixed(1) : '?'; };
+    list.forEach(function(x){
+      var key = keyOf(x);
+      if (key !== curKey){
+        curKey = key;
+        var head = el('div', {class:'todo-konst'});
+        head.appendChild(el('span', {class:'todo-konst-num', style:{color: x.k >= 0 ? konstColor(x.k) : 'var(--text-dim)'}, text: key === '?' ? '定数不明' : key}));
+        card.appendChild(head);
+        grid = el('div', {class:'todo-grid'});
+        card.appendChild(grid);
+      }
+      var t = el('div', {class:'pv-thumb todo-thumb' + (x.rm ? ' konst-remas' : ''), title: x.s.name + (x.rm ? '（Re:MASTER）' : '')});
+      t.appendChild(makeSongImg(x.s.name, resolveSongImage(x.s.name), getCachedSongImage(x.s.name), function(){
+        t.classList.add('no-img');
+        t.appendChild(el('div', {class:'placeholder-text', text: x.s.name}));
+      }));
+      addSongTitle(t, x.s.name);
+      if (types[x.s.name] && types[x.s.name].ST && types[x.s.name].DX){
+        t.appendChild(makeChartTypeMark(String(x.s.type).toLowerCase()));
+      }
+      grid.appendChild(t);
+    });
+    root.appendChild(card);
   }
 
   /* ========================= 実績フレーム表（ホームから） =========================
@@ -8111,6 +8194,7 @@
     fill:    svgIcon('<rect x="2.9" y="7.9" width="5.4" height="8.2" fill="#e0463f" stroke="none"/><rect x="8.3" y="7.9" width="4.6" height="8.2" fill="#f2b705" stroke="none"/><rect x="12.9" y="7.9" width="3.8" height="8.2" fill="#3fbf5f" stroke="none"/><rect x="2" y="7" width="20" height="10" rx="2.4" stroke-width="1.8"/>'),
     count:   svgIcon('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8 14h3M8 17h6"/>'),
     todo:    svgIcon('<rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/><circle cx="17.2" cy="16.6" r="0.1" stroke-width="2.6" stroke="#e0463f"/>'),
+    konst:   svgIcon('<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17"/>'),
     frame:   svgIcon('<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18"/><path d="M9.5 4 8 9l4 11 4-11-1.5-5"/><path d="M12 4v5" opacity=".0"/>'),
     pin:     svgIcon('<path d="M9 3.5h6l-1 5 3 3v1.5H7V11.5l3-3z"/><path d="M12 13v7.5"/>'),
     review:  svgIcon('<path d="M12 3.8l2.5 5.1 5.6.8-4.05 3.95.96 5.6L12 16.6l-5.01 2.65.96-5.6L3.9 9.7l5.6-.8z"/>')
@@ -8124,6 +8208,7 @@
     { key:'home',       icon:'home',   label:'ホーム' },
     { key:'plates',     icon:'table',  label:'実績プレート表',       group:'楽曲表' },
     { key:'frames',     icon:'frame',  label:'実績フレーム表',       group:'楽曲表' },
+    { key:'konst',      icon:'konst',  label:'定数表',               group:'楽曲表' },
     { key:'todo',       icon:'todo',   label:'未達成楽曲一覧',       group:'記録・進捗' },
     { key:'fill',       icon:'fill',   label:'下埋め進捗',           group:'記録・進捗' },
     { key:'sync',       icon:'sync',   label:'シンクのお相手記録',   group:'記録・進捗' },
@@ -8332,13 +8417,20 @@
     /* 内容ごとに分けて並べる：楽曲表／記録・進捗／その他 */
     MENU_GROUPS.forEach(function(g){
       var items = MENU_ITEMS.filter(function(it){ return it.group === g; });
+      /* ホームだけ「表の解説」と「レビュー」の位置を入れ替える（メニューの並びはそのまま） */
+      var gi = -1, ri = -1;
+      items.forEach(function(it, i){ if (it.key === 'guide') gi = i; if (it.key === 'reviews') ri = i; });
+      if (gi >= 0 && ri >= 0){ var tmp = items[gi]; items[gi] = items[ri]; items[ri] = tmp; }
       if (!items.length) return;
       wrap.appendChild(el('h3', {class:'home-h', text: g}));
       var grid = el('div', {class:'home-cards'});
       items.forEach(function(it){
         var c = el('button', {class:'home-card', type:'button', onclick: function(){ runMenuItem(it.key); }});
         c.appendChild(iconNode(it.icon, 'home-card-icon'));
-        c.appendChild(el('span', {class:'home-card-label', text: it.label}));
+        var lb = el('span', {class:'home-card-label', text: it.label});
+        /* ホームのカードだけ、2行目を足す（未達成楽曲一覧 → 改行して「定数表」） */
+        if (it.homeLine2){ lb.appendChild(el('br')); lb.appendChild(document.createTextNode(it.homeLine2)); }
+        c.appendChild(lb);
         grid.appendChild(c);
       });
       wrap.appendChild(grid);
@@ -8381,6 +8473,7 @@
     if (section === 'sync') return (syncView === 'detail' && syncId) ? '#/sync/' + encodeURIComponent(syncId) : '#/sync';
     if (section === 'frames') return framesId ? '#/frames/' + encodeURIComponent(framesId) : '#/frames';
     if (section === 'todo') return todoKind ? '#/todo/' + todoKind : '#/todo';
+    if (section === 'konst') return '#/konst';
     if (section === 'guide') return '#/guide';
     if (section === 'import') return '#/import';
     if (section === 'reviews') return '#/review';
@@ -8418,6 +8511,7 @@
     else if (section === 'fill' && fillView === 'detail'){ bar = root.querySelector('.fill-actions'); generic = true; skipSel = '.save-group, .save-toast'; }
     else if (section === 'fill'){ bar = root.querySelector('.fill-sum-bar'); generic = true; }
     else if (section === 'todo' && todoKind){ bar = root.querySelector('.todo-cut-row'); generic = true; }
+    else if (section === 'konst'){ bar = root.querySelector('.konst-cut-row'); generic = true; }
     else if (section === 'count' && countView !== 'detail'){ bar = root.querySelector('.count-cut-row'); generic = true; }
     else if (section === 'count' && countView === 'detail'){ bar = root.querySelector('.count-cut-row'); generic = true; }
     /* それ以外のページは「＜ 戻る場所」だけを上に残す */
@@ -8577,6 +8671,8 @@
       section = 'todo'; todoKind = m[1];
     } else if (hs === '#/todo'){
       section = 'todo'; todoKind = null;
+    } else if (hs === '#/konst'){
+      section = 'konst';
     } else if (hs === '#/guide'){
       section = 'guide';
     } else if (hs === '#/import'){
