@@ -710,7 +710,7 @@
   .sync-thumb img.chart-type-mark,
   .bulk-thumb img.chart-type-mark,
   img.chart-type-mark{
-    position:absolute;right:3%;bottom:4%;
+    position:absolute;right:1%;bottom:2%;
     width:52%;height:auto;
     display:block;pointer-events:none;}
   /* 小さいサムネイルでは少しだけ大きめに出す */
@@ -731,13 +731,13 @@
   .no-img .song-title, html.hide-song-titles .song-title{display:none;}
   /* 曲名の帯があるときは、DX／ST の印を帯の上にずらす */
   html:not(.hide-song-titles) .pv-thumb:not(.no-img) img.chart-type-mark,
-  html:not(.hide-song-titles) .sync-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 2px);}
+  html:not(.hide-song-titles) .sync-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 1px);}
   /* 保存画像には曲名を入れない（ON のときも）。DX／ST の印も元の位置に戻す */
   .pv-export .song-title, .sync-export .song-title, .count-export .song-title, .todo-export .song-title{display:none !important;}
-  .pv-export img.chart-type-mark, .sync-export img.chart-type-mark, .count-export img.chart-type-mark, .todo-export img.chart-type-mark{bottom:4% !important;}
+  .pv-export img.chart-type-mark, .sync-export img.chart-type-mark, .count-export img.chart-type-mark, .todo-export img.chart-type-mark{bottom:2% !important;}
   /* 定数表だけは、曲名を ON にしていれば保存画像にも入れる */
   html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) .song-title{display:block !important;}
-  html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 2px) !important;}
+  html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) img.chart-type-mark{bottom:calc(var(--tt-h) + 1px) !important;}
   /* ホームの「曲名を表示」 */
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
   .title-toggle-btn .onoff-switch, .onoff-single .onoff-switch{margin-left:6px;}
