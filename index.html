@@ -154,6 +154,11 @@
   .submission-card .vc-title{font-weight:700;font-size:14px;margin-bottom:6px;}
   .submission-card .vc-meta{font-size:11.5px;color:var(--text-dim);margin-bottom:10px;}
   .star-row{display:flex;gap:2px;font-size:20px;color:var(--warn);letter-spacing:2px;}
+  .review-name-field{display:flex;align-items:center;gap:10px;margin:0 0 10px;}
+  .review-name-label{font-size:13px;font-weight:700;color:var(--text);flex:none;}
+  .review-name-input{flex:1;min-width:0;max-width:260px;background:var(--panel);border:1px solid var(--border-strong);color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;}
+  .review-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+  .my-reviews-title{font-size:15px;font-weight:800;margin:22px 0 4px;}
   button.star-btn{background:none;border:none;font-size:22px;color:var(--warn);padding:0 2px;line-height:1;}
 
   .btn{border:1px solid var(--border-ctl);background:var(--panel);color:var(--text);border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
@@ -761,7 +766,14 @@
   .menu-item-label{font-weight:700;font-size:14.5px;line-height:1.35;}
   .menu-item-desc{font-size:11.5px;color:var(--text-dim);line-height:1.45;margin-top:1px;}
   /* ---- ホーム ---- */
-  .home{max-width:880px;margin:0 auto;}
+  .home{max-width:880px;margin:0 auto;position:relative;}
+  /* ホームの右上の「評価:★★★★★」（ヒーローの上の余白に置くので、下の並びは動かない） */
+  .home-rate{position:absolute;right:0;top:-17px;display:flex;align-items:center;gap:0;opacity:.55;transition:opacity .15s;}
+  .home-rate:hover, .home-rate:focus-within, .home-rate.is-picked{opacity:.9;}
+  .home-rate button{background:none;border:0;padding:0 1px;margin:0;line-height:1;cursor:pointer;font-family:inherit;}
+  .home-rate-label{font-size:11.5px;font-weight:700;color:var(--text-dim);margin-right:2px !important;}
+  .home-rate-star{font-size:13px;color:var(--warn);}
+  .rv-note-star{color:var(--warn);}
   .home-hero{text-align:center;padding:clamp(18px,5vw,40px) 8px clamp(22px,5vw,36px);
     border:1px solid var(--border);border-radius:18px;margin-bottom:26px;
     background:radial-gradient(560px 260px at 50% -60px, rgba(63,208,255,.20), transparent 72%), radial-gradient(420px 200px at 100% 120%, rgba(255,79,216,.07), transparent 70%), var(--panel);box-shadow:var(--shadow-sm);}
@@ -1864,6 +1876,23 @@
     var actions = el('div', {class:'modal-actions'});
     actions.appendChild(el('button', {class:'btn btn-ghost', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
     actions.appendChild(el('button', {class:'btn btn-danger', text:'実行する', onclick: function(){ closeModal(backdrop); onConfirm(); }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+  }
+
+  /* 未達成楽曲一覧・定数表：350譜面以上を画像保存するときは、先に確かめる */
+  var BIG_SAVE_COUNT = 350;
+  function confirmBigSave(card, proceed){
+    var n = card ? card.querySelectorAll('.todo-thumb').length : 0;
+    if (n < BIG_SAVE_COUNT){ proceed(); return; }
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box'});
+    box.appendChild(el('p', {style:{whiteSpace:'pre-line'}, text:'楽曲数が多いので保存に数分かかる場合はあります。\nご了承の上そのままお待ち下さい。'}));
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
+    actions.appendChild(el('button', {class:'btn btn-primary', text:'保存する', onclick: function(){ closeModal(backdrop); proceed(); }}));
     box.appendChild(actions);
     backdrop.appendChild(box);
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
@@ -3178,20 +3207,37 @@
     });
   }
 
-  function submitReview(message, rating, onDone){
+  /* 自分が送ったレビューの控え（この端末だけに保存。送ったレビューはサーバーから読めないため） */
+  var MY_REVIEWS_KEY = 'mmplate_my_reviews_v1';
+  function loadMyReviews(){
+    try{ var a = JSON.parse(localStorage.getItem(MY_REVIEWS_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; }
+  }
+  function saveMyReview(rev){
+    var a = loadMyReviews();
+    a.unshift(rev);
+    if (a.length > 100) a.length = 100;
+    try{ localStorage.setItem(MY_REVIEWS_KEY, JSON.stringify(a)); }catch(e){}
+  }
+  function submitReview(message, rating, name, onDone){
     if (!syncState.connected || !syncState.db){
       onDone(new Error('同期が設定されていないため送信できません。'));
       return;
     }
-    if (!message || !message.trim()){
-      onDone(new Error('内容を入力してください。'));
+    /* 星だけでも送れる（星も内容もないときだけ止める） */
+    if ((!message || !message.trim()) && !(rating > 0)){
+      onDone(new Error('星を選ぶか、内容を入力してください。'));
       return;
     }
-    syncState.db.collection(REVIEWS_COL).add({
+    message = message || '';
+    var doc = {
+      /* ネーム（空なら「匿名さん」） */
+      name: (String(name || '').trim() || '匿名さん').slice(0, 30),
       message: message.trim(),
       rating: rating || 0,
       submittedAt: Date.now()
-    }).then(function(){
+    };
+    syncState.db.collection(REVIEWS_COL).add(doc).then(function(){
+      saveMyReview(doc);
       onDone(null);
     }).catch(function(e){
       onDone(e);
@@ -6051,6 +6097,8 @@
       }
       allReviews.forEach(function(rev){
         var card = el('div', {class:'submission-card'});
+        /* ネーム（前に届いたネームなしのレビューは「匿名さん」） */
+        card.appendChild(el('div', {class:'review-name', text: (rev.name && String(rev.name).trim()) || '匿名さん'}));
         var stars = Math.max(0, Math.min(5, Math.round(Number(rev.rating) || 0)));
         if (stars){
           card.appendChild(el('div', {class:'star-row', text: '★'.repeat(stars) + '☆'.repeat(5 - stars)}));
@@ -6075,14 +6123,27 @@
 
     var card2 = el('div', {class:'card'});
     card2.appendChild(el('h2', {text:'このツールへの感想・要望を送る'}));
-    card2.appendChild(el('div', {class:'note', style:{marginBottom:'10px'}, text:'開発者だけが読むことができます。'}));
+    card2.appendChild(el('div', {class:'note', text:'開発者だけが読むことができます。'}));
+    var starOnly = el('div', {class:'note', style:{marginBottom:'10px'}});
+    starOnly.appendChild(el('span', {class:'rv-note-star', text:'★'}));
+    starOnly.appendChild(document.createTextNode('のみでも送ることができます。'));
+    card2.appendChild(starOnly);
 
-    var selectedRating = 0;
+    /* ネーム（初めから「匿名さん」と入っている） */
+    var nameField = el('div', {class:'review-name-field'});
+    nameField.appendChild(el('label', {class:'review-name-label', for:'reviewNameInput', text:'ネーム'}));
+    var nameInput = el('input', {type:'text', id:'reviewNameInput', class:'review-name-input', maxlength:'30', autocomplete:'nickname'});
+    nameInput.value = '匿名さん';
+    nameField.appendChild(nameInput);
+    card2.appendChild(nameField);
+
+    var selectedRating = pendingReviewRating || 0;
+    pendingReviewRating = 0;
     var starRow = el('div', {class:'star-row'});
     var starButtons = [];
     for (var i = 1; i <= 5; i++){
       (function(n){
-        var b = el('button', {class:'star-btn', text:'☆', title: n + '点'});
+        var b = el('button', {class:'star-btn', text: n <= selectedRating ? '★' : '☆', title: n + '点'});
         b.addEventListener('click', function(){
           selectedRating = n;
           starButtons.forEach(function(sb, idx){ sb.textContent = (idx < n) ? '★' : '☆'; });
@@ -6099,17 +6160,37 @@
     var sendBtn = el('button', {class:'btn btn-primary', style:{marginTop:'10px'}, text:'送信する'});
     sendBtn.addEventListener('click', function(){
       sendBtn.disabled = true;
-      submitReview(msgArea.value, selectedRating, function(err){
+      submitReview(msgArea.value, selectedRating, nameInput.value, function(err){
         sendBtn.disabled = false;
         if (err){ showAlert('送信に失敗しました: ' + err.message); return; }
         msgArea.value = '';
         selectedRating = 0;
         starButtons.forEach(function(sb){ sb.textContent = '☆'; });
+        var keepName = nameInput.value;
+        renderApp();
+        var ni = document.getElementById('reviewNameInput');
+        if (ni) ni.value = keepName;
         showAlert('送信しました。ありがとうございます！');
       });
     });
     card2.appendChild(sendBtn);
     root.appendChild(card2);
+
+    /* 過去に送ったレビュー（この端末から送った分。新しい順） */
+    var mine = loadMyReviews();
+    if (mine.length){
+      root.appendChild(el('h3', {class:'my-reviews-title', text:'過去に送ったレビュー（' + mine.length + '件）'}));
+      root.appendChild(el('div', {class:'note', style:{marginBottom:'10px'}, text:'この端末から送ったレビューが表示されます（ほかの人には見えません）。'}));
+      mine.forEach(function(rev){
+        var c = el('div', {class:'submission-card'});
+        c.appendChild(el('div', {class:'review-name', text: (rev.name && String(rev.name).trim()) || '匿名さん'}));
+        var st = Math.max(0, Math.min(5, Math.round(Number(rev.rating) || 0)));
+        if (st) c.appendChild(el('div', {class:'star-row', text: '★'.repeat(st) + '☆'.repeat(5 - st)}));
+        c.appendChild(el('div', {style:{fontSize:'13px', margin:'6px 0', whiteSpace:'pre-wrap'}, text: rev.message || ''}));
+        c.appendChild(el('div', {class:'vc-meta', text: fmtDate(rev.submittedAt)}));
+        root.appendChild(c);
+      });
+    }
   }
 
   /* ========================= app root render ========================= */
@@ -7740,7 +7821,7 @@
     bar.appendChild(makeSaveGroup(function(base, b){
       if (!cardRef) return;
       var nm = K.label.replace(/[\\/:*?"<>|・]/g, '') + '_' + todoMode + '未達成.png';
-      captureNodePNG(cardRef, nm, tStatus, b, 'todo-export', base);
+      confirmBigSave(cardRef, function(){ captureNodePNG(cardRef, nm, tStatus, b, 'todo-export', base); });
     }));
     bar.appendChild(tStatus);
     root.appendChild(bar);
@@ -7845,7 +7926,9 @@
     bar.appendChild(makeSaveGroup(function(base, b){
       if (!cardRef) return;
       /* 定数表だけは、曲名の表示（ホームの設定）が保存画像にも出る */
-      captureNodePNG(cardRef, '定数表.png', tStatus, b, 'todo-export', base, function(shot){ shot.classList.add('konst-export'); });
+      confirmBigSave(cardRef, function(){
+        captureNodePNG(cardRef, '定数表.png', tStatus, b, 'todo-export', base, function(shot){ shot.classList.add('konst-export'); });
+      });
     }));
     bar.appendChild(tStatus);
     root.appendChild(bar);
@@ -8386,8 +8469,29 @@
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', metaColor);
   }
+  /* ホームの「評価:★★★★★」から開いたときに、押した星の数をレビューに入れておく */
+  var pendingReviewRating = 0;
   function renderHome(root){
     var wrap = el('div', {class:'home'});
+    /* 右上（メニューの下あたり）に薄く「評価:★★★★★」。押すとレビュー画面へ */
+    var rate = el('div', {class:'home-rate', role:'group', 'aria-label':'このツールを評価する'});
+    rate.appendChild(el('button', {type:'button', class:'home-rate-label', text:'評価:', onclick: function(){ pendingReviewRating = 0; goSection('reviews'); }}));
+    /* 初めは枠だけの☆。押すとそこまで★で埋まり、少し見せてからレビュー画面へ */
+    var rateStars = [], rateGoing = false;
+    for (var hs = 1; hs <= 5; hs++){
+      (function(n){
+        var sb = el('button', {type:'button', class:'home-rate-star', text:'☆', title: n + '点', 'aria-label': n + '点で評価する', onclick: function(){
+          if (rateGoing) return;
+          rateGoing = true;
+          rateStars.forEach(function(x, i){ x.textContent = i < n ? '★' : '☆'; });
+          rate.classList.add('is-picked');
+          setTimeout(function(){ pendingReviewRating = n; goSection('reviews'); }, 450);
+        }});
+        rateStars.push(sb);
+        rate.appendChild(sb);
+      })(hs);
+    }
+    wrap.appendChild(rate);
 
     var hero = el('section', {class:'home-hero'});
     var mark = document.getElementById('homeLogo');
