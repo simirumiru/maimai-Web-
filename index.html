@@ -751,10 +751,21 @@
   .tour-layer{position:fixed;inset:0;z-index:1200;}
   .tour-hole{position:fixed;border-radius:20px;box-shadow:0 0 0 9999px rgba(10,18,28,.62), 0 0 0 3px var(--accent), 0 0 18px 4px var(--accent-line);transition:left .3s, top .3s, width .3s, height .3s;pointer-events:none;}
   .tour-tip{position:fixed;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:16px;padding:14px 16px 12px;box-shadow:var(--shadow-md);transition:top .3s, left .3s;}
-  .tour-step{font-size:11.5px;font-weight:800;color:var(--accent);letter-spacing:.04em;}
+  .tour-head{display:flex;align-items:center;gap:8px;}
+  .tour-sec{font-size:12px;font-weight:800;color:var(--accent);}
+  .tour-step{font-size:11.5px;font-weight:700;color:var(--text-dim);margin-left:auto;}
+  .tour-dots{display:flex;gap:4px;margin:6px 0 2px;}
+  .tour-dots i{flex:1;height:3px;border-radius:2px;background:var(--border);}
+  .tour-dots i.is-done{background:var(--accent-line);}
+  .tour-dots i.is-on{background:var(--accent);}
+  .tour-layer.no-target{background:rgba(10,18,28,.62);}
+  /* 画面を切り替えている間：暗いまま待つ（吹き出しは押せないようにする） */
+  .tour-layer.is-moving{background:rgba(10,18,28,.62);}
+  .tour-layer.is-moving .tour-tip{opacity:0;pointer-events:none;}
+  .tour-layer.is-moving .tour-hole{opacity:0;}
   .tour-title{font-size:16px;font-weight:800;margin:2px 0 6px;}
   .tour-text{font-size:13.5px;line-height:1.7;}
-  .tour-actions{display:flex;align-items:center;gap:8px;margin-top:12px;}
+  .tour-actions{display:flex;align-items:center;gap:6px 10px;margin-top:12px;flex-wrap:wrap;}
   .tour-spacer{flex:1;}
   .tour-skip{background:none;border:0;color:var(--text-dim);font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:4px 2px;}
   /* ---- 曲の詳細（オーバーレイ） ---- */
@@ -792,6 +803,10 @@
   .sd-note b{font-size:15px;}
   .sd-note.is-total{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:10px;}
   .sd-note.is-total b{font-size:18px;}
+  .sd-error{margin:10px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(220,60,60,.45);background:rgba(220,60,60,.08);font-size:12.5px;line-height:1.55;}
+  .sd-error[hidden]{display:none;}
+  .sd-error-msg{font-weight:700;}
+  .sd-error-why{color:var(--text-dim);margin:2px 0 8px;word-break:break-all;}
   .sd-credit{font-size:10.5px;color:var(--text-dim);margin-top:12px;text-align:right;}
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
   .title-toggle-btn .onoff-switch, .onoff-single .onoff-switch{margin-left:6px;}
@@ -1850,13 +1865,36 @@
      バージョン・定数・ノーツ数・BPM・譜面作者・作曲者を出す。
      定数とバージョンは songs.json、ノーツ数・BPM・譜面作者・作曲者は songinfo.json（DXRating のデータ）から */
   var SONG_INFO = null, songInfoLoading = null;
+  /* 1回分の読み込み。12秒で打ち切り、失敗の理由（HTTPの番号・形式の誤りなど）を文にして返す */
+  function fetchSongInfoOnce(url){
+    return new Promise(function(resolve, reject){
+      var done = false;
+      var timer = setTimeout(function(){ if (!done){ done = true; reject(new Error('時間切れ（12秒たっても届きませんでした）')); } }, 12000);
+      fetch(url, { cache: 'no-cache' }).then(function(r){
+        if (!r.ok) throw new Error('サーバーの応答 ' + r.status + (r.status === 404 ? '（songinfo.json が見つかりません）' : ''));
+        return r.text();
+      }).then(function(t){
+        var j;
+        try{ j = JSON.parse(t); }catch(e){
+          throw new Error('データの形式が読み取れません（先頭：' + String(t || '').slice(0, 24).replace(/\s+/g, ' ') + '）');
+        }
+        if (!j || typeof j !== 'object') throw new Error('データが空です');
+        return j;
+      }).then(function(j){
+        if (done) return; done = true; clearTimeout(timer); resolve(j);
+      }, function(e){
+        if (done) return; done = true; clearTimeout(timer);
+        reject(e && e.message ? e : new Error('通信できませんでした'));
+      });
+    });
+  }
   function loadSongInfo(){
     if (SONG_INFO) return Promise.resolve(SONG_INFO);
     if (!songInfoLoading){
-      songInfoLoading = fetch('songinfo.json').then(function(r){
-        if (!r.ok) throw new Error('songinfo.json が見つかりません');
-        return r.json();
-      }).then(function(j){ SONG_INFO = j || {}; return SONG_INFO; })
+      /* うまくいかなければ、キャッシュを使わない URL でもう1回だけ試す */
+      songInfoLoading = fetchSongInfoOnce('songinfo.json').catch(function(){
+        return fetchSongInfoOnce('songinfo.json?r=' + Date.now());
+      }).then(function(j){ SONG_INFO = j; return SONG_INFO; })
         .catch(function(e){ songInfoLoading = null; throw e; });
     }
     return songInfoLoading;
@@ -1913,9 +1951,15 @@
       });
       box.appendChild(tabs);
     }
+    /* 読み込みに失敗したときの知らせ（理由と「もう一度読み込む」） */
+    var errBox = el('div', {class:'sd-error', hidden:true});
+    box.appendChild(errBox);
     var body = el('div', {class:'sd-body'});
     box.appendChild(body);
     box.appendChild(el('div', {class:'sd-credit', text:'ノーツ数・BPM・譜面作者・作曲者のデータ: DXRating (dxrating.net)'}));
+    /* 'loading' 読み込み中 / 'ok' 読めた / 'error' 読めなかった */
+    var loadState = SONG_INFO ? 'ok' : 'loading';
+    function ph(){ return loadState === 'loading' ? '読み込み中…' : ''; }
 
     function row(dl, label, value){
       dl.appendChild(el('dt', {text: label}));
@@ -1936,7 +1980,7 @@
       h.appendChild(kc);
       b.appendChild(h);
       var dl = el('dl', {class:'sd-dl'});
-      row(dl, '譜面作者', si ? si.d : (info ? '' : '読み込み中…'));
+      row(dl, '譜面作者', si ? si.d : (info ? '' : ph()));
       b.appendChild(dl);
       /* ノーツ数：TOTAL と、TAP・HOLD・SLIDE・（でらっくすのみ TOUCH）・BREAK */
       var n = si && si.n ? si.n : null;
@@ -1963,13 +2007,13 @@
       var m = entries.filter(function(x){ return x.type === cur; })[0] ||
               { name: name, type: cur, level: '', remas: '', konst: -1, remasKonst: -1, ver: '' };
       var info = SONG_INFO ? (SONG_INFO[name + '|' + cur] || {}) : null;
-      artistEl.textContent = '作曲者：' + (info ? (info.a || '—') : '読み込み中…');
+      artistEl.textContent = '作曲者：' + (info ? (info.a || '—') : (ph() || '—'));
       body.textContent = '';
       var dl = el('dl', {class:'sd-dl sd-meta'});
       row(dl, '譜面', cur === 'DX' ? 'でらっくす譜面' : (cur === 'ST' ? 'スタンダード譜面' : ''));
       row(dl, 'バージョン', m.ver);
-      row(dl, 'ジャンル', info ? info.cat : '読み込み中…');
-      row(dl, 'BPM', info ? (info.b ? String(Math.round(info.b * 100) / 100) : '') : '読み込み中…');
+      row(dl, 'ジャンル', info ? info.cat : ph());
+      row(dl, 'BPM', info ? (info.b ? String(Math.round(info.b * 100) / 100) : '') : ph());
       body.appendChild(dl);
       var kinds = ['mas'];
       if (m.remas || m.remasKonst >= 0) kinds.push('rem');
@@ -1979,12 +2023,25 @@
     paint();
     backdrop.appendChild(box);
     document.body.appendChild(backdrop);
-    loadSongInfo().then(function(){ if (backdrop.isConnected) paint(); }).catch(function(){
-      if (!backdrop.isConnected) return;
-      SONG_INFO = SONG_INFO || null;
-      artistEl.textContent = '作曲者：—';
-      body.appendChild(el('div', {class:'note', text:'ノーツ数などの詳しいデータを読み込めませんでした。'}));
-    });
+    function load(){
+      loadState = SONG_INFO ? 'ok' : 'loading';
+      errBox.hidden = true;
+      paint();
+      if (SONG_INFO) return;
+      loadSongInfo().then(function(){
+        if (!backdrop.isConnected) return;
+        loadState = 'ok'; paint();
+      }).catch(function(e){
+        if (!backdrop.isConnected) return;
+        loadState = 'error'; paint();
+        errBox.textContent = '';
+        errBox.appendChild(el('div', {class:'sd-error-msg', text:'ノーツ数・BPM・譜面作者・作曲者のデータを読み込めませんでした。'}));
+        errBox.appendChild(el('div', {class:'sd-error-why', text:'理由：' + ((e && e.message) || '不明')}));
+        errBox.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'もう一度読み込む', onclick: load}));
+        errBox.hidden = false;
+      });
+    }
+    load();
   }
   /* ジャケットを押したら詳細。longPress のときは長押し（タップは赤線のまま） */
   function attachSongDetail(thumb, name, type, focus, longPress){
@@ -6489,7 +6546,7 @@
 
     var selectedRating = pendingReviewRating || 0;
     pendingReviewRating = 0;
-    var starRow = el('div', {class:'star-row'});
+    var starRow = el('div', {class:'star-row review-stars'});
     var starButtons = [];
     for (var i = 1; i <= 5; i++){
       (function(n){
@@ -6504,10 +6561,10 @@
     }
     card2.appendChild(starRow);
 
-    var msgArea = el('textarea', {placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
+    var msgArea = el('textarea', {class:'review-msg', placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
     card2.appendChild(msgArea);
 
-    var sendBtn = el('button', {class:'btn btn-primary', style:{marginTop:'10px'}, text:'送信する'});
+    var sendBtn = el('button', {class:'btn btn-primary review-send', style:{marginTop:'10px'}, text:'送信する'});
     sendBtn.addEventListener('click', function(){
       sendBtn.disabled = true;
       submitReview(msgArea.value, selectedRating, nameInput.value, function(err){
@@ -8147,7 +8204,7 @@
     if (todoKind && TODO_KINDS[todoKind]){ renderTodoDetail(root, todoKind); return; }
     todoKind = null;
     root.appendChild(el('h2', {class:'page-title', text:'未達成楽曲一覧'}));
-    var grid = el('div', {class:'versions-grid simple-grid'});
+    var grid = el('div', {class:'versions-grid simple-grid todo-kinds'});
     ['master', 'mai'].forEach(function(kind){
       var col = kind === 'mai' ? todoMaiColor() : TODO_KINDS[kind].color;
       var card = el('button', {type:'button', class:'version-card simple-card todo-card', onclick: function(){ goTodo(kind); }});
@@ -8676,17 +8733,95 @@
   }
   /* ========== 使い方ガイド（初めて来た人に一度だけ案内。メニューの「使い方ガイド」からいつでも見られる） ========== */
   var TOUR_KEY = 'mmplate_tour_done_v1';
+  /* 各機能を実際に開いて、操作の場所を1つずつ照らしながら説明する。
+     sel が見つからないとき（記録がまだ無い等）は alt を、それも無ければ画面のまん中に説明だけ出す */
+  function tourWaitFor(test, ms){
+    return new Promise(function(resolve){
+      var t0 = Date.now();
+      (function tick(){
+        var r = test();
+        if (r || Date.now() - t0 > (ms || 2500)){ resolve(r); return; }
+        setTimeout(tick, 80);
+      })();
+    });
+  }
+  function tourRoute(hash){
+    if (location.hash !== hash) location.hash = hash;
+    return tourWaitFor(function(){ return currentRouteHash() === hash || location.hash === hash; }, 1500).then(function(){ return tourWaitFor(function(){ return false; }, 250); });
+  }
+  /* 一覧の先頭のバージョンを開く（プレート表・下埋め進捗） */
+  function tourOpenFirst(listHash, isOpen){
+    if (isOpen()) return Promise.resolve();
+    return tourRoute(listHash).then(function(){
+      return tourWaitFor(function(){ return document.querySelector('#app .versions-grid .version-card, #app .version-card'); }, 2500);
+    }).then(function(card){
+      if (card) card.click();
+      return tourWaitFor(function(){ return isOpen(); }, 1500);
+    }).then(function(){ return tourWaitFor(function(){ return false; }, 250); });
+  }
+  function tourPlateDetail(){ return tourOpenFirst('#/plates', function(){ return section === 'plates' && view === 'detail'; }); }
+  function tourFillDetail(){ return tourOpenFirst('#/fill', function(){ return section === 'fill' && fillView === 'detail'; }); }
+  var TOUR_SECTIONS = ['実績プレート表', '未達成楽曲一覧', '下埋め進捗', 'maimai NET 取り込み', 'レビュー'];
   var TOUR_STEPS = [
-    { key:'plates', title:'実績プレート表',
-      text:'バージョンごとの収録曲と、極・将・神・舞舞の対象曲を一覧で見られます。表を開いて極〜舞を選ぶと、ジャケットのタップで赤線（達成の印）を付けて進み具合を記録できます。ジャケットを長押しすると曲の詳細も見られます。' },
-    { key:'todo', title:'未達成楽曲一覧',
-      text:'maimai NET から記録を取り込むと、FC・SSS・AP などの条件ごとに、まだ達成していない譜面を定数順に一覧できます。「達成済みを表示」を ON にすると、達成済みの譜面も一緒に確認できます。' },
-    { key:'fill', title:'下埋め進捗',
-      text:'取り込んだ記録から、プレートのための下埋めがどこまで進んでいるかを、バージョンごとに確認できます。いくつかのバージョンを選んで合計を見ることもできます。' },
-    { key:'import', title:'maimai NET 取り込み',
-      text:'maimai でらっくす NET のスコアをこのサイトに取り込みます。最初にブックマークを登録しておけば、maimai NET の画面でそれを押すだけで、未達成楽曲一覧や下埋め進捗に反映されます（1分半〜2分ほどかかります）。' },
-    { key:'reviews', title:'レビュー',
-      text:'感想や「こんな機能がほしい」はここから送れます。星だけでも送れて、読むのは開発者だけです。いただいた声をもとに機能を増やしています！' }
+    /* ---- 実績プレート表 ---- */
+    { sec:0, go:function(){ return tourRoute('#/plates'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'バージョンごとの実績プレート表の一覧です。見たいバージョンを押すと、その表が大きく開きます。' },
+    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'記録するプレートを選ぶ',
+      text:'ここで極・将・神・舞のどれを記録するかを選びます。プレートごとに別々に記録できます。' },
+    { sec:0, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'赤線を付ける・曲の詳細を見る',
+      text:'プレートを選んでいるときは、ジャケットをタップすると赤線（達成の印）が付き、もう一度タップで外れます。長押しすると、その曲の定数・ノーツ数・BPM などの詳細が出ます（プレートが未選択のときはタップで詳細）。' },
+    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .hide-marked-btn', title:'達成済みを表示',
+      text:'OFF にすると、赤線を付けた曲が表から消えて、残っている曲だけを見られます。' },
+    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'難易度の範囲',
+      text:'表に出す難易度の範囲（例：15〜13+）を、スクロールで選べます。' },
+    { sec:0, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
+      text:'背景の黒・白を選んで、表を画像で保存できます。SNS に載せるのにも使えます。' },
+    /* ---- 未達成楽曲一覧 ---- */
+    { sec:1, go:function(){ return tourRoute('#/todo'); }, sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
+      text:'MASTER の全譜面か、舞・覇者（Re:MASTER）のどちらを見るかを選びます。' },
+    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
+      text:'FC・SSS・AP・AP+・FDX・FDX+ から条件を選ぶと、その条件をまだ達成していない譜面が定数の高い順に並びます。' },
+    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .range-picker', title:'定数の範囲',
+      text:'表示する定数の範囲（例：15.0〜14.0）を選べます。' },
+    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
+      text:'ON にすると達成済みの譜面も薄く表示されて、定数表のようにも使えます。' },
+    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-card-body .todo-thumb', title:'曲の詳細',
+      text:'ジャケットを押すと、その曲の定数・ノーツ数・譜面作者などの詳細が見られます。画像保存もできます。',
+      alt:{ sel:'#app .fill-import-btn', text:'この一覧は、maimai NET から記録を取り込むと表示されます。取り込み方はこのあと説明します。' } },
+    /* ---- 下埋め進捗 ---- */
+    { sec:2, go:function(){ return tourRoute('#/fill'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'バージョンを押すと、そのバージョンのプレートに必要な BASIC〜EXPERT の譜面（下埋め）が、どれだけ残っているかを見られます。' },
+    { sec:2, go:function(){ return tourRoute('#/fill'); }, sel:'#app .fill-sum-bar .btn', title:'合計を見る',
+      text:'ここを押してからいくつかのバージョンを選ぶと、選んだバージョンをまとめた合計の残りを見られます。' },
+    { sec:2, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
+      text:'極・将・神・舞のどのプレートの下埋めを見るかを選びます。' },
+    { sec:2, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'残りの見方',
+      text:'帯の赤・黄・緑が EXPERT・ADVANCED・BASIC の残り、白が達成済みです。右の数字が進み具合（%）です。',
+      alt:{ sel:'#app .fill-import-btn', text:'maimai NET から記録を取り込むと、ここに残りが帯で表示されます。赤・黄・緑が EXPERT・ADVANCED・BASIC の残り、白が達成済みです。取り込み方はこのあと説明します。' } },
+    { sec:2, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true,
+      need:function(){ var r = netRecordIndex(); return !!(r && r.hasLower); }, title:'残りの譜面・時間・料金',
+      text:'残りの譜面数と、それをプレイするのにかかる時間・料金（1人／2人）の目安です。' },
+    /* ---- maimai NET 取り込み ---- */
+    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
+      text:'まず、このボタンで取り込み用のコードをコピーします。' },
+    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(2)', title:'② ブックマークを作る',
+      text:'ブラウザでブックマークを1つ作り、その URL をコピーしたコードに書き換えて保存します。最初の1回だけの準備です。' },
+    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(3)', title:'③ maimai NET で開く',
+      text:'maimai でらっくす NET にログインして、そのブックマークを開きます。スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押してください（1分半〜2分ほどかかります）。' },
+    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .import-caution', title:'スコアを更新したら',
+      text:'取り込んだ記録は自動では更新されません。プレイしてスコアが変わったら、もう一度ブックマークを開いて取り込んでください。' },
+    /* ---- レビュー ---- */
+    { sec:4, go:function(){ return tourRoute('#/review'); }, sel:'#app .review-name-field', title:'ネーム',
+      text:'最初は「匿名さん」と入っています。好きな名前に変えても大丈夫です。' },
+    { sec:4, go:function(){ return tourRoute('#/review'); }, sel:'#app .review-stars', title:'星で評価',
+      text:'星をタップして評価します。星だけでも送れます。' },
+    { sec:4, go:function(){ return tourRoute('#/review'); }, sel:'#app .review-msg', title:'感想・要望',
+      text:'使ってみた感想や「こんな機能がほしい」を自由に書いてください。読むのは開発者だけです。' },
+    { sec:4, go:function(){ return tourRoute('#/review'); }, sel:'#app .review-send', title:'送信',
+      text:'「送信する」で開発者に届きます。送ったあとは、この下に「過去に送ったレビュー」が出て、いつでも見返せます。' },
+    /* ---- おわり ---- */
+    { sec:-1, go:function(){ return tourRoute('#/'); }, sel:null, title:'これで説明はおしまいです',
+      text:'あとからメニューの「使い方ガイド」でいつでも見直せます。さっそく使ってみてください！' }
   ];
   function isFirstVisit(){
     if (!storageOK) return false;
@@ -8712,14 +8847,11 @@
     backdrop.appendChild(box);
     document.body.appendChild(backdrop);
   }
-  /* ホームのカードを1つずつ明るく照らして説明する */
-  function startTour(){
-    if (section !== 'home'){ goSection('home'); }
-    setTimeout(function(){ runTour(0); }, 80);
-  }
-  var tourLayer = null;
-  function endTour(){
+  function startTour(){ runTour(0); }
+  var tourLayer = null, tourRun = 0;
+  function endTour(goHome){
     markTourDone();
+    tourRun++;
     if (tourLayer){
       window.removeEventListener('resize', tourLayer.__place);
       window.removeEventListener('scroll', tourLayer.__place, true);
@@ -8727,72 +8859,137 @@
       if (tourLayer.parentNode) tourLayer.parentNode.removeChild(tourLayer);
       tourLayer = null;
     }
+    if (goHome && location.hash !== '#/') location.hash = '#/';
   }
-  function runTour(i){
-    if (i >= TOUR_STEPS.length){ endTour(); return; }
-    var step = TOUR_STEPS[i];
-    var target = document.querySelector('.home-card[data-key="' + step.key + '"]');
-    if (!target){ runTour(i + 1); return; }
-    if (!tourLayer){
-      tourLayer = el('div', {class:'tour-layer', role:'dialog', 'aria-modal':'true'});
-      tourLayer.appendChild(el('div', {class:'tour-hole'}));
-      tourLayer.appendChild(el('div', {class:'tour-tip'}));
-      tourLayer.__key = function(e){
-        if (e.key === 'Escape') endTour();
-        if (e.key === 'ArrowRight' && tourLayer) tourLayer.__next();
-        if (e.key === 'ArrowLeft' && tourLayer) tourLayer.__prev();
-      };
-      document.addEventListener('keydown', tourLayer.__key);
-      document.body.appendChild(tourLayer);
-    }
-    var hole = tourLayer.querySelector('.tour-hole');
-    var tip = tourLayer.querySelector('.tour-tip');
-    tourLayer.__next = function(){ runTour(i + 1); };
-    tourLayer.__prev = function(){ if (i > 0) runTour(i - 1); };
-    tip.textContent = '';
-    tip.appendChild(el('div', {class:'tour-step', text: (i + 1) + ' / ' + TOUR_STEPS.length}));
-    tip.appendChild(el('div', {class:'tour-title', text: step.title}));
-    tip.appendChild(el('div', {class:'tour-text', text: step.text}));
-    var act = el('div', {class:'tour-actions'});
-    act.appendChild(el('button', {type:'button', class:'tour-skip', text:'スキップ', onclick: endTour}));
-    act.appendChild(el('div', {class:'tour-spacer'}));
-    if (i > 0) act.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'戻る', onclick: function(){ runTour(i - 1); }}));
-    var last = i === TOUR_STEPS.length - 1;
-    var nextBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text: last ? 'はじめる' : '次へ', onclick: function(){ runTour(i + 1); }});
-    act.appendChild(nextBtn);
-    tip.appendChild(act);
-
-    function place(){
+  function ensureTourLayer(){
+    if (tourLayer) return tourLayer;
+    tourLayer = el('div', {class:'tour-layer', role:'dialog', 'aria-modal':'true', 'aria-label':'使い方ガイド'});
+    tourLayer.appendChild(el('div', {class:'tour-hole'}));
+    tourLayer.appendChild(el('div', {class:'tour-tip'}));
+    tourLayer.__key = function(e){
       if (!tourLayer) return;
-      /* 途中で画面が描き直されたときは、カードを探し直す */
-      if (!target.isConnected) target = document.querySelector('.home-card[data-key="' + step.key + '"]');
-      if (!target) return;
-      var r = target.getBoundingClientRect(), pad = 6;
-      hole.style.left = (r.left - pad) + 'px'; hole.style.top = (r.top - pad) + 'px';
-      hole.style.width = (r.width + pad * 2) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
-      var vw = window.innerWidth, vh = window.innerHeight;
-      var tw = Math.min(360, vw - 24);
-      tip.style.width = tw + 'px';
-      var left = Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2));
-      tip.style.left = left + 'px';
-      var th = tip.offsetHeight;
-      /* 下に入るなら下、入らなければ上 */
-      var top = (r.bottom + 14 + th <= vh - 8) ? r.bottom + 14 : Math.max(8, r.top - 14 - th);
-      tip.style.top = top + 'px';
-    }
-    window.removeEventListener('resize', tourLayer.__place);
-    window.removeEventListener('scroll', tourLayer.__place, true);
-    tourLayer.__place = place;
-    window.addEventListener('resize', place);
-    window.addEventListener('scroll', place, true);
-    /* 照らすカードが画面のまん中あたりに来るようにスクロールしてから置く */
-    var rr = target.getBoundingClientRect();
-    var want = rr.top + window.scrollY - Math.max(80, (window.innerHeight - rr.height) / 2 - 90);
-    window.scrollTo({ top: Math.max(0, want), behavior: 'smooth' });
-    place();
-    setTimeout(place, 350);
-    setTimeout(place, 700);
-    try{ nextBtn.focus({ preventScroll: true }); }catch(e){}
+      if (e.key === 'Escape') endTour(false);
+      if (e.key === 'ArrowRight' && tourLayer.__next) tourLayer.__next();
+      if (e.key === 'ArrowLeft' && tourLayer.__prev) tourLayer.__prev();
+    };
+    document.addEventListener('keydown', tourLayer.__key);
+    document.body.appendChild(tourLayer);
+    return tourLayer;
+  }
+  /* 'A || B' と書くと A と B をまとめて1つの枠で照らす（A が無ければ見つからない扱い） */
+  function tourQuery(sel){
+    if (!sel) return null;
+    var parts = sel.split('||'), first = document.querySelector(parts[0].trim());
+    if (!first) return null;
+    var out = [first];
+    parts.slice(1).forEach(function(q){ var e = document.querySelector(q.trim()); if (e) out.push(e); });
+    return out;
+  }
+  function tourRect(els){
+    var l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+    els.forEach(function(e){ var x = e.getBoundingClientRect(); l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom); });
+    return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+  }
+  function runTour(i, dir){
+    dir = dir || 1;
+    if (i < 0) i = 0;
+    if (i >= TOUR_STEPS.length){ endTour(true); return; }
+    var step = TOUR_STEPS[i];
+    /* 記録が無いと出せない説明（need）は、進んでいる向きにとばす */
+    if (step.need && !step.need()){ runTour(i + dir, dir); return; }
+    var myRun = ++tourRun;
+    var layer = ensureTourLayer();
+    layer.classList.add('is-moving');
+    var hole = layer.querySelector('.tour-hole');
+    var tip = layer.querySelector('.tour-tip');
+    layer.__next = layer.__prev = null;
+    Promise.resolve(step.go ? step.go() : null).then(function(){
+      if (myRun !== tourRun) return;
+      return tourWaitFor(function(){
+        return (step.sel && document.querySelector(step.sel.split('||')[0].trim())) || (step.alt && document.querySelector(step.alt.sel)) || (!step.sel ? true : null);
+      }, step.sel ? 1500 : 10);
+    }).then(function(){
+      if (myRun !== tourRun || !tourLayer) return;
+      var target = tourQuery(step.sel), text = step.text, selUsed = step.sel;
+      if (!target && step.alt){ target = tourQuery(step.alt.sel); text = step.alt.text; selUsed = step.alt.sel; }
+      /* 記録が無いなどで出せない説明は、進んでいる向きにとばす */
+      if (!target && step.optional){ runTour(i + dir, dir); return; }
+      layer.classList.remove('is-moving');
+      layer.__next = function(){ runTour(i + 1); };
+      layer.__prev = function(){ if (i > 0) runTour(i - 1, -1); };
+
+      /* 吹き出しの中身 */
+      tip.textContent = '';
+      if (step.sec >= 0){
+        var inSec = TOUR_STEPS.filter(function(x){ return x.sec === step.sec && (!x.need || x.need()); });
+        var head = el('div', {class:'tour-head'});
+        head.appendChild(el('span', {class:'tour-sec', text: (step.sec + 1) + '. ' + TOUR_SECTIONS[step.sec]}));
+        head.appendChild(el('span', {class:'tour-step', text: (inSec.indexOf(step) + 1) + ' / ' + inSec.length}));
+        tip.appendChild(head);
+        var dots = el('div', {class:'tour-dots'});
+        TOUR_SECTIONS.forEach(function(_, k){ dots.appendChild(el('i', {class: k < step.sec ? 'is-done' : (k === step.sec ? 'is-on' : '')})); });
+        tip.appendChild(dots);
+      }
+      tip.appendChild(el('div', {class:'tour-title', text: step.title}));
+      tip.appendChild(el('div', {class:'tour-text', text: text}));
+      var act = el('div', {class:'tour-actions'});
+      var last = i === TOUR_STEPS.length - 1;
+      if (!last){
+        act.appendChild(el('button', {type:'button', class:'tour-skip', text:'終了する', onclick: function(){ endTour(false); }}));
+        /* この機能の説明をとばして次の機能へ */
+        if (step.sec >= 0){
+          act.appendChild(el('button', {type:'button', class:'tour-skip', text:'この項目をとばす', onclick: function(){
+            var j = i + 1; while (j < TOUR_STEPS.length && TOUR_STEPS[j].sec === step.sec) j++;
+            runTour(j);
+          }}));
+        }
+      }
+      act.appendChild(el('div', {class:'tour-spacer'}));
+      if (i > 0 && !last) act.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'戻る', onclick: function(){ runTour(i - 1, -1); }}));
+      var nextBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text: last ? 'はじめる' : '次へ', onclick: function(){ runTour(i + 1); }});
+      act.appendChild(nextBtn);
+      tip.appendChild(act);
+
+      function place(){
+        if (!tourLayer) return;
+        if (target && !target[0].isConnected && selUsed) target = tourQuery(selUsed);
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var tw = Math.min(380, vw - 24);
+        tip.style.width = tw + 'px';
+        var th = tip.offsetHeight;
+        if (!target){
+          hole.style.display = 'none';
+          layer.classList.add('no-target');
+          tip.style.left = Math.round((vw - tw) / 2) + 'px';
+          tip.style.top = Math.max(12, Math.round((vh - th) / 2)) + 'px';
+          return;
+        }
+        layer.classList.remove('no-target');
+        hole.style.display = '';
+        var r = tourRect(target), pad = 6;
+        hole.style.left = (r.left - pad) + 'px'; hole.style.top = (r.top - pad) + 'px';
+        hole.style.width = (r.width + pad * 2) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+        tip.style.left = Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2)) + 'px';
+        var top = (r.bottom + 14 + th <= vh - 8) ? r.bottom + 14 : Math.max(8, r.top - 14 - th);
+        tip.style.top = top + 'px';
+      }
+      window.removeEventListener('resize', layer.__place);
+      window.removeEventListener('scroll', layer.__place, true);
+      layer.__place = place;
+      window.addEventListener('resize', place);
+      window.addEventListener('scroll', place, true);
+      /* 照らす場所が見える位置までスクロール（吹き出しの分、少し上に寄せる） */
+      if (!target) window.scrollTo({ top: 0, behavior: 'auto' });
+      else {
+        var rr = tourRect(target);
+        var want = rr.top + window.scrollY - Math.max(70, Math.min(window.innerHeight * 0.28, (window.innerHeight - rr.height) / 2 - 120));
+        window.scrollTo({ top: Math.max(0, want), behavior: 'auto' });
+      }
+      place();
+      setTimeout(place, 120);
+      setTimeout(place, 400);
+      try{ nextBtn.focus({ preventScroll: true }); }catch(e){}
+    });
   }
 
   var MENU_ITEMS = [
