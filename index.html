@@ -745,7 +745,7 @@
   .tour-invite-icon svg{width:46px;height:46px;}
   .tour-invite-title{font-size:19px;font-weight:800;margin:4px 0 8px;}
   .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
-  .tour-invite-go{width:100%;padding:12px 0;font-size:15px;font-weight:800;}
+  .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
   .tour-invite-skip{margin-top:10px;background:none;border:0;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;}
   .tour-invite-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;}
   .tour-layer{position:fixed;inset:0;z-index:1200;}
@@ -7590,7 +7590,8 @@
     persistSongMarks();
     renderApp();
     finishImportProgress();
-    showAlert('取り込みました。');
+    if (takeTourResume()) setTimeout(showTourResume, 300);
+    else showAlert('取り込みました。');
   }
 
   function renderImportSection(root){
@@ -8777,55 +8778,59 @@
   }
   function tourPlateDetail(){ return tourOpenFirst('#/plates', function(){ return section === 'plates' && view === 'detail'; }); }
   function tourFillDetail(){ return tourOpenFirst('#/fill', function(){ return section === 'fill' && fillView === 'detail'; }); }
-  var TOUR_SECTIONS = ['実績プレート表', '未達成楽曲一覧', '下埋め進捗', 'maimai NET 取り込み', 'レビュー'];
+  var TOUR_SECTIONS = ['maimai NET 取り込み', '実績プレート表', '未達成楽曲一覧', '下埋め進捗', 'レビュー'];
   var TOUR_STEPS = [
+    /* ---- maimai NET 取り込み ---- */
+    { sec:0, go:function(){ return tourRoute('#/import'); }, sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
+      text:'まず、このボタンで取り込み用のコードをコピーします。' },
+    { sec:0, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(2)', title:'② ブックマークを作る',
+      text:'ブラウザでブックマークを1つ作り、その URL をコピーしたコードに書き換えて保存します。最初の1回だけの準備です。' },
+    { sec:0, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(3)', title:'③ maimai NET で開く',
+      text:'maimai でらっくす NET にログインして、そのブックマークを開きます。スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押してください（1分半〜2分ほどかかります）。' },
+    { sec:0, go:function(){ return tourRoute('#/import'); }, sel:'#app .import-caution', title:'スコアを更新したら',
+      text:'取り込んだ記録は自動では更新されません。プレイしてスコアが変わったら、もう一度ブックマークを開いて取り込んでください。' },
+    /* 記録がまだ無い人：ここで取り込んでもらい、取り込みが終わったら続き（プレート表〜）を始める */
+    { sec:0, gate:true, go:function(){ return tourRoute('#/import'); }, sel:'#app .page-actions .btn-primary',
+      need:function(){ return !netRecordIndex(); }, title:'まずは記録を取り込んでみましょう',
+      text:'このあと説明する実績プレート表の赤線・未達成楽曲一覧・下埋め進捗は、取り込んだ記録を使います。「取り込む」を押したら、上の ① から順に進めてください。取り込みが終わると、使い方ガイドの続きが始まります。' },
     /* ---- 実績プレート表 ---- */
-    { sec:0, go:function(){ return tourRoute('#/plates'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
+    { sec:1, go:function(){ return tourRoute('#/plates'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'バージョンごとの実績プレート表の一覧です。見たいバージョンを押すと、その表が大きく開きます。' },
-    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'記録するプレートを選ぶ',
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'記録するプレートを選ぶ',
       text:'ここで極・将・神・舞のどれを記録するかを選びます。プレートごとに別々に記録できます。' },
-    { sec:0, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'赤線を付ける・曲の詳細を見る',
+    { sec:1, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'赤線を付ける・曲の詳細を見る',
       text:'プレートを選んでいるときは、ジャケットをタップすると赤線（達成の印）が付き、もう一度タップで外れます。長押しすると、その曲の定数・ノーツ数・BPM などの詳細が出ます（プレートが未選択のときはタップで詳細）。' },
-    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .hide-marked-btn', title:'達成済みを表示',
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .hide-marked-btn', title:'達成済みを表示',
       text:'OFF にすると、赤線を付けた曲が表から消えて、残っている曲だけを見られます。' },
-    { sec:0, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'難易度の範囲',
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'難易度の範囲',
       text:'表に出す難易度の範囲（例：15〜13+）を、スクロールで選べます。' },
-    { sec:0, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
+    { sec:1, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
       text:'背景の黒・白を選んで、表を画像で保存できます。SNS に載せるのにも使えます。' },
     /* ---- 未達成楽曲一覧 ---- */
-    { sec:1, go:function(){ return tourRoute('#/todo'); }, sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
+    { sec:2, go:function(){ return tourRoute('#/todo'); }, sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
       text:'MASTER の全譜面か、舞・覇者（Re:MASTER）のどちらを見るかを選びます。' },
-    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
+    { sec:2, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
       text:'FC・SSS・AP・AP+・FDX・FDX+、DXスコアの☆5・☆6・☆7 から条件を選ぶと、その条件をまだ達成していない譜面が定数の高い順に並びます。' },
-    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .range-picker', title:'定数の範囲',
+    { sec:2, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .range-picker', title:'定数の範囲',
       text:'表示する定数の範囲（例：15.0〜14.0）を選べます。' },
-    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
+    { sec:2, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
       text:'ON にすると達成済みの譜面も薄く表示されて、定数表のようにも使えます。' },
-    { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-card-body .todo-thumb', title:'曲の詳細',
+    { sec:2, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-card-body .todo-thumb', title:'曲の詳細',
       text:'ジャケットを押すと、その曲の定数・ノーツ数・譜面作者などの詳細が見られます。画像保存もできます。',
-      alt:{ sel:'#app .fill-import-btn', text:'この一覧は、maimai NET から記録を取り込むと表示されます。取り込み方はこのあと説明します。' } },
+      alt:{ sel:'#app .fill-import-btn', text:'この一覧は、maimai NET から記録を取り込むと表示されます（取り込み方は最初に説明したとおりです）。' } },
     /* ---- 下埋め進捗 ---- */
-    { sec:2, go:function(){ return tourRoute('#/fill'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
+    { sec:3, go:function(){ return tourRoute('#/fill'); }, sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'バージョンを押すと、そのバージョンのプレートに必要な BASIC〜EXPERT の譜面（下埋め）が、どれだけ残っているかを見られます。' },
-    { sec:2, go:function(){ return tourRoute('#/fill'); }, sel:'#app .fill-sum-bar .btn', title:'合計を見る',
+    { sec:3, go:function(){ return tourRoute('#/fill'); }, sel:'#app .fill-sum-bar .btn', title:'合計を見る',
       text:'ここを押してからいくつかのバージョンを選ぶと、選んだバージョンをまとめた合計の残りを見られます。' },
-    { sec:2, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
+    { sec:3, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
       text:'極・将・神・舞のどのプレートの下埋めを見るかを選びます。' },
-    { sec:2, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'残りの見方',
+    { sec:3, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'残りの見方',
       text:'帯の赤・黄・緑が EXPERT・ADVANCED・BASIC の残り、白が達成済みです。右の数字が進み具合（%）です。',
-      alt:{ sel:'#app .fill-import-btn', text:'maimai NET から記録を取り込むと、ここに残りが帯で表示されます。赤・黄・緑が EXPERT・ADVANCED・BASIC の残り、白が達成済みです。取り込み方はこのあと説明します。' } },
-    { sec:2, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true,
+      alt:{ sel:'#app .fill-import-btn', text:'maimai NET から記録を取り込むと、ここに残りが帯で表示されます。赤・黄・緑が EXPERT・ADVANCED・BASIC の残り、白が達成済みです。' } },
+    { sec:3, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true,
       need:function(){ var r = netRecordIndex(); return !!(r && r.hasLower); }, title:'残りの譜面・時間・料金',
       text:'残りの譜面数と、それをプレイするのにかかる時間・料金（1人／2人）の目安です。' },
-    /* ---- maimai NET 取り込み ---- */
-    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
-      text:'まず、このボタンで取り込み用のコードをコピーします。' },
-    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(2)', title:'② ブックマークを作る',
-      text:'ブラウザでブックマークを1つ作り、その URL をコピーしたコードに書き換えて保存します。最初の1回だけの準備です。' },
-    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .steps .step:nth-child(3)', title:'③ maimai NET で開く',
-      text:'maimai でらっくす NET にログインして、そのブックマークを開きます。スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押してください（1分半〜2分ほどかかります）。' },
-    { sec:3, go:function(){ return tourRoute('#/import'); }, sel:'#app .import-caution', title:'スコアを更新したら',
-      text:'取り込んだ記録は自動では更新されません。プレイしてスコアが変わったら、もう一度ブックマークを開いて取り込んでください。' },
     /* ---- レビュー ---- */
     { sec:4, go:function(){ return tourRoute('#/review'); }, sel:'#app .review-name-field', title:'ネーム',
       text:'最初は「匿名さん」と入っています。好きな名前に変えても大丈夫です。' },
@@ -8857,13 +8862,34 @@
     box.appendChild(iconNode('tour', 'tour-invite-icon'));
     box.appendChild(el('h3', {id:'tourInviteTitle', class:'tour-invite-title', text:'maiプレートへようこそ！'}));
     box.appendChild(el('p', {class:'tour-invite-text', text:'主な使い方を、約1分で紹介します。はじめての方は、ぜひ見てから使ってみてください。'}));
-    box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'使い方を見る（おすすめ）', onclick: function(){ closeModal(backdrop); startTour(); }}));
+    box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'使い方ガイドを見る', onclick: function(){ closeModal(backdrop); startTour(); }}));
     box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'スキップする', onclick: function(){ markTourDone(); closeModal(backdrop); }}));
     box.appendChild(el('p', {class:'tour-invite-note', text:'あとからメニューの「使い方ガイド」でいつでも見られます。'}));
     backdrop.appendChild(box);
     document.body.appendChild(backdrop);
   }
-  function startTour(){ runTour(0); }
+  function startTour(){ try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(0); }
+  /* 「取り込む」でガイドを閉じた人：取り込みが終わったら、続き（実績プレート表〜）を案内する */
+  var TOUR_RESUME_KEY = 'mmplate_tour_resume_v1';
+  function takeTourResume(){
+    try{ if (localStorage.getItem(TOUR_RESUME_KEY) !== '1') return false; localStorage.removeItem(TOUR_RESUME_KEY); return true; }catch(e){ return false; }
+  }
+  function showTourResume(){
+    var backdrop = el('div', {class:'modal-backdrop tour-invite-backdrop'});
+    var box = el('div', {class:'modal-box tour-invite', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'tourResumeTitle'});
+    box.appendChild(iconNode('tour', 'tour-invite-icon'));
+    box.appendChild(el('h3', {id:'tourResumeTitle', class:'tour-invite-title', text:'取り込みました！'}));
+    box.appendChild(el('p', {class:'tour-invite-text', text:'使い方ガイドの続き（実績プレート表・未達成楽曲一覧・下埋め進捗・レビュー）を、取り込んだ記録で見てみましょう。'}));
+    box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'続きを見る', onclick: function(){
+      closeModal(backdrop);
+      var j = 0; while (j < TOUR_STEPS.length && TOUR_STEPS[j].sec < 1) j++;
+      runTour(j);
+    }}));
+    box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'あとで見る', onclick: function(){ closeModal(backdrop); }}));
+    box.appendChild(el('p', {class:'tour-invite-note', text:'あとからメニューの「使い方ガイド」でいつでも見られます。'}));
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
   var tourLayer = null, tourRun = 0;
   function endTour(goHome){
     markTourDone();
@@ -8948,23 +8974,42 @@
       }
       tip.appendChild(el('div', {class:'tour-title', text: step.title}));
       tip.appendChild(el('div', {class:'tour-text', text: text}));
+      var nextBtn = null;
       var act = el('div', {class:'tour-actions'});
       var last = i === TOUR_STEPS.length - 1;
+      /* 最後の説明は、吹き出しの外を押しても閉じる */
+      layer.onclick = last ? function(e){ if (!tip.contains(e.target)) endTour(true); } : null;
+      if (step.gate){
+        /* 取り込みへ：ガイドはいったん閉じ、取り込みが終わったら続きを案内する */
+        act.appendChild(el('button', {type:'button', class:'tour-skip', text:'取り込まずに続きを見る', onclick: function(){ runTour(i + 1); }}));
+        act.appendChild(el('div', {class:'tour-spacer'}));
+        act.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'戻る', onclick: function(){ runTour(i - 1, -1); }}));
+        var goBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text:'取り込む', onclick: function(){
+          try{ localStorage.setItem(TOUR_RESUME_KEY, '1'); }catch(e){}
+          endTour(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }});
+        act.appendChild(goBtn);
+        tip.appendChild(act);
+        nextBtn = goBtn;
+      } else {
       if (!last){
         act.appendChild(el('button', {type:'button', class:'tour-skip', text:'終了する', onclick: function(){ endTour(false); }}));
         /* この機能の説明をとばして次の機能へ */
         if (step.sec >= 0){
           act.appendChild(el('button', {type:'button', class:'tour-skip', text:'この項目をとばす', onclick: function(){
-            var j = i + 1; while (j < TOUR_STEPS.length && TOUR_STEPS[j].sec === step.sec) j++;
+            /* 記録が無い人は「取り込んでみましょう」では止める */
+            var j = i + 1; while (j < TOUR_STEPS.length && TOUR_STEPS[j].sec === step.sec && !(TOUR_STEPS[j].gate && TOUR_STEPS[j].need())) j++;
             runTour(j);
           }}));
         }
       }
       act.appendChild(el('div', {class:'tour-spacer'}));
       if (i > 0 && !last) act.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'戻る', onclick: function(){ runTour(i - 1, -1); }}));
-      var nextBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text: last ? 'はじめる' : '次へ', onclick: function(){ runTour(i + 1); }});
+      nextBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text: last ? 'はじめる' : '次へ', onclick: function(){ runTour(i + 1); }});
       act.appendChild(nextBtn);
       tip.appendChild(act);
+      }
 
       function place(){
         if (!tourLayer) return;
