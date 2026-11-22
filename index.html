@@ -7540,8 +7540,9 @@
     for (var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = (x + ((x << 1) + (x << 4) + (x << 7) + (x << 8) + (x << 24))) >>> 0; }
     return x.toString(36);
   }
-  function saveNetRecords(records){
-    var o = { at: Date.now(), records: records, sig: tablesSignature() };
+  function saveNetRecords(records, ver){
+    /* v：取り込みプログラムの版（2 から DXスコアも読む） */
+    var o = { at: Date.now(), records: records, sig: tablesSignature(), v: ver || 1 };
     netRecordsMemo = o; netSigCheckedFor = allVersions;
     if (!storageOK) return;
     try{ localStorage.setItem(NET_RECORDS_KEY, JSON.stringify(o)); }catch(e){}
@@ -7578,7 +7579,7 @@
     pendingImport = null;
     if (d.error || !Array.isArray(d.records)){ hideImportProgress(); showAlert(d.error || '記録を受け取れませんでした。'); return; }
     var p = buildImportPlan(d.records.slice(0, 20000));
-    saveNetRecords(d.records.slice(0, 20000));
+    saveNetRecords(d.records.slice(0, 20000), +d.v || 1);
     /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
     p.plan.forEach(function(it){
       Object.keys(it.maps).forEach(function(m){
@@ -7689,13 +7690,16 @@
   function netRecordIndex(){
     var o = loadNetRecords();
     if (!o || !Array.isArray(o.records)) return null;
-    var idx = {}, lower = false;
+    var idx = {}, lower = false, hasDx = false;
     o.records.forEach(function(r){
       if (!Array.isArray(r) || r.length < 6) return;
       if (+r[2] < 3) lower = true;
-      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
+      /* 7・8番目：DXスコアとその理論値（新しい取り込みから） */
+      var dx = +r[6] || 0, dxMax = +r[7] || 0;
+      if (dxMax > 0) hasDx = true;
+      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || ''), dx: dx, dxMax: dxMax };
     });
-    return { idx: idx, hasLower: lower, at: o.at };
+    return { idx: idx, hasLower: lower, hasDx: hasDx, v: +o.v || 1, at: o.at };
   }
   function fillDocs(){
     return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel' && !isMaiHashaDoc(v); });
@@ -8089,8 +8093,13 @@
     { key: 'AP+', test: function(x){ return x.fc === 'app' || x.ach >= 101; } },
     { key: 'FDX', cond: '舞舞' },
     /* FDX+（FULL SYNC DX+） */
-    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } }
+    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } },
+    /* DXスコアの星：理論値（総ノーツ数×3）に対して ☆5＝97%以上・☆6＝99%以上・☆7＝100%（理論値） */
+    { key: '☆5', dx: 97 }, { key: '☆6', dx: 99 }, { key: '☆7', dx: 100 }
   ];
+  TODO_MODES.forEach(function(m){
+    if (m.dx) m.test = function(x){ return x.dxMax > 0 && x.dx >= Math.ceil(x.dxMax * m.dx / 100); };
+  });
   var todoKind = null;
   var TODO_MODE_KEY = 'mmplate_todo_mode_v1';
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
@@ -8220,7 +8229,7 @@
     var col = kind === 'mai' ? todoMaiColor() : K.color;
     root.appendChild(el('h2', {class:'page-title', style:{color: col}, text: K.label}));
     var bar = el('div', {class:'detail-actions'});
-    /* FC・SSS・AP・AP+・FDX・FDX+ をスクロールで選ぶ */
+    /* FC・SSS・AP・AP+・FDX・FDX+・☆5・☆6・☆7 をスクロールで選ぶ */
     var seg = makeWheelPicker({ title: '見る条件', cls: 'mode-picker todo-mode-seg',
       items: TODO_MODES.map(function(m){ return [m.key, m.key]; }),
       current: todoMode, onPick: function(k){ setTodoMode(k); renderApp(); } });
@@ -8237,7 +8246,7 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
     var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
-    /* 左から：達成済みを表示 → n〜n → FC・SSS・AP・AP+・FDX・FDX+ */
+    /* 左から：達成済みを表示 → n〜n → FC・SSS・AP・AP+・FDX・FDX+・☆5〜☆7 */
     var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; }, false, true);
     doneBtn.classList.add('todo-done-btn');
     cutRow.appendChild(doneBtn);
@@ -8248,6 +8257,13 @@
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
 
     var mode = TODO_MODES.filter(function(m){ return m.key === todoMode; })[0] || TODO_MODES[0];
+    /* ☆5〜☆7 は DXスコアが要る（前の取り込み方では DXスコアを読んでいない） */
+    if (mode.dx && !rec.hasDx){
+      needImportNote(root, rec.v >= 2
+        ? 'maimai NET の一覧から DXスコアを読み取れませんでした。\n☆5〜☆7 はまだ使えません（お手数ですが開発者に知らせてください）。'
+        : '☆5〜☆7 を見るには DXスコアが必要です。\n取り込みが DXスコアも読むようになったので、もう一度 maimai NET から取り込んでください（ブックマークはそのままで大丈夫です）。');
+      return;
+    }
     var cond = mode.test || PLATE_COND[mode.cond];
     var all = todoCharts(kind);
     var left = all.filter(function(x){
@@ -8780,7 +8796,7 @@
     { sec:1, go:function(){ return tourRoute('#/todo'); }, sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
       text:'MASTER の全譜面か、舞・覇者（Re:MASTER）のどちらを見るかを選びます。' },
     { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
-      text:'FC・SSS・AP・AP+・FDX・FDX+ から条件を選ぶと、その条件をまだ達成していない譜面が定数の高い順に並びます。' },
+      text:'FC・SSS・AP・AP+・FDX・FDX+、DXスコアの☆5・☆6・☆7 から条件を選ぶと、その条件をまだ達成していない譜面が定数の高い順に並びます。' },
     { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .range-picker', title:'定数の範囲',
       text:'表示する定数の範囲（例：15.0〜14.0）を選べます。' },
     { sec:1, go:function(){ return tourRoute('#/todo/master'); }, sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
@@ -9006,8 +9022,8 @@
     { key:'guide',      icon:'guide',  label:'表の解説',             group:'その他' },
     { key:'notice',     icon:'notice', label:'更新情報',             group:'その他' },
     { key:'reviews',    icon:'review', label:'レビュー',             group:'その他' },
-    /* 使い方ガイド（メニューだけに出す。ホームには出さない） */
-    { key:'tour',       icon:'tour',   label:'使い方ガイド',         group:'その他', menuOnly:true }
+    /* 使い方ガイド（押すと各機能を順に照らして説明する） */
+    { key:'tour',       icon:'tour',   label:'使い方ガイド',         group:'その他' }
   ];
   var MENU_GROUPS = ['楽曲表', '記録・進捗', 'その他'];
   function runMenuItem(key){
