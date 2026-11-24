@@ -9599,13 +9599,16 @@
         layer.appendChild(hole);
         var tip = el('div', {class:'guide-hint-tip'});
         tip.appendChild(el('p', {class:'guide-hint-text', text:'使い方ガイドは、ホーム画面のここからいつでも見直せます。'}));
-        tip.appendChild(el('button', {type:'button', class:'btn btn-primary btn-sm guide-hint-ok', text:'OK', onclick: function(){ if (layer.parentNode) layer.parentNode.removeChild(layer); }}));
+        tip.appendChild(el('button', {type:'button', class:'btn btn-primary btn-sm guide-hint-ok', text:'OK', onclick: function(){ closeHint(); }}));
         layer.appendChild(tip);
         var below = r.top < window.innerHeight * 0.55;
         tip.style.left = Math.max(12, Math.min(window.innerWidth - 292, r.left + r.width / 2 - 140)) + 'px';
         if (below) tip.style.top = (r.bottom + 16) + 'px';
         else tip.style.bottom = (window.innerHeight - r.top + 16) + 'px';
-        layer.addEventListener('click', function(e){ if (e.target === layer) layer.parentNode.removeChild(layer); });
+        function closeHint(){ window.removeEventListener('hashchange', closeHint); if (layer.parentNode) layer.parentNode.removeChild(layer); }
+        layer.addEventListener('click', function(e){ if (e.target === layer) closeHint(); });
+        /* 戻るボタンなどで別の画面に移ったら閉じる */
+        window.addEventListener('hashchange', closeHint);
         document.body.appendChild(layer);
       }, 450);
     }, 400);
