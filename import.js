@@ -82,8 +82,17 @@ function parse(t, d){
     if (n === 'Link' && /niconico/i.test(g)) n = 'Link (Circle of friends)';
     var k = r.querySelector('.music_kind_icon');
     var ty = r.id ? (r.id.indexOf('sta_') >= 0 ? 'ST' : 'DX') : (k && /_standard/.test(k.src) ? 'ST' : 'DX');
+    /* DX\u30b9\u30b3\u30a2\uff08\u300c1,234 / 1,500\u300d\u306e\u5f62\u306e\u6b04\uff09\u3002\u7406\u8ad6\u5024\u306f\u7dcf\u30ce\u30fc\u30c4\u6570\u00d73 \u306a\u306e\u30673\u3067\u5272\u308a\u5207\u308c\u308b\u3082\u306e\u3060\u3051\u4f7f\u3046\u3002\u7121\u3051\u308c\u3070 0 */
+    var dx = 0, dxm = 0;
+    for (var j = 0; j < sb.length; j++){
+      var mm = /([\d,]+)\s*\/\s*([\d,]+)/.exec(sb[j].textContent);
+      if (!mm) continue;
+      var a1 = parseInt(mm[1].replace(/,/g, ''), 10) || 0, a2 = parseInt(mm[2].replace(/,/g, ''), 10) || 0;
+      if (a2 > 0 && a2 % 3 === 0 && a1 <= a2){ dx = a1; dxm = a2; }
+      break;
+    }
     out.push([n, ty, d, Math.round((parseFloat(sb[0].textContent) || 0) * 10000),
-      ic(r, /music_icon_(fcp?|app?)\.png$/), ic(r, /music_icon_(fsd?p?|fdxp?|fsp?|sync)\.png$/)]);
+      ic(r, /music_icon_(fcp?|app?)\.png$/), ic(r, /music_icon_(fsd?p?|fdxp?|fsp?|sync)\.png$/), dx, dxm]);
   });
   return out;
 }
@@ -122,7 +131,7 @@ readAll().then(function(a){
   if (stale()) return;
   var rec = [].concat.apply([], a);
   if (!rec.length){ fail('\u8a18\u9332\u3092\u8aad\u307f\u53d6\u308c\u307e\u305b\u3093\u3067\u3057\u305f\u3002maimai\u3067\u3089\u3063\u304f\u3059NET\u306b\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u3044\u308b\u304b\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002'); return; }
-  var p = { type: 'maiplate-import', v: 1, at: Date.now(), records: rec };
+  var p = { type: 'maiplate-import', v: 2, at: Date.now(), records: rec };
   var ok = false, sending = null;
   window.addEventListener('message', function(e){ if (e.origin === O && e.data === 'maiplate-ack') ok = true; });
   function done(){
