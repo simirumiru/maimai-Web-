@@ -814,7 +814,6 @@
   .tour-block-all{position:fixed;inset:0;}
   .tour-layer.is-paused{display:none;}
   .tour-try{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:12.5px;font-weight:800;color:var(--accent);}
-  .tour-try i{font-style:normal;font-size:15px;}
   /* 押したあと：ヒントの行と同じ大きさ・形で、緑の丸いチェックと文字だけ（目立ちすぎないように） */
   .tour-tried{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:12.5px;font-weight:800;color:var(--ok);animation:tourTried .3s ease-out;}
   .tour-tried i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;
@@ -9490,9 +9489,9 @@
       text:'ブラウザでブックマークを1つ作り、URL の欄にコピーしたコードをペーストします。' },
     { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', noTouch:true, title:'③ maimai NET で開く',
       text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開き、[ui:かんたん] か [ui:すべて] を選びます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。' },
-    { sec:0, go:R('#/import'), sel:'#app .import-modes', title:'取り込み方を選ぶ',
+    { sec:0, go:R('#/import'), sel:'#app .import-modes', noTouch:true, title:'取り込み方を選ぶ',
       text:'[ui:かんたん] MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。\n[ui:すべて] BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んで下さい。' },
-    { sec:0, go:R('#/import'), sel:'#app .import-caution', title:'プレイしたら取り込み直す',
+    { sec:0, go:R('#/import'), sel:'#app .import-caution', noTouch:true, title:'プレイしたら取り込み直す',
       text:'記録は自動では更新されません。\nスコアが変わったら、もう一度 ③ をしてください。' },
     /* 記録がまだ無い人：ここで取り込んでもらい、取り込みが終わったら続き（プレート表〜）を始める */
     { sec:0, gate:true, go:R('#/import'), sel:'#app .page-actions .btn-primary', need:function(){ return !hasNetRecords(); },
@@ -9514,7 +9513,7 @@
     { sec:1, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
       text:'表示している状態の表を画像保存します。\n保存する画像のテーマを [blk:黒]・[wht:白] から選んで保存できます。\n様々な箇所に画像保存機能を設けているのでぜひご利用下さい。' },
     /* ---- 実績フレーム表 ---- */
-    { sec:2, go:R('#/frames'), sel:'#app .jewel-grid .jewel-cell-title || #app .jewel-grid .jewel-img-row img', title:'実績フレーム表',
+    { sec:2, go:R('#/frames'), sel:'#app .jewel-grid .jewel-cell-title || #app .jewel-grid .jewel-img-row img', noTouch:true, title:'実績フレーム表',
       text:'実績フレームのデザインを確認できます。',
       alt:{ sel:'#app .version-card', text:'見たい実績フレーム表を押すと、実績フレームのデザインを確認できます。' } },
     /* ---- 定数表 ---- */
@@ -9578,10 +9577,10 @@
       text:'押してからバージョンをいくつか選ぶと、その合計の進捗を見ることができます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
       text:'[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] から、下埋め進捗を見るプレートを選びます。' },
-    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'帯の見方',
+    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', noTouch:true, title:'帯の見方',
       text:'帯の色は、残っている難易度です。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成\n右の % が進み具合です。',
       alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに残りが帯で表示されます。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成' } },
-    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true,
+    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true, noTouch:true,
       need:function(){ var r = netRecordIndex(); return !!(r && r.hasLower); }, title:'残りの譜面・時間・料金',
       text:'残りの譜面数と、終えるまでの時間・料金（1人／2人）の目安です。' },
     /* ---- レビュー ---- */
@@ -9912,7 +9911,9 @@
       clearTimeout(slow);
       if (myRun !== tourRun || !tourLayer) return;
       var target = tourQuery(step.sel), text = step.text, selUsed = step.sel;
-      if (!target && step.alt){ target = tourQuery(step.alt.sel); text = step.alt.text; selUsed = step.alt.sel; }
+      /* alt（記録が無いときなど）に切り替えたら、押せるかどうかも alt の方で決める */
+      var noTouch = !!step.noTouch;
+      if (!target && step.alt){ target = tourQuery(step.alt.sel); text = step.alt.text; selUsed = step.alt.sel; noTouch = !!step.alt.noTouch; }
       if (!target && step.optional){ runTour(i + dir, dir); return; }
       layer.classList.remove('is-moving');
       tip.classList.remove('is-busy');
@@ -9929,12 +9930,11 @@
       titleEl.appendChild(document.createTextNode(step.title));
       tip.appendChild(titleEl);
       tip.appendChild(tourRich(text));
-      /* 光っている所は実際に押して試せる（送信・削除・保存など、押すと困るものは除く） */
-      var touchable = !!target && !step.noTouch;
+      /* 光っている所は実際に押して試せる（送信・削除・保存など押すと困るもの、押しても何も起きない説明だけの所は除く） */
+      var touchable = !!target && !noTouch;
       layer.__touch = touchable; layer.__target = target;
       if (touchable){
         var tryEl = el('div', {class:'tour-try'});
-        tryEl.appendChild(el('i', {'aria-hidden':'true', text:'👆'}));
         tryEl.appendChild(document.createTextNode('光っている所は、実際に押して試せます'));
         tip.appendChild(tryEl);
       }
