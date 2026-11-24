@@ -809,10 +809,12 @@
   .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
   .tour-invite-skip{margin-top:10px;background:none;border:0;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;}
   .tour-invite-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;}
-  .tour-layer{position:fixed;inset:0;z-index:1200;pointer-events:none;}
+  /* 照らす枠・まわりの板・吹き出しは、画面ではなくページの上に置く（absolute）。
+     キーボードが開いたり画面を拡大したりしても、照らす所と一緒に動くのでズレない */
+  .tour-layer{position:absolute;left:0;top:0;width:0;height:0;z-index:1200;pointer-events:none;}
   /* 光っている所だけは下の画面を実際に押せる。まわり（tour-block）は押せない */
   .tour-layer .tour-tip, .tour-layer .tour-block, .tour-layer .tour-block-all{pointer-events:auto;}
-  .tour-block{position:fixed;display:none;}
+  .tour-block{position:absolute;display:none;}
   .tour-block-all{position:fixed;inset:0;}
   .tour-layer.is-paused{display:none;}
   .tour-try{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:12.5px;font-weight:800;color:var(--accent);}
@@ -821,12 +823,12 @@
   .tour-tried i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;
     border:1.5px solid currentColor;font-style:normal;font-size:10px;line-height:1;}
   @keyframes tourTried{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
-  .tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,18,28,.62), 0 0 0 3px var(--accent), 0 0 18px 4px var(--accent-line);transition:left .22s ease, top .22s ease, width .22s ease, height .22s ease;pointer-events:none;}
-  .tour-tip{position:fixed;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:16px;padding:12px 14px 10px;box-shadow:var(--shadow-md);transition:top .22s ease, left .22s ease;}
+  .tour-hole{position:absolute;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,18,28,.62), 0 0 0 3px var(--accent), 0 0 18px 4px var(--accent-line);transition:left .22s ease, top .22s ease, width .22s ease, height .22s ease;pointer-events:none;}
+  .tour-tip{position:absolute;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:16px;padding:12px 14px 10px;box-shadow:var(--shadow-md);transition:top .22s ease, left .22s ease;}
   .tour-tip.is-busy .tour-nav, .tour-tip.is-busy .tour-foot{pointer-events:none;opacity:.6;}
-  .tour-layer.no-target{background:rgba(10,18,28,.62);}
+  .tour-layer.no-target .tour-block-all{background:rgba(10,18,28,.62);}
   /* 画面を切り替えている間：暗いまま待つ（吹き出しは押せないようにする） */
-  .tour-layer.is-moving{background:rgba(10,18,28,.62);}
+  .tour-layer.is-moving .tour-block-all{display:block !important;background:rgba(10,18,28,.62);}
   .tour-layer.is-moving .tour-tip{opacity:0;pointer-events:none;}
   .tour-layer.is-moving .tour-hole{opacity:0;}
   /* 取り込みの画面の「使い方ガイドの続きを見る」 */
@@ -7607,7 +7609,7 @@
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
   var APP_VERSION = '2.4';
   var CHANGELOG = [
-    { ver:'2.4', date:'2026/11/25', items:[
+    { ver:'2.4', date:'2026/11/XX', items:[
       ['使い方ガイド', 'ホームやメニューの「使い方ガイド」から、各機能の使い方を実際の画面で確認できます。'],
       ['曲の詳細に自分の記録', '楽曲画像をタップすると、ランク・FC/AP・でらっくすスコア・星を確認できます。'],
       ['未達成楽曲一覧の SSS+・☆4〜☆7', '条件に、SSS+ と でらっくすスコアの☆4・☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
@@ -9796,6 +9798,10 @@
     if (tourLayer){
       window.removeEventListener('resize', tourLayer.__place);
       window.removeEventListener('scroll', tourLayer.__place, true);
+      if (window.visualViewport && tourLayer.__vvPlace){
+        window.visualViewport.removeEventListener('resize', tourLayer.__vvPlace);
+        window.visualViewport.removeEventListener('scroll', tourLayer.__vvPlace);
+      }
       document.removeEventListener('keydown', tourLayer.__key);
       document.removeEventListener('click', tourLayer.__click, true);
       if (tourLayer.__obs) tourLayer.__obs.disconnect();
@@ -9888,18 +9894,20 @@
     wrap.appendChild(sub);
     return wrap;
   }
-  /* 板の位置：rect が無いときは全体を覆う（押せない） */
+  /* 板の位置：rect が無いときは画面全体を覆う（押せない）。
+     rect はページ上の位置（吹き出しなどと同じ）。板はページ全体（光っている所のまわり）を覆う */
   function tourSetBlocks(layer, rect){
     var all = layer.querySelector('.tour-block-all');
     var bs = {}; ['t', 'l', 'r', 'b'].forEach(function(k){ bs[k] = layer.querySelector('.tour-block-' + k); });
     if (!rect){ all.style.display = ''; Object.keys(bs).forEach(function(k){ bs[k].style.display = 'none'; }); return; }
     all.style.display = 'none';
-    var vw = window.innerWidth, vh = window.innerHeight;
+    var de = document.documentElement;
+    var W = Math.max(de.scrollWidth, window.innerWidth), H = Math.max(de.scrollHeight, window.innerHeight);
     function put(e, l, tp, w, h){ e.style.display = ''; e.style.left = l + 'px'; e.style.top = tp + 'px'; e.style.width = Math.max(0, w) + 'px'; e.style.height = Math.max(0, h) + 'px'; }
-    put(bs.t, 0, 0, vw, rect.t);
-    put(bs.b, 0, rect.b, vw, vh - rect.b);
+    put(bs.t, 0, 0, W, rect.t);
+    put(bs.b, 0, rect.b, W, H - rect.b);
     put(bs.l, 0, rect.t, rect.l, rect.b - rect.t);
-    put(bs.r, rect.r, rect.t, vw - rect.r, rect.b - rect.t);
+    put(bs.r, rect.r, rect.t, W - rect.r, rect.b - rect.t);
   }
   function tourMarkTried(){
     var tip = tourLayer && tourLayer.querySelector('.tour-tip');
@@ -10012,15 +10020,26 @@
         if (!tourLayer) return;
         if (target && !target[0].isConnected && selUsed){ target = tourQuery(selUsed); layer.__target = target; }
         var vw = window.innerWidth, vh = window.innerHeight;
-        var tw = Math.min(380, vw - 24);
+        /* いま実際に見えている範囲（キーボードが開いている・拡大しているときは画面より狭い）。
+           getBoundingClientRect と同じ「画面の左上」からの位置で持つ */
+        var vv = window.visualViewport;
+        var visL = vv ? vv.offsetLeft : 0, visT = vv ? vv.offsetTop : 0;
+        var visW = vv ? vv.width : vw, visH = vv ? vv.height : vh;
+        /* 画面上の位置 → ページ上の位置（ガイドの部品はページの上に置くので） */
+        var lr = layer.getBoundingClientRect(), ox = -lr.left, oy = -lr.top;
+        var tw = Math.min(380, vw - 24, Math.max(200, visW - 16));
         tip.style.width = tw + 'px';
         var th = tip.offsetHeight;
+        function tipLeft(want){
+          var lo = visL + 12, hi = visL + visW - tw - 12;
+          return Math.round((hi < lo ? visL + (visW - tw) / 2 : Math.max(lo, Math.min(hi, want))) + ox);
+        }
         if (!target){
           hole.style.display = 'none';
           tourSetBlocks(layer, null);
           layer.classList.add('no-target');
-          tip.style.left = Math.round((vw - tw) / 2) + 'px';
-          tip.style.top = Math.max(12, Math.round((vh - th) / 2)) + 'px';
+          tip.style.left = tipLeft(visL + (visW - tw) / 2) + 'px';
+          tip.style.top = Math.round(visT + Math.max(12, (visH - th) / 2) + oy) + 'px';
           return;
         }
         layer.classList.remove('no-target');
@@ -10033,17 +10052,18 @@
         }
         /* 照らす枠が画面の左右からはみ出さないように、画面の内側に収める */
         var hl = Math.max(5, r.left - pad), hr = Math.min(vw - 5, r.right + pad);
-        hole.style.left = hl + 'px'; hole.style.top = (r.top - pad) + 'px';
+        hole.style.left = (hl + ox) + 'px'; hole.style.top = (r.top - pad + oy) + 'px';
         hole.style.width = Math.max(0, hr - hl) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
-        tourSetBlocks(layer, touchable ? { l: hl, t: r.top - pad, r: hr, b: r.bottom + pad } : null);
-        tip.style.left = Math.round(Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2))) + 'px';
-        var top;
-        if (r.bottom + 14 + th <= vh - 10) top = r.bottom + 14;            /* 下に置ける */
-        else if (r.top - 14 - th >= 10) top = r.top - 14 - th;             /* 上に置ける */
-        else top = vh - th - 12;                                            /* 大きい場所：画面の下に重ねる */
-        /* 吹き出しは必ず画面の中に出す（「次へ」が押せなくならないように） */
-        top = Math.max(10, Math.min(vh - th - 10, top));
-        tip.style.top = Math.round(top) + 'px';
+        tourSetBlocks(layer, touchable ? { l: hl + ox, t: r.top - pad + oy, r: hr + ox, b: r.bottom + pad + oy } : null);
+        tip.style.left = tipLeft(r.left + r.width / 2 - tw / 2) + 'px';
+        /* 上下は「いま見えている範囲」の中で決める */
+        var rt = r.top - visT, rb = r.bottom - visT, top;
+        if (rb + 14 + th <= visH - 10) top = rb + 14;                       /* 下に置ける */
+        else if (rt - 14 - th >= 10) top = rt - 14 - th;                    /* 上に置ける */
+        else top = visH - th - 12;                                          /* 大きい場所：見えている範囲の下に重ねる */
+        /* 吹き出しは必ず見えている範囲の中に出す（「次へ」が押せなくならないように） */
+        top = Math.max(10, Math.min(visH - th - 10, top));
+        tip.style.top = Math.round(visT + top + oy) + 'px';
       }
       var settleUntil = Date.now() + 1200;
       window.removeEventListener('resize', layer.__place);
@@ -10051,6 +10071,17 @@
       layer.__place = place;
       window.addEventListener('resize', place);
       window.addEventListener('scroll', place, true);
+      /* キーボードの開け閉め・拡大・拡大中の移動では window の scroll が来ないことがあるので、見えている範囲の変化でも置き直す */
+      if (window.visualViewport){
+        if (layer.__vvPlace){
+          window.visualViewport.removeEventListener('resize', layer.__vvPlace);
+          window.visualViewport.removeEventListener('scroll', layer.__vvPlace);
+        }
+        var vvRaf = 0;
+        layer.__vvPlace = function(){ if (vvRaf) return; vvRaf = requestAnimationFrame(function(){ vvRaf = 0; if (layer.__place === place) place(); }); };
+        window.visualViewport.addEventListener('resize', layer.__vvPlace);
+        window.visualViewport.addEventListener('scroll', layer.__vvPlace);
+      }
       /* 照らす場所が見える位置までスクロール（上の固定バーと吹き出しの分を空ける） */
       if (!target) window.scrollTo({ top: 0, behavior: 'auto' });
       else {
@@ -10641,7 +10672,12 @@
   if (!pendingBackup && section !== 'import') setTimeout(function(){
     /* 初めて来た人には、更新情報の代わりに使い方ガイドを案内する。
        アップデート後に来た人には、まず更新情報（初回だけ）→ 閉じたら使い方ガイドの案内（初回だけ） */
-    if (isFirstVisit()){ markTourInviteSeen(); showTourInvite(false); return; }
+    /* はじめての人も、まず今回の更新内容 → 閉じたら使い方ガイドの案内 */
+    if (isFirstVisit()){
+      markTourInviteSeen();
+      if (!maybeShowUpdateNotice(false, function(){ showTourInvite(false); })) showTourInvite(false);
+      return;
+    }
     var shown = maybeShowUpdateNotice(false, function(){ maybeInviteTourAfterUpdate(); });
     if (!shown) maybeInviteTourAfterUpdate();
   }, 600);
