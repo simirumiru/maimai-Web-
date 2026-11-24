@@ -68,7 +68,7 @@
   }catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E6%A5%B5%E5%B0%86%E7%A5%9E%E8%88%9E%E8%A6%87&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E6%A5%B5%E5%B0%86%E7%A5%9E%E8%88%9E%E8%A6%87%E3%81%A7%E3%82%89%E3%81%A3%E3%81%8F%E3%81%99%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%80%E3%83%89&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -904,7 +904,7 @@
     --bg:#ffffff; --panel:#ffffff; --panel-2:#f4f6f8; --panel-3:#eef1f4;
     --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
     --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c; --canvas:#ffffff; background:#ffffff;}
-  .sd-export .sd-close, .sd-export .sd-save-row, .sd-export .sd-error{display:none !important;}
+  .sd-export .sd-close, .sd-export .sd-save-row, .sd-export .sd-error, .sd-export .sd-tabs{display:none !important;}
   /* 保存画像では光の流れは止める（✦ と縁の光は残す） */
   .sd-export .sd-badge.is-app{background-image:linear-gradient(180deg,#ff9f3d,#e55f12) !important;background-size:100% 100% !important;background-position:0 0 !important;animation:none !important;}
   .sd-export .sd-badge.is-fsdp, .sd-export .sd-badge.is-fdxp{background-image:linear-gradient(180deg,#ffc83d,#e08a0f) !important;background-size:100% 100% !important;background-position:0 0 !important;animation:none !important;}
@@ -924,6 +924,15 @@
   .sd-dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:12px 0 0;font-size:13px;}
   .sd-dl dt{color:var(--text-dim);font-weight:700;white-space:nowrap;}
   .sd-dl dd{margin:0;font-weight:600;word-break:break-word;}
+  /* 「譜面」の欄：ゲームの「でらっくす」「スタンダード」の札に合わせた見た目 */
+  .sd-type-val{display:inline-flex;align-items:center;gap:6px;}
+  .sd-type-tag{display:inline-flex;align-items:center;justify-content:center;padding:1px 12px 1px;border-radius:999px;line-height:1.25;
+    font-family:'M PLUS Rounded 1c','Noto Sans JP',sans-serif;font-weight:900;font-size:14px;letter-spacing:.02em;}
+  /* 下の厚み（影）は画像保存でも写るよう、影ではなく枠線で描く */
+  .sd-type-tag.is-dx{background:#fff;border:1px solid #dcdcdc;border-bottom:3px solid #cfcfcf;}
+  .sd-type-tag.is-dx span{text-shadow:0 1px 0 rgba(0,0,0,.08);}
+  .sd-type-tag.is-st{background:#45aeff;color:#fff;border:1px solid #45aeff;border-bottom:3px solid #0f48b0;text-shadow:0 1px 0 rgba(15,72,176,.45);}
+  .sd-type-suffix{font-weight:700;color:var(--text-dim);font-size:12.5px;}
   .sd-chart{margin-top:14px;padding:12px 12px 12px;border-radius:14px;border:1px solid var(--border);background:var(--panel-2, rgba(127,127,127,.06));}
   .sd-chart.is-mas{border-left:4px solid #b38cf2;}
   .sd-chart.is-rem{border-left:4px solid #d9c8ff;}
@@ -1006,18 +1015,23 @@
   .wheel-item.has-render .mode-badge-num{font-size:15px;}
   .wheel-item.has-render .dx-star{width:22px;height:22px;}
   .sd-note-label{display:inline-flex;align-items:center;gap:3px;}
-  /* ブレイク：濃い縁・白っぽい縁・赤橙黄の輪・白っぽい縁・暗いまん中 */
-  .break-note{display:inline-block;flex:none;border-radius:50%;box-sizing:border-box;
+  /* ブレイク：白っぽい縁・赤橙黄の輪・白っぽい縁・まん中は穴（後ろの色が見える）。
+     輪は ::before に描いて、まん中をマスクでくり抜く（外側の光や縁の線は本体の影なので、くり抜かれない） */
+  .break-note{display:inline-block;flex:none;border-radius:50%;box-sizing:border-box;position:relative;}
+  .break-note::before{content:'';position:absolute;inset:0;border-radius:50%;
     background:
-      radial-gradient(circle, #50557a 0, #3a3d58 22%, #2c2d44 30%, #f6d4c6 31%, #f6d4c6 36%, transparent 37%),
+      radial-gradient(circle, transparent 0, transparent 30%, #f6d4c6 31%, #f6d4c6 36%, transparent 37%),
       conic-gradient(from 0deg, #ff6a10 0deg, #ffb31c 40deg, #ffd52c 80deg, #ffc022 115deg, #ff6012 150deg, #ff2c0c 185deg, #ff7414 220deg, #ffc62a 260deg, #ffb01c 285deg, #ff3a0e 320deg, #ff6a10 360deg);
-    box-shadow:inset 0 0 0 1.2px #f8d8cb, inset 0 0 0 2px #ffb59a, 0 0 0 1px #1c2136;}
-  /* EXブレイク：黄色〜橙の輪、まわりが白っぽく光る、まん中は黒 */
-  .break-note.is-ex{
+    box-shadow:inset 0 0 0 1.2px #f8d8cb, inset 0 0 0 2px #ffb59a;
+    -webkit-mask:radial-gradient(circle, transparent 30%, #000 31%);mask:radial-gradient(circle, transparent 30%, #000 31%);}
+  /* EXブレイク：黄色〜橙の輪、まわりが白っぽく光る、まん中は穴 */
+  .break-note.is-ex{box-shadow:0 0 0 1.5px #fff1a6, 0 0 4px 2px rgba(255,226,110,.95), 0 0 9px 3px rgba(255,190,40,.55);}
+  .break-note.is-ex::before{
     background:
-      radial-gradient(circle, #000 0, #000 31%, #fff3c4 32%, #fff3c4 37%, transparent 38%),
+      radial-gradient(circle, transparent 0, transparent 31%, #fff3c4 32%, #fff3c4 37%, transparent 38%),
       conic-gradient(from 0deg, #ffd83a 0deg, #ffe85a 70deg, #ffcf2e 130deg, #ff9a1c 190deg, #ff6414 240deg, #ff5a12 270deg, #ff8a18 310deg, #ffd83a 360deg);
-    box-shadow:inset 0 0 0 1.2px #fff6c8, 0 0 0 1.5px #fff1a6, 0 0 4px 2px rgba(255,226,110,.95), 0 0 9px 3px rgba(255,190,40,.55);}
+    box-shadow:inset 0 0 0 1.2px #fff6c8;
+    -webkit-mask:radial-gradient(circle, transparent 31%, #000 32%);mask:radial-gradient(circle, transparent 31%, #000 32%);}
   .break-chevrons{flex:none;margin-right:-1px;filter:drop-shadow(0 0 1.5px rgba(255,80,0,.75));}
   /* BREAK の内訳（上：通常ブレイク／下：ブレイクスライド・EXブレイク） */
   .sd-note.has-bk{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:14px;padding:6px 10px;}
@@ -2255,21 +2269,16 @@
     c.beginPath(); c.arc(cx, cx, R - 0.6 * S, 0, Math.PI * 2); c.stroke();
     if (!ex){
       c.lineWidth = 0.8 * S; c.strokeStyle = '#ffb59a'; c.beginPath(); c.arc(cx, cx, R - 1.6 * S, 0, Math.PI * 2); c.stroke();
-      c.lineWidth = 1 * S; c.strokeStyle = '#1c2136'; c.beginPath(); c.arc(cx, cx, R + 0.5 * S, 0, Math.PI * 2); c.stroke();
     } else {
       c.lineWidth = 1.5 * S; c.strokeStyle = '#fff1a6'; c.beginPath(); c.arc(cx, cx, R + 0.75 * S, 0, Math.PI * 2); c.stroke();
     }
-    /* まん中（radial-gradient と同じ割合。半径＝直径の割合で） */
-    var D = size * S;
-    if (ex){
-      c.fillStyle = '#fff3c4'; c.beginPath(); c.arc(cx, cx, D * 0.37, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#000'; c.beginPath(); c.arc(cx, cx, D * 0.315, 0, Math.PI * 2); c.fill();
-    } else {
-      c.fillStyle = '#f6d4c6'; c.beginPath(); c.arc(cx, cx, D * 0.365, 0, Math.PI * 2); c.fill();
-      var rg = c.createRadialGradient(cx, cx, 0, cx, cx, D * 0.305);
-      stops(rg, [[0,'#50557a'],[0.72,'#3a3d58'],[1,'#2c2d44']]);
-      c.fillStyle = rg; c.beginPath(); c.arc(cx, cx, D * 0.305, 0, Math.PI * 2); c.fill();
-    }
+    /* まん中：CSS の radial-gradient(circle, …) の % は「中心から角まで」（直径×0.707）に対する割合なので、それに合わせる */
+    var D = size * S * Math.SQRT1_2;
+    /* 白っぽい縁を描いてから、まん中をくり抜く（画面と同じく、後ろの色が見える） */
+    c.fillStyle = ex ? '#fff3c4' : '#f6d4c6'; c.beginPath(); c.arc(cx, cx, D * (ex ? 0.375 : 0.365), 0, Math.PI * 2); c.fill();
+    c.globalCompositeOperation = 'destination-out';
+    c.fillStyle = '#000'; c.beginPath(); c.arc(cx, cx, D * (ex ? 0.315 : 0.305), 0, Math.PI * 2); c.fill();
+    c.globalCompositeOperation = 'source-over';
     return { url: cv.toDataURL('image/png'), pad: pad };
   }
   function drawGradientText(text, fontCss, sizePx){
@@ -2446,7 +2455,20 @@
 
     function row(dl, label, value){
       dl.appendChild(el('dt', {text: label}));
+      if (value && value.nodeType){ var dd = el('dd'); dd.appendChild(value); dl.appendChild(dd); return; }
       dl.appendChild(el('dd', {text: (value === 0 || value) ? String(value) : '—'}));
+    }
+    /* 譜面の種類：でらっくす＝白い札に1文字ずつ色（赤・橙・黄・緑・水色）／スタンダード＝青い札に白文字 */
+    var DX_TAG_COLORS = ['#ff4646', '#ffa02d', '#ffc800', '#8cc63f', '#00aae6'];
+    function chartTypeNode(t){
+      if (t !== 'DX' && t !== 'ST') return '';
+      var wrap = el('span', {class:'sd-type-val'});
+      var tag = el('span', {class:'sd-type-tag ' + (t === 'DX' ? 'is-dx' : 'is-st')});
+      if (t === 'DX') 'でらっくす'.split('').forEach(function(ch, i){ tag.appendChild(el('span', {text: ch, style:{color: DX_TAG_COLORS[i]}})); });
+      else tag.textContent = 'スタンダード';
+      wrap.appendChild(tag);
+      wrap.appendChild(el('span', {class:'sd-type-suffix', text:'譜面'}));
+      return wrap;
     }
     function chartBlock(kind, m, info){
       var isRem = kind === 'rem';
@@ -2527,7 +2549,7 @@
       artistEl.textContent = '作曲者：' + (info ? (info.a || '—') : (ph() || '—'));
       body.textContent = '';
       var dl = el('dl', {class:'sd-dl sd-meta'});
-      row(dl, '譜面', cur === 'DX' ? 'でらっくす譜面' : (cur === 'ST' ? 'スタンダード譜面' : ''));
+      row(dl, '譜面', chartTypeNode(cur));
       row(dl, 'バージョン', m.ver);
       row(dl, 'ジャンル', info ? info.cat : ph());
       row(dl, 'BPM', info ? (info.b ? String(Math.round(info.b * 100) / 100) : '') : ph());
