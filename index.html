@@ -758,6 +758,13 @@
   .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
   .tour-invite-text + .tour-invite-text{margin-top:-8px;}
   .tour-mk{display:inline-flex;vertical-align:middle;margin:0 1px;}
+  /* 取り込み方（かんたん／すべて） */
+  .import-modes{margin:14px 0 4px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--panel);display:flex;flex-direction:column;gap:8px;}
+  .import-modes-title{font-size:13px;font-weight:800;color:var(--text-dim);}
+  .import-mode{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.6;}
+  .import-mode-tag{flex:none;min-width:64px;text-align:center;font-weight:800;font-size:13px;color:#fff;border-radius:999px;padding:2px 10px;margin-top:1px;}
+  .import-mode-tag.is-quick{background:#2f9be0;}
+  .import-mode-tag.is-all{background:#5b6b7a;}
   /* ---- 極・将・神・舞舞・覇の印 ---- */
   .pm-badge{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;box-sizing:border-box;
     font-family:'M PLUS Rounded 1c',var(--font-body);font-weight:900;font-size:14px;line-height:1;letter-spacing:.05em;
@@ -983,6 +990,10 @@
   .sd-star-num{font-size:17px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;}
   .dx-star{display:inline-block;vertical-align:-3px;flex:none;filter:drop-shadow(0 0 1px rgba(0,0,0,.35));}
   .dx-star-0{filter:none;color:var(--text-dim);}
+  /* ☆6・☆7 の上を流れる光（AP+・FDX+ と同じ速さ） */
+  .dx-star-glint{animation:dxGlint 2.6s cubic-bezier(.35,0,.65,1) infinite;}
+  @keyframes dxGlint{0%{transform:translateX(0)}60%,100%{transform:translateX(48px)}}
+  @media (prefers-reduced-motion: reduce){.dx-star-glint{animation:none!important;}}
   .sd-rec-next{margin-top:4px;text-align:right;font-size:12px;color:var(--text-dim);display:flex;justify-content:flex-end;align-items:center;gap:3px;}
   .sd-rec-next b{color:var(--accent);font-size:13px;}
   /* 条件のバッジ（未達成楽曲一覧のスクロールで選ぶ所） */
@@ -2186,6 +2197,26 @@
       var shine = document.createElementNS(ns, 'path');
       shine.setAttribute('d', path.getAttribute('d')); shine.setAttribute('fill', 'url(#' + sid + ')');
       svg.appendChild(shine);
+    }
+    /* ☆6・☆7：AP+・FDX+ と同じように、光の帯が星の上を流れる。
+       帯は初めは星の外（左）に置き、CSS のアニメーションで右へ動かす。
+       画像保存では CSS が効かないので、帯は星の外のまま写らない */
+    if (lv >= 6){
+      var cid = id + 'c', gid = id + 'g';
+      var cp = document.createElementNS(ns, 'clipPath'); cp.setAttribute('id', cid);
+      var cpath = document.createElementNS(ns, 'path'); cpath.setAttribute('d', path.getAttribute('d'));
+      cp.appendChild(cpath);
+      var bg = document.createElementNS(ns, 'linearGradient'); bg.setAttribute('id', gid);
+      [['0', 0], ['.5', lv === 7 ? 1 : .8], ['1', 0]].forEach(function(st){
+        var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); bg.appendChild(e);
+      });
+      var dfs = svg.querySelector('defs'); dfs.appendChild(cp); dfs.appendChild(bg);
+      var gl = document.createElementNS(ns, 'g'); gl.setAttribute('clip-path', 'url(#' + cid + ')');
+      var tilt = document.createElementNS(ns, 'g'); tilt.setAttribute('transform', 'rotate(20 12 12)');
+      var band = document.createElementNS(ns, 'rect');
+      band.setAttribute('x', '-18'); band.setAttribute('y', '-8'); band.setAttribute('width', '12'); band.setAttribute('height', '40');
+      band.setAttribute('fill', 'url(#' + gid + ')'); band.setAttribute('class', 'dx-star-glint');
+      tilt.appendChild(band); gl.appendChild(tilt); svg.appendChild(gl);
     }
     return svg;
   }
@@ -7553,7 +7584,8 @@
       ['使い方ガイド', 'ホームやメニューの「使い方ガイド」から、各機能の使い方を実際の画面で確認できます。'],
       ['曲の詳細に自分の記録', '楽曲画像をタップすると、ランク・FC/AP・でらっくすスコア・星を確認できます。'],
       ['未達成楽曲一覧の SSS+・☆5〜☆7', '条件に、SSS+ と でらっくすスコアの☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
-      ['赤線 → 薄く表示', '達成済みの楽曲は、赤線ではなく薄く表示されるようになりました。\n自分で登録するときは、楽曲画像を長押しします（タップは楽曲の詳細）。']
+      ['赤線 → 薄く表示', '達成済みの楽曲は、赤線ではなく薄く表示されるようになりました。\n自分で登録するときは、楽曲画像を長押しします（タップは楽曲の詳細）。'],
+      ['取り込みの高速化', '取り込みが速くなりました。NET の画面で「かんたん（MASTER・Re:MASTER）」を選ぶと、さらに早く終わります。\n下埋め進捗を見るときは「すべて」を選んでください。ブックマークはそのままで大丈夫です。']
     ]},
     { ver:'2.2', date:'2026/11/10', items:[
       ['曲名の表示', '楽曲画像の下に曲名を表示するようにしました（保存画像には入りません）。\nホームの「楽曲画像に曲名を表示」でON/OFFできます。'],
@@ -8074,9 +8106,12 @@
     for (var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = (x + ((x << 1) + (x << 4) + (x << 7) + (x << 8) + (x << 24))) >>> 0; }
     return x.toString(36);
   }
-  function saveNetRecords(records, ver){
-    /* v：取り込みプログラムの版（2 から DXスコアも読む） */
+  function saveNetRecords(records, ver, extra){
+    /* v：取り込みプログラムの版（2 から DXスコアも読む）
+       mode：'quick'（MASTER・Re:MASTER だけ）／'all'（BASIC〜Re:MASTER）
+       lowerAt：BASIC〜EXPERT の記録を読んだ日（「かんたん」で取り込んだときは前の「すべて」の日のまま） */
     var o = { at: Date.now(), records: records, sig: tablesSignature(), v: ver || 1 };
+    if (extra){ if (extra.mode) o.mode = extra.mode; if (extra.lowerAt) o.lowerAt = extra.lowerAt; }
     netRecordsMemo = o; netSigCheckedFor = allVersions;
     if (!storageOK) return;
     try{ localStorage.setItem(NET_RECORDS_KEY, JSON.stringify(o)); }catch(e){}
@@ -8115,7 +8150,14 @@
     var p = buildImportPlan(d.records.slice(0, 20000));
     /* はじめての取り込みか（使い方ガイドの続きを案内するかどうかに使う） */
     var firstImport = !netRecordIndex();
-    saveNetRecords(d.records.slice(0, 20000), +d.v || 1);
+    var recs = d.records.slice(0, 20000), extra = { mode: d.mode === 'quick' ? 'quick' : 'all' };
+    if (extra.mode === 'quick'){
+      /* かんたん（MASTER・Re:MASTER だけ）：前に取り込んだ BASIC〜EXPERT の記録は消さずに残す（下埋め進捗で使う） */
+      var prev = loadNetRecords();
+      var keep = (prev && Array.isArray(prev.records)) ? prev.records.filter(function(r){ return Array.isArray(r) && +r[2] < 3; }) : [];
+      if (keep.length){ recs = keep.concat(recs); extra.lowerAt = prev.lowerAt || prev.at; }
+    } else extra.lowerAt = Date.now();
+    saveNetRecords(recs, +d.v || 1, extra);
     /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
     p.plan.forEach(function(it){
       Object.keys(it.maps).forEach(function(m){
@@ -8167,7 +8209,7 @@
     [
       ['コピー', '下のボタンで取り込み用のコードをコピー'],
       ['ブックマーク', 'ブックマークを1つ作り、URLをコピーしたコードに書き換える'],
-      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開く（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
+      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開いて「かんたん」か「すべて」を選ぶ（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
     ].forEach(function(s, i){
       var li = el('li', {class:'step'});
       li.appendChild(el('span', {class:'step-num', text: String(i + 1)}));
@@ -8178,6 +8220,18 @@
       steps.appendChild(li);
     });
     wrap.appendChild(steps);
+
+    /* 取り込み方（NET の画面で選ぶ） */
+    var modes = el('div', {class:'import-modes'});
+    modes.appendChild(el('div', {class:'import-modes-title', text:'取り込み方（NET の画面で選びます）'}));
+    [['かんたん', 'is-quick', 'MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。'],
+     ['すべて', 'is-all', 'BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んでください。']].forEach(function(m){
+      var row = el('div', {class:'import-mode'});
+      row.appendChild(el('span', {class:'import-mode-tag ' + m[1], text: m[0]}));
+      row.appendChild(el('span', {class:'import-mode-text', text: m[2]}));
+      modes.appendChild(row);
+    });
+    wrap.appendChild(modes);
 
     /* ③の下の注意書き */
     var caution = el('div', {class:'import-caution', role:'note'});
@@ -8266,7 +8320,7 @@
       if (dxMax > 0) hasDx = true;
       idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || ''), dx: dx, dxMax: dxMax };
     });
-    return { idx: idx, hasLower: lower, hasDx: hasDx, v: +o.v || 1, at: o.at };
+    return { idx: idx, hasLower: lower, hasDx: hasDx, v: +o.v || 1, at: o.at, mode: o.mode || 'all', lowerAt: o.lowerAt || (lower ? o.at : 0) };
   }
   /* 自分で登録した達成済み（プレート表で長押し）を記録として扱う。
      極＝FC、将＝SSS（ちょうど 100.0000%）、神＝AP（100.9500%）、舞＝FDX。AP+ は 101.0000%。
@@ -8528,11 +8582,13 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     var rec = netRecordIndex();
     if (!rec){
-      needImportNote(root, 'maimai NET から記録を取り込むと、下埋めの残りが表示されます。');
+      needImportNote(root, 'maimai NET から記録を取り込むと、下埋めの残りが表示されます。\n下埋め進捗には BASIC〜EXPERT の記録が必要なので、取り込むときに「すべて」を選んでください。');
       return;
     }
     if (!rec.hasLower){
-      needImportNote(root, '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
+      needImportNote(root, rec.mode === 'quick'
+        ? '「かんたん」で取り込んだ記録には BASIC〜EXPERT が入っていません。\n下埋め進捗を見るときは、取り込むときに「すべて」を選んでください（ブックマークはそのままで大丈夫です）。'
+        : '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
       return;
     }
     var r = isMai ? computeFillMany(maiFillDocs(), mode, rec) : isSum ? computeFillMany(fillSumDocs(), mode, rec) : computeFill(v, mode, rec);
@@ -8638,9 +8694,13 @@
     });
     stats.appendChild(ps);
     card.appendChild(stats);
-    card.appendChild(el('div', {class:'export-only-note', text:'取り込んだ日: ' + fmtDate(rec.at)}));
+    /* 「かんたん」で取り込んだあとは、BASIC〜EXPERT は前に「すべて」で取り込んだ日の記録 */
+    var lowerOld = rec.lowerAt && rec.lowerAt < rec.at - 60000;
+    card.appendChild(el('div', {class:'export-only-note', text:'取り込んだ日: ' + fmtDate(lowerOld ? rec.lowerAt : rec.at)}));
     root.appendChild(card);
-    root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+    root.appendChild(el('div', {class:'pv-caption', text: lowerOld
+      ? 'BASIC〜EXPERT は ' + fmtDate(rec.lowerAt) + ' に「すべて」で取り込んだときの記録です。下埋めを進めたら「すべて」でもう一度取り込んでください。'
+      : '取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
   }
 
   /* ========================= シンクのお相手記録（ホームから） =========================
@@ -9429,7 +9489,9 @@
     { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(2)', noTouch:true, title:'② ブックマークを作る',
       text:'ブラウザでブックマークを1つ作り、URL の欄にコピーしたコードをペーストします。' },
     { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', noTouch:true, title:'③ maimai NET で開く',
-      text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開きます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。（1分半〜2分ほど）' },
+      text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開き、[ui:かんたん] か [ui:すべて] を選びます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。' },
+    { sec:0, go:R('#/import'), sel:'#app .import-modes', title:'取り込み方を選ぶ',
+      text:'[ui:かんたん] MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。\n[ui:すべて] BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んで下さい。' },
     { sec:0, go:R('#/import'), sel:'#app .import-caution', title:'プレイしたら取り込み直す',
       text:'記録は自動では更新されません。\nスコアが変わったら、もう一度 ③ をしてください。' },
     /* 記録がまだ無い人：ここで取り込んでもらい、取り込みが終わったら続き（プレート表〜）を始める */
