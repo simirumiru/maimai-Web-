@@ -808,6 +808,9 @@
   .guide-hint-text{margin:0;font-size:14px;font-weight:700;line-height:1.6;align-self:stretch;}
   .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
   .tour-invite-skip{margin-top:10px;background:none;border:0;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;}
+  .tour-invite-go .tour-pick-main{font-size:15px;font-weight:800}
+  .tour-invite-go .tour-pick-sub{font-size:12px;font-weight:700;opacity:.85;margin-left:10px}
+  .tour-pick-first{margin-top:8px;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl)}
   .tour-invite-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;}
   /* 照らす枠・まわりの板・吹き出しは、画面ではなくページの上に置く（absolute）。
      キーボードが開いたり画面を拡大したりしても、照らす所と一緒に動くのでズレない */
@@ -9740,6 +9743,10 @@
   var GUIDE_HINT_KEY = 'mmplate_guide_hint_v1';
   function showGuideHomeHint(){
     try{ if (localStorage.getItem(GUIDE_HINT_KEY)) return; localStorage.setItem(GUIDE_HINT_KEY, '1'); }catch(e){ return; }
+    pointHomeTourCard('使い方ガイドは、ホーム画面のここからいつでも見直せます。');
+  }
+  /* ホーム画面の「使い方ガイド」を照らして、ひとこと案内を出す */
+  function pointHomeTourCard(msg){
     if (location.hash !== '#/' && location.hash !== ''){ location.hash = '#/'; }
     setTimeout(function(){
       var card = document.querySelector('#app .home-card[data-key="tour"]');
@@ -9753,7 +9760,7 @@
         hole.style.width = (r.width + 12) + 'px'; hole.style.height = (r.height + 12) + 'px';
         layer.appendChild(hole);
         var tip = el('div', {class:'guide-hint-tip'});
-        tip.appendChild(el('p', {class:'guide-hint-text', text:'使い方ガイドは、ホーム画面のここからいつでも見直せます。'}));
+        tip.appendChild(el('p', {class:'guide-hint-text', text: msg}));
         tip.appendChild(el('button', {type:'button', class:'btn btn-primary btn-sm guide-hint-ok', text:'OK', onclick: function(){ closeHint(); }}));
         layer.appendChild(tip);
         var below = r.top < window.innerHeight * 0.55;
@@ -9768,11 +9775,44 @@
       }, 450);
     }, 400);
   }
-  function startTour(){ try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(0); }
+  /* 途中で終了した場所（説明の番号）。次に開いたとき「続きから」を選べる */
+  var TOUR_POS_KEY = 'mmplate_tour_pos_v1';
+  function getTourPos(){ try{ var n = parseInt(localStorage.getItem(TOUR_POS_KEY), 10); return n > 0 ? n : 0; }catch(e){ return 0; } }
+  function setTourPos(n){ try{ if (n > 0) localStorage.setItem(TOUR_POS_KEY, String(n)); else localStorage.removeItem(TOUR_POS_KEY); }catch(e){} }
+  function tourPosLabel(n){
+    var st = TOUR_STEPS[Math.min(n, TOUR_STEPS.length - 1)];
+    if (!st || st.sec < 0) return 'テーマカラー';
+    return (st.sec + 1) + ' / ' + TOUR_SECTIONS.length + '　' + TOUR_SECTIONS[st.sec];
+  }
+  function startTourFresh(){ setTourPos(0); try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(0); }
+  /* ガイドを開く：途中で終了していたら「続きから」か「最初から」を選ぶ */
+  function startTour(){
+    var pos = getTourPos();
+    if (!pos || pos >= TOUR_STEPS.length - 1){ startTourFresh(); return; }
+    var backdrop = el('div', {class:'modal-backdrop tour-invite-backdrop'});
+    var box = el('div', {class:'modal-box tour-invite', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'tourPickTitle'});
+    box.appendChild(iconNode('tour', 'tour-invite-icon'));
+    box.appendChild(el('h3', {id:'tourPickTitle', class:'tour-invite-title', text:'使い方ガイド'}));
+    box.appendChild(el('p', {class:'tour-invite-text', text:'前回は途中で終了しています。どこから見ますか？'}));
+    var go = el('button', {type:'button', class:'btn btn-primary tour-invite-go', onclick: function(){ closeModal(backdrop); try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(pos); }});
+    go.appendChild(el('span', {class:'tour-pick-main', text:'続きから'}));
+    go.appendChild(el('span', {class:'tour-pick-sub', text: tourPosLabel(pos)}));
+    box.appendChild(go);
+    box.appendChild(el('button', {type:'button', class:'btn tour-invite-go tour-pick-first', text:'最初から', onclick: function(){ closeModal(backdrop); startTourFresh(); }}));
+    box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'やめる', onclick: function(){ closeModal(backdrop); }}));
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+  /* 途中で終了：場所を覚えて、ホーム画面の「使い方ガイド」から再開できることを案内する */
+  function quitTourMidway(i){
+    setTourPos(i);
+    endTour(false);
+    setTimeout(function(){ pointHomeTourCard('途中で終了しました。次はホーム画面のここから、続きを再開できます。'); }, 250);
+  }
   /* ガイドを最後（おしまいの画面）まで見たか */
   var TOUR_FINISHED_KEY = 'mmplate_tour_finished_v1';
   function tourFinished(){ try{ return localStorage.getItem(TOUR_FINISHED_KEY) === '1'; }catch(e){ return true; } }
-  function markTourFinished(){ try{ localStorage.setItem(TOUR_FINISHED_KEY, '1'); localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} }
+  function markTourFinished(){ try{ localStorage.setItem(TOUR_FINISHED_KEY, '1'); localStorage.removeItem(TOUR_RESUME_KEY); localStorage.removeItem(TOUR_POS_KEY); }catch(e){} }
   function setTourResume(){ try{ localStorage.setItem(TOUR_RESUME_KEY, '1'); }catch(e){} }
   /* 続き（実績プレート表〜）から始める */
   function resumeTour(){ try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(firstStepOf(1)); }
@@ -9852,7 +9892,7 @@
       if (!tourLayer) return;
       /* 入力欄に文字を打っているときの ← → はガイドを動かさない */
       if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
-      if (e.key === 'Escape') endTour(false);
+      if (e.key === 'Escape'){ var si = tourLayer.__stepIndex; if (si > 0 && si < TOUR_STEPS.length - 1) quitTourMidway(si); else endTour(false); return; }
       if (e.key === 'ArrowRight' && tourLayer.__next) tourLayer.__next();
       if (e.key === 'ArrowLeft' && tourLayer.__prev) tourLayer.__prev();
     };
@@ -9996,7 +10036,7 @@
         if (i > 0) nav.appendChild(el('button', {type:'button', class:'btn tour-back', text:'戻る', onclick: goPrev}));
         if (step.gate){
           primary = el('button', {type:'button', class:'btn btn-primary tour-next', text:'取り込む', onclick: function(){
-            setTourResume();
+            setTourResume(); setTourPos(firstStepOf(1));
             /* 「取り込む」で取り込み用のコードもコピーする（①のボタンと同じ） */
             var cp = document.querySelector('#app .page-actions .btn-primary');
             if (cp) cp.click();
@@ -10013,7 +10053,7 @@
         foot.appendChild(el('button', {type:'button', class:'tour-link', text:'ガイドを終了', onclick: function(){
           /* 取り込みの説明の途中でやめた人は、取り込みが終わったら続きを案内する */
           if (step.sec === 0 && !hasNetRecords()) setTourResume();
-          endTour(false);
+          if (i > 0) quitTourMidway(i); else endTour(false);
         }}));
         /* 次のメニュー（プレート表・未達成表…）の説明へとぶ（いまのメニューの残りはとばす） */
         var nextSec = -1, j = i + 1;

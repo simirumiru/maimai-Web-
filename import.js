@@ -110,7 +110,7 @@ var st = setInterval(function(){
   if (sh < cap) sh = Math.min(cap, sh + Math.max(0.12, (cap - sh) * 0.035));
   var sec = Math.floor((Date.now() - pageStart) / 1000);
   say('mai\u30d7\u30ec\u30fc\u30c8\uff1a\u8a18\u9332\u3092\u8aad\u307f\u53d6\u308a\u4e2d\u2026 ' + Math.floor(sh) + '%\uff08' + dn + '/' + tot + '\uff09' +
-    '\n' + (mode === 'quick' ? '\u304b\u3093\u305f\u3093' : '\u3059\u3079\u3066') + ' \u30fb ' + sec + '\u79d2' + (retry ? '\u30fb\u3084\u308a\u76f4\u3057' + retry + '\u56de\uff08' + lastErr + '\uff09' : '') +
+    '\n' + (mode === 'quick' ? '\u30b9\u30d4\u30fc\u30c9' : '\u3059\u3079\u3066') + ' \u30fb ' + sec + '\u79d2' + (retry ? '\u30fb\u3084\u308a\u76f4\u3057' + retry + '\u56de\uff08' + lastErr + '\uff09' : '') +
     (mobile ? '\n\u3053\u306e\u753b\u9762\u306e\u307e\u307e\u5c11\u3057\u304a\u5f85\u3061\u304f\u3060\u3055\u3044' : ''));
 }, 60);
 msg.style.whiteSpace = 'pre-line';
@@ -137,7 +137,7 @@ function readAll(diffs){
     return queue.length ? worker(0) : null;
   }).then(function(){ return diffs.map(function(d){ return res[d] || []; }); });
 }
-/* \u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304b\u3089\u8aad\u307f\u59cb\u3081\u308b\u3002\u304b\u3093\u305f\u3093\uff1dMASTER\u30fbRe:MASTER \u3060\u3051\uff08\u901f\u3044\uff09\uff0f\u3059\u3079\u3066\uff1dBASIC\u301cRe:MASTER\uff08\u4e0b\u57cb\u3081\u9032\u6357\u3082\u4f7f\u3048\u308b\uff09 */
+/* \u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304b\u3089\u8aad\u307f\u59cb\u3081\u308b\u3002\u30b9\u30d4\u30fc\u30c9\uff1dMASTER\u30fbRe:MASTER \u3060\u3051\uff08\u901f\u3044\uff09\uff0f\u3059\u3079\u3066\uff1dBASIC\u301cRe:MASTER\uff08\u4e0b\u57cb\u3081\u9032\u6357\u3082\u4f7f\u3048\u308b\uff09 */
 function choose(){
   return new Promise(function(resolve){
     say('mai \u30d7\u30ec\u30fc\u30c8\uff1a\u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044');
@@ -150,7 +150,7 @@ function choose(){
       x.onclick = function(){ row.remove(); resolve(m); };
       row.appendChild(x);
     }
-    b('\u304b\u3093\u305f\u3093', 'MASTER\u30fbRe:MASTER\uff08\u901f\u3044\uff09', '#2f9be0', 'quick');
+    b('\u30b9\u30d4\u30fc\u30c9', 'MASTER\u30fbRe:MASTER\uff08\u901f\u3044\uff09', '#2f9be0', 'quick');
     b('\u3059\u3079\u3066', 'BASIC\u301cRe:MASTER\uff08\u4e0b\u57cb\u3081\u9032\u6357\u3082\uff09', '#5b6b7a', 'all');
     box.appendChild(row);
   });
