@@ -261,7 +261,9 @@
   /* 達成済みの曲：未達成楽曲一覧の「達成済みを表示」と同じように薄く表示する */
   .pv-thumb.is-marked > img{opacity:.16;filter:grayscale(.85);}
   .pv-thumb.is-marked.no-img{opacity:.3;}
-  .pv-thumb.is-marked .song-title{background:rgba(0,0,0,.35);color:rgba(255,255,255,.5);}
+  /* 薄くした曲は、曲名も少し控えめに（ただし読める濃さは残す） */
+  .pv-thumb.is-marked .song-title, .todo-thumb.is-done .song-title{background:rgba(0,0,0,.55);color:rgba(255,255,255,.8);}
+  html:not([data-theme="dark"]) .pv-thumb.is-marked .song-title, html:not([data-theme="dark"]) .todo-thumb.is-done .song-title{background:rgba(40,44,52,.5);color:rgba(255,255,255,.92);}
 
   .badge-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;}
   .badge-thumb{position:relative;width:150px;height:42px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--panel);}
@@ -543,6 +545,13 @@
   .ptier-band{margin-bottom:20px;}
   .ptier-band-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border);}
   .ptier-band-label{font-family:var(--font-display);font-weight:800;font-size:20px;}
+  .ptier-band-label.is-plain{color:#ffffff;}
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .ptier-band-label.is-plain{color:var(--text);}
+  .export-white .ptier-band-label.is-plain{color:#17252f !important;}
+  /* 白い背景では淡い定数の色（12・11 など）が見えにくいので、色はそのままで細い縁取りを付ける */
+  html:not([data-theme="dark"]) #previewCard:not(.pv-export) .ptier-band-label:not(.is-plain),
+  .export-white .ptier-band-label:not(.is-plain){
+    text-shadow:-1px 0 0 rgba(23,37,47,.55), 1px 0 0 rgba(23,37,47,.55), 0 -1px 0 rgba(23,37,47,.55), 0 1px 0 rgba(23,37,47,.55);}
   .ptier-doc-title{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--text);}
   .ptier-band-meta{font-size:11px;color:var(--text-dim);}
   .ptier-row{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--border);
@@ -765,32 +774,25 @@
   .import-mode-tag{flex:none;min-width:64px;text-align:center;font-weight:800;font-size:13px;color:#fff;border-radius:999px;padding:2px 10px;margin-top:1px;}
   .import-mode-tag.is-quick{background:#2f9be0;}
   .import-mode-tag.is-all{background:#5b6b7a;}
-  /* ---- 極・将・神・舞舞・覇の印 ---- */
+  /* ---- 極・将・神・舞舞・覇の印 ----
+     FC・AP・FDX の印と同じ形：プレートの色で塗った丸い札に、白い太字（書体も同じ） */
   .pm-badge{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;box-sizing:border-box;
-    font-family:'M PLUS Rounded 1c',var(--font-body);font-weight:900;font-size:14px;line-height:1;letter-spacing:.05em;
-    padding:3px 10px 4px;border-radius:999px;border:2px solid currentColor;white-space:nowrap;}
-  .pm-kiwami{color:#4fc3f7;}
-  .pm-sho{color:#c2185b;}
-  .pm-shin{color:#e8c24a;}
-  .pm-hasha{color:#9b7bd9;}
-  .pm-other{color:var(--text);}
-  /* 舞舞：プレート難易度表のバーと同じ淡い虹を、文字と楕円の線に */
-  .pm-maimai{border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
-    linear-gradient(90deg,#f2b8c6,#f6d9b0,#f2eeb3,#bfe3c6,#b8d8ee,#cfc2e8,#eebfd6) border-box;}
-  .pm-maimai .pm-text{background:linear-gradient(90deg,#f2b8c6,#f6d9b0,#f2eeb3,#bfe3c6,#b8d8ee,#cfc2e8,#eebfd6);
-    -webkit-background-clip:text;background-clip:text;color:transparent;}
-  /* 白い画面では淡い色が見えにくいので、同じ色合いを少し濃くする */
-  html:not([data-theme="dark"]) .pm-kiwami{color:#1fa3dc;}
-  html:not([data-theme="dark"]) .pm-shin{color:#d4a017;}
-  html:not([data-theme="dark"]) .pm-maimai{background:linear-gradient(var(--panel),var(--panel)) padding-box,
-    linear-gradient(90deg,#ec7f9c,#f2b26a,#e3c94a,#6fc48a,#5aaee0,#9b86d6,#e78bb8) border-box;}
-  html:not([data-theme="dark"]) .pm-maimai .pm-text{background:linear-gradient(90deg,#ec7f9c,#f2b26a,#e3c94a,#6fc48a,#5aaee0,#9b86d6,#e78bb8);
-    -webkit-background-clip:text;background-clip:text;}
+    font-family:var(--font-body);font-weight:900;font-size:13px;line-height:1.2;letter-spacing:.04em;
+    padding:2px 10px;border-radius:999px;white-space:nowrap;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.18);
+    background:var(--border-strong);}
+  /* 色はプレート難易度表のバーの色（上を少し明るく、下を少し濃く） */
+  .pm-kiwami{background:linear-gradient(180deg,#6fd0fa,#1f9fd8);}
+  .pm-sho{background:linear-gradient(180deg,#e2457f,#a5124a);}
+  .pm-shin{background:linear-gradient(180deg,#f1d063,#c9980f);}
+  .pm-hasha{background:linear-gradient(180deg,#b29bea,#7f5cc8);}
+  .pm-other{background:var(--border-strong);}
+  /* 舞舞：プレート難易度表のバーと同じ虹（白い文字が読めるよう少し濃いめにし、彩度は控えめに） */
+  .pm-maimai{background:linear-gradient(90deg,#dc8fa4,#deb17e,#ccba61,#7cb78f,#6ea9cc,#a192ca,#d999b8);text-shadow:0 1px 1.5px rgba(0,0,0,.3);}
   .pm-none{font-weight:800;}
   .pm-row{display:inline-flex;gap:5px;margin:0 4px;vertical-align:middle;flex-wrap:wrap;}
-  .range-label .pm-badge{font-size:13px;padding:2px 9px 3px;}
-  .wheel-item .pm-badge{font-size:16px;padding:4px 13px 5px;}
-  .tour-line .pm-badge{font-size:13px;padding:2px 8px 3px;margin:0 1px;}
+  .range-label .pm-badge{font-size:12.5px;padding:2px 9px;}
+  .wheel-item .pm-badge{font-size:15px;padding:3px 14px;}
+  .tour-line .pm-badge{font-size:12px;padding:2px 8px;margin:0 1px;}
   .tour-mk .mode-badge{display:inline-flex;align-items:center;gap:2px;}
   .tour-mk .mode-badge-rank{font-size:16px;min-width:0;}
   .tour-mk .sd-badge{min-width:0;padding:1px 7px;font-size:11px;}
@@ -1547,7 +1549,6 @@
   /* 達成済み（「達成済みを表示」のとき）は薄く */
   .todo-thumb.is-done > img{opacity:.16;filter:grayscale(.85);}
   .todo-thumb.is-done.no-img{opacity:.3;}
-  .todo-thumb.is-done .song-title{background:rgba(0,0,0,.35);color:rgba(255,255,255,.5);}
   @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} .konst-card-body .todo-grid{gap:7px;} .todo-thumb.konst-remas{width:60px;height:60px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
   .sync-card-preview{max-height:240px;position:relative;}
@@ -2331,7 +2332,7 @@
     svg.innerHTML = g + p;
     return svg;
   }
-  /* 未達成楽曲一覧の条件（FC・SSS・AP…・☆5〜☆7）を、曲の詳細と同じ見た目で出す */
+  /* 未達成楽曲一覧の条件（FC・SSS・AP…・☆4〜☆7）を、曲の詳細と同じ見た目で出す */
   var TODO_BADGE = { 'FC':'fc', 'AP':'ap', 'AP+':'app', 'FDX':'fsd', 'FDX+':'fsdp' };
   function todoModeBadge(key){
     var box = el('span', {class:'mode-badge'});
@@ -6710,6 +6711,8 @@
     document.body.appendChild(backdrop);
   }
 
+  /* ランク名の色：定数の色（15 → 14+ → 14 → 13+ → 13 → 12+ → 12 → 11+ → 11 → 10+）を上のランクから順に使う */
+  var PTIER_LABEL_COLORS = TOP_LEVEL_DEFS.concat(LOWER_LEVEL_DEFS).map(function(d){ return d.color; });
   function buildPlateTierPreviewNode(t){
     var card = el('div', {id:'previewCard', style:{position:'relative'}});
     var tTitle = el('div', {class:'pv-title ptier-title'});
@@ -6735,6 +6738,8 @@
       return card;
     }
 
+    /* ランク名の色：表に出ている順に、上から定数の色（15〜10+ の10色）。11個目からは白（白い画面では黒っぽい文字） */
+    var shownRank = 0;
     t.ranks.forEach(function(rank){
       var jiriki = rank.jiriki || [];
       var kojinsa = rank.kojinsa || [];
@@ -6742,7 +6747,8 @@
 
       var section = el('div', {class:'ptier-band'});
       var head = el('div', {class:'ptier-band-head'});
-      head.appendChild(el('div', {class:'ptier-band-label', style:{color: rank.color, '--lvc': rank.color}, text: rank.label}));
+      var rc = PTIER_LABEL_COLORS[shownRank++];
+      head.appendChild(el('div', {class:'ptier-band-label' + (rc ? '' : ' is-plain'), style: rc ? {color: rc} : {}, text: rank.label}));
       section.appendChild(head);
 
       [['jiriki','地力'], ['kojinsa','個人差']].forEach(function(pair){
@@ -7604,7 +7610,7 @@
     { ver:'2.4', date:'2026/11/25', items:[
       ['使い方ガイド', 'ホームやメニューの「使い方ガイド」から、各機能の使い方を実際の画面で確認できます。'],
       ['曲の詳細に自分の記録', '楽曲画像をタップすると、ランク・FC/AP・でらっくすスコア・星を確認できます。'],
-      ['未達成楽曲一覧の SSS+・☆5〜☆7', '条件に、SSS+ と でらっくすスコアの☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
+      ['未達成楽曲一覧の SSS+・☆4〜☆7', '条件に、SSS+ と でらっくすスコアの☆4・☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
       ['赤線 → 薄く表示', '達成済みの楽曲は、赤線ではなく薄く表示されるようになりました。\n自分で登録するときは、楽曲画像を長押しします（タップは楽曲の詳細）。'],
       ['取り込みの高速化', '取り込みが速くなりました。NET の画面で「かんたん（MASTER・Re:MASTER）」を選ぶと、さらに早く終わります。\n下埋め進捗を見るときは「すべて」を選んでください。ブックマークはそのままで大丈夫です。']
     ]},
@@ -8795,8 +8801,8 @@
     { key: 'FDX', cond: '舞舞' },
     /* FDX+（FULL SYNC DX+） */
     { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } },
-    /* DXスコアの星：理論値（総ノーツ数×3）に対して ☆5＝97%以上・☆6＝99%以上・☆7＝100%（理論値） */
-    { key: '☆5', dx: 97 }, { key: '☆6', dx: 99 }, { key: '☆7', dx: 100 }
+    /* DXスコアの星：理論値（総ノーツ数×3）に対して ☆4＝95%以上・☆5＝97%以上・☆6＝99%以上・☆7＝100%（理論値） */
+    { key: '☆4', dx: 95 }, { key: '☆5', dx: 97 }, { key: '☆6', dx: 99 }, { key: '☆7', dx: 100 }
   ];
   TODO_MODES.forEach(function(m){
     if (m.dx) m.test = function(x){ return x.dxMax > 0 && x.dx >= Math.ceil(x.dxMax * m.dx / 100); };
@@ -8930,7 +8936,7 @@
     var col = kind === 'mai' ? todoMaiColor() : K.color;
     root.appendChild(el('h2', {class:'page-title', style:{color: col}, text: K.label}));
     var bar = el('div', {class:'detail-actions'});
-    /* FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆5・☆6・☆7 をスクロールで選ぶ */
+    /* FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆4〜☆7 をスクロールで選ぶ */
     var seg = makeWheelPicker({ title: '見る条件', cls: 'mode-picker todo-mode-seg',
       items: TODO_MODES.map(function(m){ return [m.key, m.key]; }),
       render: todoModeBadge,
@@ -8948,7 +8954,7 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
     var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
-    /* 左から：達成済みを表示 → n〜n → FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆5〜☆7 */
+    /* 左から：達成済みを表示 → n〜n → FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆4〜☆7 */
     var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; }, false, true);
     doneBtn.classList.add('todo-done-btn');
     cutRow.appendChild(doneBtn);
@@ -8959,11 +8965,11 @@
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。\n取り込めない方は、実績プレート表で楽曲画像を長押しして達成済みを登録すると、ここにも反映されます。'); return; }
 
     var mode = TODO_MODES.filter(function(m){ return m.key === todoMode; })[0] || TODO_MODES[0];
-    /* ☆5〜☆7 は DXスコアが要る（前の取り込み方では DXスコアを読んでいない） */
+    /* ☆4〜☆7 は DXスコアが要る（前の取り込み方では DXスコアを読んでいない） */
     if (mode.dx && !rec.hasDx){
-      needImportNote(root, !rec.hasNet ? '☆5〜☆7 を見るには、maimai NET から記録を取り込んでください（DXスコアが必要です）。' : rec.v >= 2
-        ? 'maimai NET の一覧から DXスコアを読み取れませんでした。\n☆5〜☆7 はまだ使えません（お手数ですが開発者に知らせてください）。'
-        : '☆5〜☆7 を見るには DXスコアが必要です。\n取り込みが DXスコアも読むようになったので、もう一度 maimai NET から取り込んでください（ブックマークはそのままで大丈夫です）。');
+      needImportNote(root, !rec.hasNet ? '☆4〜☆7 を見るには、maimai NET から記録を取り込んでください（DXスコアが必要です）。' : rec.v >= 2
+        ? 'maimai NET の一覧から DXスコアを読み取れませんでした。\n☆4〜☆7 はまだ使えません（お手数ですが開発者に知らせてください）。'
+        : '☆4〜☆7 を見るには DXスコアが必要です。\n取り込みが DXスコアも読むようになったので、もう一度 maimai NET から取り込んでください（ブックマークはそのままで大丈夫です）。');
       return;
     }
     var cond = mode.test || PLATE_COND[mode.cond];
@@ -9549,7 +9555,7 @@
     { sec:4, go:R('#/todo'), sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
       text:'MASTER の全譜面か、舞・覇者（Re:MASTER）を選びます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
-      text:'[mk:SSS]・[mk:SSS+]・[mk:FC]〜[mk:AP+]・[mk:FS]〜[mk:FDX+]・[mk:☆5]〜[mk:☆7] から選ぶと、まだ達成していない譜面が並びます。' },
+      text:'[mk:SSS]・[mk:SSS+]・[mk:FC]〜[mk:AP+]・[mk:FS]〜[mk:FDX+]・[mk:☆4]〜[mk:☆7] から選ぶと、まだ達成していない譜面が並びます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .range-picker', title:'譜面定数の範囲',
       text:'表示する楽曲の範囲を選べます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
@@ -9651,7 +9657,7 @@
         }
         /* 極・将・神・舞舞の印 */
         if (m2 = /^\[pm:(.+)\]$/.exec(part)){ row.appendChild(plateModeBadge(m2[1])); return; }
-        /* 未達成楽曲一覧の条件のマーク（SSS・FC・AP+・FS・FDX+・☆5 など。曲の詳細と同じ見た目） */
+        /* 未達成楽曲一覧の条件のマーク（SSS・FC・AP+・FS・FDX+・☆4 など。曲の詳細と同じ見た目） */
         if (m2 = /^\[mk:(.+)\]$/.exec(part)){
           var mk = el('span', {class:'tour-mk'});
           if (m2[1] === 'FS' || m2[1] === 'FS+') mk.appendChild(el('span', {class:'sd-badge is-' + (m2[1] === 'FS' ? 'fs' : 'fsp'), text: m2[1]}));
