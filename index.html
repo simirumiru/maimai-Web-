@@ -257,7 +257,11 @@
   .thumb button{position:absolute;top:0;right:0;width:18px;height:18px;line-height:18px;background:rgba(19,20,23,.88);color:var(--danger);border:none;font-size:11px;padding:0;border-radius:0 0 0 6px;}
   .thumb-controls{display:flex;gap:4px;}
   .tbtn{flex:1;height:22px;min-width:0;border-radius:5px;border:1px solid var(--border-ctl);background:var(--panel);color:var(--text-dim);font-size:11px;padding:0;}
-  .slash-overlay{position:absolute;left:-15%;top:46%;width:130%;height:16%;background:#ff2d2d;transform:rotate(-38deg);pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
+  .slash-overlay{display:none;}
+  /* 達成済みの曲：未達成楽曲一覧の「達成済みを表示」と同じように薄く表示する */
+  .pv-thumb.is-marked > img{opacity:.16;filter:grayscale(.85);}
+  .pv-thumb.is-marked.no-img{opacity:.3;}
+  .pv-thumb.is-marked .song-title{background:rgba(0,0,0,.35);color:rgba(255,255,255,.5);}
 
   .badge-thumb-grid{display:flex;flex-wrap:wrap;gap:8px;}
   .badge-thumb{position:relative;width:150px;height:42px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--panel);}
@@ -362,6 +366,13 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sync-export .sync-name-input{display:none;}
   .sync-export .sync-name-print{display:block;}
+  /* 達成日（入力欄の下に小さく。保存画像では文字で、書いた分だけ） */
+  .sync-date{display:block;margin-top:3px;appearance:none;-webkit-appearance:none;border:0;background:none;padding:0 2px;font:inherit;font-size:11.5px;font-weight:700;color:var(--text-dim);cursor:pointer;text-align:left;}
+  .sync-date.is-empty{color:var(--text-faint);font-weight:600;}
+  .sync-date-print{display:none;font-size:12px;font-weight:700;color:var(--text-dim);padding:0 2px;}
+  .sync-export .sync-date, .sync-preview .sync-date{display:none;}
+  .sync-export .sync-date-print, .sync-preview .sync-date-print{display:block;}
+  .sync-export .sync-date-print{font-size:13px;margin-top:2px;}
   /* 保存時だけ2列に並べて、縦に伸びすぎないようにする */
   .sync-export .sync-list{grid-template-columns:repeat(2, 420px);gap:8px 28px;
     justify-content:start;}
@@ -739,6 +750,237 @@
   html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) .song-title{display:block !important;}
   html:not(.hide-song-titles) .todo-export.konst-export .pv-thumb:not(.no-img) img.chart-type-mark{bottom:var(--tt-h) !important;}
   /* ホームの「曲名を表示」 */
+  /* ---- 使い方ガイド ---- */
+  .modal-box.tour-invite{text-align:center;max-width:360px;padding:26px 22px 18px;}
+  .tour-invite-icon{width:46px;height:46px;color:var(--accent);margin:0 auto 6px;display:block;}
+  .tour-invite-icon svg{width:46px;height:46px;}
+  .tour-invite-title{font-size:19px;font-weight:800;margin:4px 0 8px;}
+  .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
+  .tour-invite-text + .tour-invite-text{margin-top:-8px;}
+  .tour-mk{display:inline-flex;vertical-align:middle;margin:0 1px;}
+  .tour-mk .mode-badge{display:inline-flex;align-items:center;gap:2px;}
+  .tour-mk .mode-badge-rank{font-size:16px;min-width:0;}
+  .tour-mk .sd-badge{min-width:0;padding:1px 7px;font-size:11px;}
+  .tour-mk .mode-badge-num{font-size:13px;}
+  .tour-invite-emph{font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 12px;}
+  /* ガイドをスキップした人へ：ホームの「使い方ガイド」の場所を照らす */
+  .guide-hint-layer{position:fixed;inset:0;z-index:2000;}
+  .guide-hint-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px var(--accent),0 0 18px var(--accent);pointer-events:none;
+    animation:guideHintPulse 1.6s ease-in-out infinite;}
+  @keyframes guideHintPulse{0%,100%{box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px var(--accent),0 0 10px var(--accent);}50%{box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 5px var(--accent),0 0 24px var(--accent);}}
+  .guide-hint-tip{position:fixed;width:280px;background:var(--panel);border:1px solid var(--border-ctl);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-md);
+    display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
+  .guide-hint-text{margin:0;font-size:14px;font-weight:700;line-height:1.6;align-self:stretch;}
+  .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
+  .tour-invite-skip{margin-top:10px;background:none;border:0;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;}
+  .tour-invite-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;}
+  .tour-layer{position:fixed;inset:0;z-index:1200;}
+  .tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,18,28,.62), 0 0 0 3px var(--accent), 0 0 18px 4px var(--accent-line);transition:left .22s ease, top .22s ease, width .22s ease, height .22s ease;pointer-events:none;}
+  .tour-tip{position:fixed;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:16px;padding:12px 14px 10px;box-shadow:var(--shadow-md);transition:top .22s ease, left .22s ease;}
+  .tour-tip.is-busy .tour-nav, .tour-tip.is-busy .tour-foot{pointer-events:none;opacity:.6;}
+  .tour-layer.no-target{background:rgba(10,18,28,.62);}
+  /* 画面を切り替えている間：暗いまま待つ（吹き出しは押せないようにする） */
+  .tour-layer.is-moving{background:rgba(10,18,28,.62);}
+  .tour-layer.is-moving .tour-tip{opacity:0;pointer-events:none;}
+  .tour-layer.is-moving .tour-hole{opacity:0;}
+  /* 取り込みの画面の「使い方ガイドの続きを見る」 */
+  .tour-resume-bar{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;border:1px solid var(--accent-line);border-radius:12px;background:var(--panel);}
+  .tour-resume-icon{width:26px;height:26px;flex:none;color:var(--accent);}
+  .tour-resume-text{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;font-size:12.5px;line-height:1.5;color:var(--text-dim);}
+  .tour-resume-text strong{font-size:13.5px;color:var(--text);}
+  .tour-resume-go{flex:none;white-space:nowrap;justify-content:center;}
+  .tour-resume-close{flex:none;width:28px;height:28px;margin:-4px -4px 0 -4px;align-self:flex-start;border:0;background:none;color:var(--text-dim);font-size:18px;line-height:1;cursor:pointer;font-family:inherit;}
+  /* 全体の進み具合：メニューの数だけ細い帯を並べ、終わったもの・いまのものを色で示す */
+  .tour-secs{list-style:none;margin:0;padding:0;display:grid;gap:3px;}
+  .tour-secs-item{height:5px;border-radius:3px;background:var(--border);}
+  .tour-secs-item.is-done{background:var(--accent);opacity:.45;}
+  .tour-secs-item.is-on{background:var(--accent);}
+  /* いまのメニュー名と、その中の何番目か */
+  .tour-sub{display:flex;align-items:center;gap:8px;margin:8px 0 2px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .tour-sub-left{display:flex;align-items:baseline;gap:6px;min-width:0;}
+  .tour-sub-no{font-size:11px;font-weight:800;color:var(--accent);background:var(--accent-soft, rgba(10,132,199,.12));border-radius:999px;padding:1px 7px;white-space:nowrap;}
+  .tour-sub-name{font-size:12.5px;font-weight:800;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tour-sub-dots{display:flex;gap:4px;flex:1;justify-content:flex-end;}
+  .tour-sub-dots i{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .tour-sub-dots i.is-done{background:var(--accent-line);}
+  .tour-sub-dots i.is-on{background:var(--accent);width:14px;border-radius:3px;}
+  .tour-sub-count{font-size:11.5px;font-weight:700;color:var(--text-dim);min-width:2.6em;text-align:right;}
+  .tour-title{font-size:16px;font-weight:800;margin:4px 0 4px;line-height:1.4;}
+  .tour-text{font-size:13.5px;line-height:1.65;}
+  .tour-line + .tour-line{margin-top:3px;}
+  /* 説明文の中の「ボタンの見た目」「操作の印」「色見本」 */
+  .tour-ui{display:inline-block;padding:0 8px;margin:0 1px;border:1px solid var(--border-ctl);border-radius:999px;background:var(--panel-2, #eef3f6);font-size:12px;font-weight:700;line-height:1.7;white-space:nowrap;vertical-align:1px;}
+  .tour-ui.is-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .tour-ui.is-blk{background:#111111;border-color:#111111;color:#ffffff;}
+  html[data-theme="dark"] .tour-ui.is-blk{border-color:#8a8f9b;}
+  .tour-ui.is-wht{background:#ffffff;border-color:#bfc7cf;color:#111111;}
+  .tour-ui-icon{display:inline-flex;align-items:center;gap:3px;vertical-align:-1px;}
+  .tour-ui-ico svg{width:13px;height:13px;display:block;}
+  .tour-rate-label{color:var(--text-dim);margin-right:1px;}
+  .tour-rate-stars{color:var(--warn);letter-spacing:-1px;}
+  .tour-title{display:flex;align-items:center;gap:6px;}
+  .tour-title-icon{display:inline-flex;color:var(--accent);}
+  .tour-title-icon svg{width:18px;height:18px;}
+  .tour-gest{display:inline-flex;align-items:center;gap:4px;padding:0 8px 0 6px;margin-right:4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11.5px;font-weight:800;line-height:1.75;white-space:nowrap;vertical-align:1px;}
+  .tour-gest-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .tour-gest.is-hold{padding-left:8px;gap:6px;}
+  .tour-gest.is-hold .tour-gest-dot{width:6px;height:6px;box-shadow:0 0 0 2px var(--accent), 0 0 0 3.2px currentColor;}
+  .tour-sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin:0 3px 0 0;vertical-align:-1px;}
+  .tour-sw.is-done{background:#ffffff;border:1px solid var(--border-strong);box-sizing:border-box;}
+  html[data-theme="dark"] .tour-sw.is-done{background:#4a4d57;border-color:#6b707c;}
+  /* ボタン：戻る・次へ（右）／ガイドを終了・次のメニュー（下の段） */
+  .tour-nav{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+  .tour-nav .btn{padding:9px 18px;font-size:13.5px;font-weight:700;justify-content:center;touch-action:manipulation;}
+  .tour-next{min-width:96px;}
+  .tour-nav .btn:active{transform:scale(.96);}
+  .tour-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .tour-link{background:none;border:0;color:var(--text-dim);font-size:12px;cursor:pointer;font-family:inherit;padding:6px 2px;touch-action:manipulation;}
+  .tour-jump{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;padding:6px 2px;touch-action:manipulation;}
+  .tour-jump-arrow{font-size:16px;line-height:1;margin-top:-1px;}
+  /* ---- 曲の詳細（オーバーレイ） ---- */
+  .has-detail{cursor:pointer;}
+  .has-detail img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .modal-box.song-detail{max-width:440px;position:relative;padding:20px 18px 14px;}
+  .sd-close{position:absolute;top:8px;right:10px;width:34px;height:34px;border:0;background:none;font-size:24px;line-height:1;color:var(--text-dim);cursor:pointer;border-radius:50%;}
+  .sd-close:hover{background:var(--panel-2, rgba(0,0,0,.05));}
+  .sd-head{display:flex;gap:14px;align-items:center;margin-right:30px;}
+  /* 曲の詳細の画像保存（楽曲画像の上・少し大きめ） */
+  .sd-save-row{display:flex;align-items:center;gap:10px;margin:0 40px 12px 0;flex-wrap:wrap;}
+  .sd-save-row .save-group-label{font-size:14.5px;padding:9px 16px;}
+  .sd-save-row .save-group-label .save-icon{width:18px;height:18px;}
+  .sd-save-row .save-base{font-size:13.5px;min-width:40px;padding:8px 13px;}
+  /* 保存画像：ボタン類は出さず、高さの制限もなくす */
+  html .modal-box.song-detail.sd-export{
+    --bg:#131417; --panel:#1b1c21; --panel-2:#23252b; --panel-3:#2c2e35;
+    --border:#34363e; --border-ctl:#4a4d57; --border-strong:#6b707c;
+    --text:#e3e4e8; --text-dim:#a7abb5; --text-faint:#747883; --canvas:#1e1e1e;
+    color:var(--text);background:#1e1e1e;width:430px !important;max-width:none;max-height:none !important;overflow:visible !important;
+    border:0;border-radius:0;box-shadow:none;padding:24px 22px 16px;margin:0;}
+  html .modal-box.song-detail.sd-export.export-white{
+    --bg:#ffffff; --panel:#ffffff; --panel-2:#f4f6f8; --panel-3:#eef1f4;
+    --border:#e3e7eb; --border-ctl:#cfd6dc; --border-strong:#a3adb5;
+    --text:#17252f; --text-dim:#5a6670; --text-faint:#8a949c; --canvas:#ffffff; background:#ffffff;}
+  .sd-export .sd-close, .sd-export .sd-save-row, .sd-export .sd-error{display:none !important;}
+  /* 保存画像では光の流れは止める（✦ と縁の光は残す） */
+  .sd-export .sd-badge.is-app{background-image:linear-gradient(180deg,#ff9f3d,#e55f12) !important;background-size:100% 100% !important;background-position:0 0 !important;animation:none !important;}
+  .sd-export .sd-badge.is-fsdp, .sd-export .sd-badge.is-fdxp{background-image:linear-gradient(180deg,#ffc83d,#e08a0f) !important;background-size:100% 100% !important;background-position:0 0 !important;animation:none !important;}
+  .sd-export .sd-badge::before, .sd-export .sd-badge::after{animation:none !important;opacity:1 !important;}
+  html .sd-export.export-white .sd-badge::before, html .sd-export.export-white .sd-badge::after{color:#f5b400 !important;text-shadow:none !important;}
+  .sd-export .sd-badge.is-fcp, .sd-export .sd-badge.is-app, .sd-export .sd-badge.is-fsp, .sd-export .sd-badge.is-fsdp, .sd-export .sd-badge.is-fdxp{box-shadow:0 0 0 1.5px #ffe680 !important;text-shadow:none !important;}
+  .sd-export img.sd-fix{display:inline-block;vertical-align:middle;}
+  .sd-export .sd-head{margin-right:0;}
+  .sd-jacket{width:92px;height:92px;flex:none;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2, #eef3f6);}
+  .sd-jacket img{width:100%;height:100%;object-fit:cover;display:block;}
+  .sd-head-text{min-width:0;}
+  .sd-title{font-size:17px;font-weight:800;line-height:1.35;word-break:break-word;}
+  .sd-artist{font-size:12.5px;color:var(--text-dim);margin-top:4px;word-break:break-word;}
+  .sd-tabs{display:flex;gap:6px;margin:14px 0 2px;}
+  .sd-tab{flex:1;padding:7px 0;border-radius:10px;border:1px solid var(--border-ctl);background:var(--panel);color:var(--text-dim);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
+  .sd-tab.is-on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .sd-dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:12px 0 0;font-size:13px;}
+  .sd-dl dt{color:var(--text-dim);font-weight:700;white-space:nowrap;}
+  .sd-dl dd{margin:0;font-weight:600;word-break:break-word;}
+  .sd-chart{margin-top:14px;padding:12px 12px 12px;border-radius:14px;border:1px solid var(--border);background:var(--panel-2, rgba(127,127,127,.06));}
+  .sd-chart.is-mas{border-left:4px solid #b38cf2;}
+  .sd-chart.is-rem{border-left:4px solid #d9c8ff;}
+  .sd-chart .sd-dl{margin-top:8px;}
+  .sd-chart-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .sd-diff{font-weight:900;font-size:14px;color:#9b6ff2;letter-spacing:.02em;}
+  .sd-chart.is-rem .sd-diff{color:#b392f0;}
+  .sd-lv{font-size:13px;font-weight:700;color:var(--text-dim);}
+  .sd-konst{margin-left:auto;display:inline-flex;align-items:baseline;gap:5px;}
+  .sd-konst-label{font-size:12px;font-weight:700;color:var(--text-dim);}
+  .sd-konst b{font-size:22px;font-family:var(--font-display);}
+  .sd-notes{display:grid;grid-template-columns:repeat(var(--cols, 4), 1fr);gap:5px;margin-top:10px;}
+  .sd-note{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px 2px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .sd-note-label{font-size:10.5px;font-weight:800;color:var(--text-dim);letter-spacing:.04em;}
+  .sd-note b{font-size:15px;}
+  .sd-note.is-total{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:10px;}
+  .sd-note.is-total b{font-size:18px;}
+  .sd-error{margin:10px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(220,60,60,.45);background:rgba(220,60,60,.08);font-size:12.5px;line-height:1.55;}
+  .sd-error[hidden]{display:none;}
+  .sd-error-msg{font-weight:700;}
+  .sd-error-why{color:var(--text-dim);margin:2px 0 8px;word-break:break-all;}
+  /* 自分の記録 */
+  .sd-rec{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--panel);border:1px solid var(--border);}
+  .sd-rec-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .sd-rank{font-family:var(--font-display);font-weight:900;font-size:24px;line-height:1;letter-spacing:.01em;min-width:2.6em;}
+  .sd-rank.is-sss{background:linear-gradient(100deg,#ff5a5a 0%,#ffb12e 35%,#ffd93d 50%,#3d9bff 80%,#6a5cff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:.6px rgba(120,60,0,.35);}
+  .sd-rank.is-s{color:#e7a20f;-webkit-text-stroke:.6px rgba(120,70,0,.35);}
+  .sd-rank.is-aa{color:#e04848;}
+  .sd-rank.is-a{color:#2f7de1;}
+  .sd-rank.is-none, .sd-ach, .sd-dxscore{color:var(--text);}
+  .sd-ach{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .sd-badges{display:inline-flex;gap:5px;margin-left:auto;}
+  .sd-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:2px 7px;border-radius:999px;font-size:11.5px;font-weight:900;letter-spacing:.02em;color:#fff;background:var(--border-strong);}
+  .sd-badge.is-none{background:none;border:1px solid var(--border);color:var(--text-dim);}
+  .sd-badge.is-fc, .sd-badge.is-fcp{background:linear-gradient(180deg,#46c96a,#219a44);}
+  .sd-badge.is-ap, .sd-badge.is-app{background:linear-gradient(180deg,#ff9f3d,#e55f12);}
+  .sd-badge.is-fcp, .sd-badge.is-app, .sd-badge.is-fsp, .sd-badge.is-fsdp, .sd-badge.is-fdxp{box-shadow:0 0 0 1.5px #ffd84d inset;}
+  .sd-badge.is-fs, .sd-badge.is-fsp{background:linear-gradient(180deg,#4aa7ff,#1f6fe0);}
+  .sd-badge.is-fsd, .sd-badge.is-fsdp, .sd-badge.is-fdx, .sd-badge.is-fdxp{background:linear-gradient(180deg,#ffc83d,#e08a0f);}
+  .sd-badge.is-sync{background:linear-gradient(180deg,#7fd3ff,#3aa0e6);}
+  /* AP+・FDX+：色はそのままで、光が流れて ✦ がきらめく */
+  .sd-badge.is-app, .sd-badge.is-fsdp, .sd-badge.is-fdxp{position:relative;overflow:visible;
+    text-shadow:0 0 5px rgba(255,255,255,.75);
+    box-shadow:0 0 0 1.5px #ffe680 inset,0 0 9px rgba(255,205,80,.7);
+    background-size:260% 100%,100% 100%;animation:badgeShine 2.6s ease-in-out infinite;}
+  .sd-badge.is-app{background-image:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.6) 48%,rgba(255,255,255,0) 61%),linear-gradient(180deg,#ff9f3d,#e55f12);}
+  .sd-badge.is-fsdp, .sd-badge.is-fdxp{background-image:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.65) 48%,rgba(255,255,255,0) 61%),linear-gradient(180deg,#ffc83d,#e08a0f);}
+  .sd-badge.is-app::before, .sd-badge.is-fsdp::before, .sd-badge.is-fdxp::before,
+  .sd-badge.is-app::after, .sd-badge.is-fsdp::after, .sd-badge.is-fdxp::after{
+    content:'✦';position:absolute;color:#f5b400;line-height:1;pointer-events:none;
+    text-shadow:0 0 3px #fff8d0,0 0 7px #ffd84d;animation:badgeTwinkle 1.8s ease-in-out infinite;}
+  html[data-theme="dark"] .sd-badge.is-app::before, html[data-theme="dark"] .sd-badge.is-fsdp::before, html[data-theme="dark"] .sd-badge.is-fdxp::before,
+  html[data-theme="dark"] .sd-badge.is-app::after, html[data-theme="dark"] .sd-badge.is-fsdp::after, html[data-theme="dark"] .sd-badge.is-fdxp::after{color:#fff;text-shadow:0 0 4px #fff,0 0 8px #ffe680;}
+  .sd-badge.is-app::before, .sd-badge.is-fsdp::before, .sd-badge.is-fdxp::before{font-size:10px;top:-5px;right:-3px;}
+  .sd-badge.is-app::after, .sd-badge.is-fsdp::after, .sd-badge.is-fdxp::after{font-size:7px;bottom:-3px;left:-1px;animation-delay:.9s;}
+  @keyframes badgeShine{0%{background-position:130% 0,0 0}55%,100%{background-position:-40% 0,0 0}}
+  @keyframes badgeTwinkle{0%,100%{opacity:.35;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+  @media (prefers-reduced-motion: reduce){.sd-badge.is-app, .sd-badge.is-fsdp, .sd-badge.is-fdxp, .sd-badge::before, .sd-badge::after{animation:none!important;}}
+  .sd-rec-dx{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+  .sd-rec-label{font-size:11.5px;font-weight:800;color:var(--text-dim);}
+  .sd-dxscore{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .sd-star{display:inline-flex;align-items:center;gap:3px;margin-left:auto;color:var(--text-dim);}
+  .sd-star-num{font-size:17px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums;}
+  .dx-star{display:inline-block;vertical-align:-3px;flex:none;filter:drop-shadow(0 0 1px rgba(0,0,0,.35));}
+  .dx-star-0{filter:none;color:var(--text-dim);}
+  .sd-rec-next{margin-top:4px;text-align:right;font-size:12px;color:var(--text-dim);display:flex;justify-content:flex-end;align-items:center;gap:3px;}
+  .sd-rec-next b{color:var(--accent);font-size:13px;}
+  /* 条件のバッジ（未達成楽曲一覧のスクロールで選ぶ所） */
+  .mode-badge{display:inline-flex;align-items:center;gap:3px;line-height:1;vertical-align:middle;}
+  .mode-badge .sd-badge{min-width:0;padding:2px 8px;font-size:11px;}
+  .mode-badge-rank{font-size:15px;min-width:0;}
+  .mode-badge-num{font-size:13px;font-weight:900;color:var(--text);}
+  .wheel-item.has-render{display:flex;align-items:center;justify-content:center;}
+  .wheel-item.has-render .mode-badge .sd-badge{font-size:13px;padding:3px 12px;}
+  .wheel-item.has-render .mode-badge-rank{font-size:19px;}
+  .wheel-item.has-render .mode-badge-num{font-size:15px;}
+  .wheel-item.has-render .dx-star{width:22px;height:22px;}
+  .sd-note-label{display:inline-flex;align-items:center;gap:3px;}
+  /* ブレイク：濃い縁・白っぽい縁・赤橙黄の輪・白っぽい縁・暗いまん中 */
+  .break-note{display:inline-block;flex:none;border-radius:50%;box-sizing:border-box;
+    background:
+      radial-gradient(circle, #50557a 0, #3a3d58 22%, #2c2d44 30%, #f6d4c6 31%, #f6d4c6 36%, transparent 37%),
+      conic-gradient(from 0deg, #ff6a10 0deg, #ffb31c 40deg, #ffd52c 80deg, #ffc022 115deg, #ff6012 150deg, #ff2c0c 185deg, #ff7414 220deg, #ffc62a 260deg, #ffb01c 285deg, #ff3a0e 320deg, #ff6a10 360deg);
+    box-shadow:inset 0 0 0 1.2px #f8d8cb, inset 0 0 0 2px #ffb59a, 0 0 0 1px #1c2136;}
+  /* EXブレイク：黄色〜橙の輪、まわりが白っぽく光る、まん中は黒 */
+  .break-note.is-ex{
+    background:
+      radial-gradient(circle, #000 0, #000 31%, #fff3c4 32%, #fff3c4 37%, transparent 38%),
+      conic-gradient(from 0deg, #ffd83a 0deg, #ffe85a 70deg, #ffcf2e 130deg, #ff9a1c 190deg, #ff6414 240deg, #ff5a12 270deg, #ff8a18 310deg, #ffd83a 360deg);
+    box-shadow:inset 0 0 0 1.2px #fff6c8, 0 0 0 1.5px #fff1a6, 0 0 4px 2px rgba(255,226,110,.95), 0 0 9px 3px rgba(255,190,40,.55);}
+  .break-chevrons{flex:none;margin-right:-1px;filter:drop-shadow(0 0 1.5px rgba(255,80,0,.75));}
+  /* BREAK の内訳（上：通常ブレイク／下：ブレイクスライド・EXブレイク） */
+  .sd-note.has-bk{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:14px;padding:6px 10px;}
+  .sd-bk{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding-left:14px;border-left:1px solid var(--border);}
+  .sd-bk-head{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .sd-bk-total{font-size:18px;}
+  .sd-bk-row{display:inline-flex;align-items:center;gap:4px;}
+  .sd-bk-row b{font-size:15px;}
+  .sd-note.is-break.has-bk .sd-note-label .break-note{display:none;}
+  .sd-rec-note{margin-top:6px;font-size:11.5px;color:var(--text-dim);}
+  .sd-credit{font-size:10.5px;color:var(--text-dim);margin-top:12px;text-align:right;}
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
   .title-toggle-btn .onoff-switch, .onoff-single .onoff-switch{margin-left:6px;}
   .title-toggle-btn[aria-pressed="false"] .onoff-active, .onoff-single[aria-pressed="false"] .onoff-active{color:var(--text-dim);}
@@ -1241,9 +1483,9 @@
   .todo-export .konst-card-body .todo-grid, .todo-export.konst-card-body .todo-grid{gap:8px;}
   .todo-export .todo-thumb.konst-remas{width:84px;height:84px;}
   /* 達成済み（「達成済みを表示」のとき）は薄く */
-  .todo-thumb.is-done > img{opacity:.3;filter:grayscale(.7);}
-  .todo-thumb.is-done.no-img{opacity:.45;}
-  .todo-thumb.is-done .song-title{background:rgba(0,0,0,.5);color:rgba(255,255,255,.75);}
+  .todo-thumb.is-done > img{opacity:.16;filter:grayscale(.85);}
+  .todo-thumb.is-done.no-img{opacity:.3;}
+  .todo-thumb.is-done .song-title{background:rgba(0,0,0,.35);color:rgba(255,255,255,.5);}
   @media (max-width:420px){ .todo-thumb{width:56px;height:56px;} .todo-grid{gap:5px;} .konst-card-body .todo-grid{gap:7px;} .todo-thumb.konst-remas{width:60px;height:60px;} }
   /* シンクのお相手記録：一覧の縮小プレビュー（書いた名前だけ。入力欄・ボタンは出さない） */
   .sync-card-preview{max-height:240px;position:relative;}
@@ -1457,6 +1699,16 @@
     .sticky-todo .sticky-inner .onoff-single .onoff-switch{margin-left:3px;}
     .sticky-todo .sticky-inner .range-btn{padding:4px 4px;gap:2px;font-size:11px;}
     .sticky-todo .sticky-inner .cut-picker button{font-size:11px;}
+    /* プレート表：達成済みを表示・n〜n・極将神舞 を1行に収める */
+    .sticky-plates .back-full{display:none;}
+    .sticky-plates .back-short{display:inline;}
+    .sticky-plates .sticky-inner{gap:3px;padding:6px 5px;}
+    .sticky-plates .sticky-inner .page-back{padding:3px 6px 3px 1px;font-size:11px;min-height:30px;}
+    .sticky-plates .sticky-inner .page-back svg{width:14px;height:14px;}
+    .sticky-plates .sticky-inner .btn-sm.onoff-btn{padding:4px 6px;font-size:10.5px;}
+    .sticky-plates .sticky-inner .onoff-single .onoff-switch{margin-left:3px;}
+    .sticky-plates .sticky-inner .range-btn{padding:4px 4px;gap:2px;font-size:11px;}
+    .sticky-plates .sticky-inner .cut-picker button{font-size:11px;}
   }
 </style>
 </head>
@@ -1782,6 +2034,506 @@
     thumb.appendChild(tt);
   }
 
+  /* ========== 曲の詳細（ジャケットを押すと出る） ==========
+     バージョン・定数・ノーツ数・BPM・譜面作者・作曲者を出す。
+     定数とバージョンは songs.json、ノーツ数・BPM・譜面作者・作曲者は songinfo.json（DXRating のデータ）から */
+  var SONG_INFO = null, songInfoLoading = null;
+  /* 1回分の読み込み。12秒で打ち切り、失敗の理由（HTTPの番号・形式の誤りなど）を文にして返す */
+  function fetchSongInfoOnce(url){
+    return new Promise(function(resolve, reject){
+      var done = false;
+      var timer = setTimeout(function(){ if (!done){ done = true; reject(new Error('時間切れ（12秒たっても届きませんでした）')); } }, 12000);
+      fetch(url, { cache: 'no-cache' }).then(function(r){
+        if (!r.ok) throw new Error('サーバーの応答 ' + r.status + (r.status === 404 ? '（songinfo.json が見つかりません）' : ''));
+        return r.text();
+      }).then(function(t){
+        var j;
+        try{ j = JSON.parse(t); }catch(e){
+          throw new Error('データの形式が読み取れません（先頭：' + String(t || '').slice(0, 24).replace(/\s+/g, ' ') + '）');
+        }
+        if (!j || typeof j !== 'object') throw new Error('データが空です');
+        return j;
+      }).then(function(j){
+        if (done) return; done = true; clearTimeout(timer); resolve(j);
+      }, function(e){
+        if (done) return; done = true; clearTimeout(timer);
+        reject(e && e.message ? e : new Error('通信できませんでした'));
+      });
+    });
+  }
+  function loadSongInfo(){
+    if (SONG_INFO) return Promise.resolve(SONG_INFO);
+    if (!songInfoLoading){
+      /* うまくいかなければ、キャッシュを使わない URL でもう1回だけ試す */
+      songInfoLoading = fetchSongInfoOnce('songinfo.json').catch(function(){
+        return fetchSongInfoOnce('songinfo.json?r=' + Date.now());
+      }).then(function(j){ SONG_INFO = j; return SONG_INFO; })
+        .catch(function(e){ songInfoLoading = null; throw e; });
+    }
+    return songInfoLoading;
+  }
+  /* 表の曲 → 'ST' / 'DX'（分からなければ空） */
+  function songTypeFor(v, song, levelLabel){
+    var m = masterOfTableSong(song, levelLabel);
+    if (m) return m.type;
+    var ct = chartTypeFor(v, song, levelLabel);
+    if (ct === 'dx') return 'DX';
+    if (ct === 'st') return 'ST';
+    if (song.srcType === 'DX' || song.srcType === 'ST') return song.srcType;
+    return '';
+  }
+  function fmtKonst(k){ return k >= 0 ? k.toFixed(1) : '不明'; }
+
+  /* ---- 曲の詳細：自分の記録（クリアランク・達成率・FC/AP・でらっくすスコアと星） ---- */
+  /* 達成率からクリアランク */
+  var RANK_TABLE = [[100.5,'SSS+'],[100,'SSS'],[99.5,'SS+'],[99,'SS'],[98,'S+'],[97,'S'],[94,'AAA'],[90,'AA'],[80,'A'],[75,'BBB'],[70,'BB'],[60,'B'],[50,'C'],[0,'D']];
+  function rankOf(ach){ for (var i = 0; i < RANK_TABLE.length; i++){ if (ach >= RANK_TABLE[i][0]) return RANK_TABLE[i][1]; } return 'D'; }
+  /* 色分け：SSS系は虹色、SS・S系は金、AAA・AA・A は赤、BBB 以下はすべて青（maimai NET に合わせる） */
+  function rankClass(r){ return /^SSS/.test(r) ? 'is-sss' : /^S/.test(r) ? 'is-s' : /^A/.test(r) ? 'is-aa' : 'is-a'; }
+  var FC_LABEL = { fc:'FC', fcp:'FC+', ap:'AP', app:'AP+' };
+  var SYNC_LABEL = { sync:'SYNC', fs:'FS', fsp:'FS+', fsd:'FDX', fsdp:'FDX+', fdx:'FDX', fdxp:'FDX+' };
+  /* でらっくすスコアの星：理論値に対して ☆1＝85% ☆2＝90% ☆3＝93% ☆4＝95% ☆5＝97% ☆6＝99% ☆7＝100% */
+  var DX_STAR_PCT = [0, 85, 90, 93, 95, 97, 99, 100];
+  function dxNeed(max, lv){ return Math.ceil(max * DX_STAR_PCT[lv] / 100); }
+  /* 星の段階（0〜7）と小数（例 4.5）、次の星までの残り */
+  function dxStarInfo(dx, max){
+    if (!(max > 0)) return null;
+    var lv = 0;
+    for (var i = 7; i >= 1; i--){ if (dx >= dxNeed(max, i)) { lv = i; break; } }
+    var dec = lv;
+    if (lv < 7){
+      var lo = DX_STAR_PCT[lv], hi = DX_STAR_PCT[lv + 1], pct = dx / max * 100;
+      dec = lv + Math.max(0, Math.min(0.99, (pct - lo) / (hi - lo)));
+    }
+    return { lv: lv, dec: Math.floor(dec * 10) / 10, next: lv < 7 ? lv + 1 : 0, need: lv < 7 ? dxNeed(max, lv + 1) - dx : 0 };
+  }
+  /* 星の絵：0＝枠だけ、1・2＝緑、3・4＝橙、5＝金、6＝虹、7＝パール */
+  var dxStarSeq = 0;
+  function dxStarSvg(lv, size){
+    var ns = 'http://www.w3.org/2000/svg', id = 'dxs' + (++dxStarSeq);
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', size || 18); svg.setAttribute('height', size || 18);
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('class', 'dx-star dx-star-' + lv);
+    var path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', 'M12 1.5c.9 5.1 2.6 7.6 9.5 10.5-6.9 2.9-8.6 5.4-9.5 10.5-.9-5.1-2.6-7.6-9.5-10.5 6.9-2.9 8.6-5.4 9.5-10.5z');
+    path.setAttribute('stroke-linejoin', 'round');
+    var stops = null;
+    if (lv === 7) stops = [['0', '#ffb3d9'], ['.2', '#fff0f8'], ['.38', '#c7a8ff'], ['.55', '#9fdcff'], ['.7', '#f4fbff'], ['.85', '#ffd09e'], ['1', '#ff9fcf']];   /* ☆7 パール：ピンク・薄紫・水色・桃の強い光沢 */
+    if (lv === 6) stops = [['0', '#e8003d'], ['.167', '#ff6a00'], ['.333', '#ffc400'], ['.5', '#00c853'], ['.667', '#00b0ff'], ['.833', '#2962ff'], ['1', '#aa00ff']];   /* ☆6 虹：宝石のような濃い色のなめらかなグラデーション */
+    if (stops){
+      var defs = document.createElementNS(ns, 'defs'), g = document.createElementNS(ns, 'linearGradient');
+      g.setAttribute('id', id);
+      /* 虹は星のまん中に6色がすべて入るよう、真ん中の範囲だけで色を変える */
+      if (lv === 6){ g.setAttribute('x1', '.28'); g.setAttribute('y1', '.28'); g.setAttribute('x2', '.72'); g.setAttribute('y2', '.72'); }
+      else { g.setAttribute('x1', '0'); g.setAttribute('y1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y2', '1'); }
+      stops.forEach(function(st){ var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', st[1]); g.appendChild(e); });
+      defs.appendChild(g); svg.appendChild(defs);
+      path.setAttribute('fill', 'url(#' + id + ')');
+      path.setAttribute('stroke', lv === 7 ? '#8a5fb8' : '#5b2a86'); path.setAttribute('stroke-width', lv === 7 ? '1.4' : '1.3');
+    } else if (lv === 0){
+      path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '1.6');
+    } else {
+      var c = lv <= 2 ? '#2fb457' : lv <= 4 ? '#f26a1b' : '#f5be16';
+      path.setAttribute('fill', c); path.setAttribute('stroke', '#ffffff'); path.setAttribute('stroke-width', '1.2');
+    }
+    svg.appendChild(path);
+    /* 虹（☆6）は上に白い光沢をうっすら重ねて、宝石のようなつやを出す */
+    if (lv === 6){
+      var sid = id + 's', sg = document.createElementNS(ns, 'linearGradient');
+      sg.setAttribute('id', sid); sg.setAttribute('x1', '1'); sg.setAttribute('y1', '0'); sg.setAttribute('x2', '0'); sg.setAttribute('y2', '1');
+      [['0', 0], ['.38', .25], ['.52', 0], ['1', 0]].forEach(function(st){
+        var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); sg.appendChild(e);
+      });
+      svg.querySelector('defs').appendChild(sg);
+      var shine = document.createElementNS(ns, 'path');
+      shine.setAttribute('d', path.getAttribute('d')); shine.setAttribute('fill', 'url(#' + sid + ')');
+      svg.appendChild(shine);
+    }
+    return svg;
+  }
+  /* ブレイクノーツの絵：ゲームの見た目に合わせ、濃い縁 → 白っぽい縁 → 赤・橙・黄がうねる輪 → 白っぽい縁 → 暗いまん中。
+     色が輪のまわりで変わる（円すい状のグラデーション）ので、SVG ではなく CSS で描く */
+  var breakSeq = 0;
+  function breakNoteSvg(size){
+    var e = el('span', {class:'break-note', 'aria-hidden':'true'});
+    e.style.width = e.style.height = size + 'px';
+    return e;
+  }
+  /* EXブレイク（光るブレイク）：黄色〜橙の輪のまわりが白っぽく光り、まん中は黒 */
+  function exBreakSvg(size){
+    var e = el('span', {class:'break-note is-ex', 'aria-hidden':'true'});
+    e.style.width = e.style.height = size + 'px';
+    return e;
+  }
+  /* 画像保存の仕組みは、円すい状のグラデーション（ブレイクの輪）と、文字のグラデーション（SSS）を描けない。
+     保存用の写しだけ、同じ見た目をキャンバスで描いた画像に置きかえる */
+  function drawBreakPng(size, ex){
+    var S = 3, pad = ex ? 6 : 1, W = (size + pad * 2) * S;
+    var cv = document.createElement('canvas'); cv.width = cv.height = W;
+    var c = cv.getContext('2d');
+    if (!c || !c.createConicGradient) return null;
+    var cx = W / 2, R = size * S / 2;
+    function stops(g, list){ list.forEach(function(s){ g.addColorStop(s[0], s[1]); }); }
+    c.save();
+    if (ex){ c.shadowColor = 'rgba(255,200,60,.95)'; c.shadowBlur = 5 * S; }
+    var cg = c.createConicGradient(-Math.PI / 2, cx, cx);
+    stops(cg, ex
+      ? [[0,'#ffd83a'],[70/360,'#ffe85a'],[130/360,'#ffcf2e'],[190/360,'#ff9a1c'],[240/360,'#ff6414'],[270/360,'#ff5a12'],[310/360,'#ff8a18'],[1,'#ffd83a']]
+      : [[0,'#ff6a10'],[40/360,'#ffb31c'],[80/360,'#ffd52c'],[115/360,'#ffc022'],[150/360,'#ff6012'],[185/360,'#ff2c0c'],[220/360,'#ff7414'],[260/360,'#ffc62a'],[285/360,'#ffb01c'],[320/360,'#ff3a0e'],[1,'#ff6a10']]);
+    c.fillStyle = cg; c.beginPath(); c.arc(cx, cx, R, 0, Math.PI * 2); c.fill();
+    c.restore();
+    /* 縁の線 */
+    c.lineWidth = 1.2 * S; c.strokeStyle = ex ? '#fff6c8' : '#f8d8cb';
+    c.beginPath(); c.arc(cx, cx, R - 0.6 * S, 0, Math.PI * 2); c.stroke();
+    if (!ex){
+      c.lineWidth = 0.8 * S; c.strokeStyle = '#ffb59a'; c.beginPath(); c.arc(cx, cx, R - 1.6 * S, 0, Math.PI * 2); c.stroke();
+      c.lineWidth = 1 * S; c.strokeStyle = '#1c2136'; c.beginPath(); c.arc(cx, cx, R + 0.5 * S, 0, Math.PI * 2); c.stroke();
+    } else {
+      c.lineWidth = 1.5 * S; c.strokeStyle = '#fff1a6'; c.beginPath(); c.arc(cx, cx, R + 0.75 * S, 0, Math.PI * 2); c.stroke();
+    }
+    /* まん中（radial-gradient と同じ割合。半径＝直径の割合で） */
+    var D = size * S;
+    if (ex){
+      c.fillStyle = '#fff3c4'; c.beginPath(); c.arc(cx, cx, D * 0.37, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#000'; c.beginPath(); c.arc(cx, cx, D * 0.315, 0, Math.PI * 2); c.fill();
+    } else {
+      c.fillStyle = '#f6d4c6'; c.beginPath(); c.arc(cx, cx, D * 0.365, 0, Math.PI * 2); c.fill();
+      var rg = c.createRadialGradient(cx, cx, 0, cx, cx, D * 0.305);
+      stops(rg, [[0,'#50557a'],[0.72,'#3a3d58'],[1,'#2c2d44']]);
+      c.fillStyle = rg; c.beginPath(); c.arc(cx, cx, D * 0.305, 0, Math.PI * 2); c.fill();
+    }
+    return { url: cv.toDataURL('image/png'), pad: pad };
+  }
+  function drawGradientText(text, fontCss, sizePx){
+    var S = 3, cv = document.createElement('canvas'), c = cv.getContext('2d');
+    if (!c) return null;
+    c.font = fontCss;
+    var w = Math.ceil(c.measureText(text).width) + 4, h = Math.ceil(sizePx * 1.25);
+    cv.width = w * S; cv.height = h * S;
+    c = cv.getContext('2d'); c.scale(S, S); c.font = fontCss; c.textBaseline = 'middle';
+    var g = c.createLinearGradient(0, 0, w, h * 0.18);
+    [[0,'#ff5a5a'],[0.35,'#ffb12e'],[0.5,'#ffd93d'],[0.8,'#3d9bff'],[1,'#6a5cff']].forEach(function(s){ g.addColorStop(s[0], s[1]); });
+    c.fillStyle = g; c.fillText(text, 2, h / 2);
+    c.lineWidth = 0.6; c.strokeStyle = 'rgba(120,60,0,.35)'; c.strokeText(text, 2, h / 2);
+    return { url: cv.toDataURL('image/png'), w: w, h: h };
+  }
+  function fixSongDetailShot(shot){
+    Array.prototype.forEach.call(shot.querySelectorAll('.break-note'), function(b){
+      var size = parseFloat(b.style.width) || 16, ex = b.classList.contains('is-ex');
+      var r = drawBreakPng(size, ex);
+      if (!r) return;
+      var full = size + r.pad * 2;
+      var im = el('img', {class:'sd-fix', src: r.url, alt:''});
+      im.style.width = im.style.height = full + 'px';
+      im.style.margin = (-r.pad) + 'px';
+      b.parentNode.replaceChild(im, b);
+    });
+    Array.prototype.forEach.call(shot.querySelectorAll('.sd-rank.is-sss'), function(rk){
+      /* 写しはまだ画面に置かれていないので、文字の大きさ・書体は画面の方から読む */
+      var live = document.querySelector('.modal-box.song-detail:not(.sd-export) .sd-rank.is-sss') || rk;
+      var cs = getComputedStyle(live), size = parseFloat(cs.fontSize) || 24;
+      var fam = cs.fontFamily || 'sans-serif', wt = cs.fontWeight || '900';
+      var r = drawGradientText(rk.textContent, wt + ' ' + size + 'px ' + fam, size);
+      if (!r) return;
+      var im = el('img', {class:'sd-fix', src: r.url, alt: rk.textContent});
+      im.style.width = r.w + 'px'; im.style.height = r.h + 'px';
+      rk.textContent = ''; rk.style.background = 'none'; rk.style.webkitTextStroke = '0';
+      rk.appendChild(im);
+    });
+  }
+  /* ブレイクスライドの「＞＞＞」（黄色〜橙の矢印） */
+  function slideChevronSvg(size){
+    var ns = 'http://www.w3.org/2000/svg', id = 'chv' + (++breakSeq);
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 34 18'); svg.setAttribute('width', Math.round(size * 34 / 18)); svg.setAttribute('height', size);
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('class', 'break-chevrons');
+    /* 上半分が橙、下半分が黄色（境目はくっきり） */
+    var g = '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8c00"/><stop offset=".5" stop-color="#ff9a00"/><stop offset=".5" stop-color="#ffe600"/><stop offset="1" stop-color="#fff200"/></linearGradient></defs>';
+    var p = '';
+    [0, 11, 22].forEach(function(x){ p += '<path d="M' + (x + .8) + ' 1.5 L' + (x + 6.8) + ' 9 L' + (x + .8) + ' 16.5 L' + (x + 6.3) + ' 16.5 L' + (x + 12.3) + ' 9 L' + (x + 6.3) + ' 1.5 Z" fill="url(#' + id + ')" stroke="#ff4d00" stroke-width=".7" stroke-linejoin="round"/>'; });
+    svg.innerHTML = g + p;
+    return svg;
+  }
+  /* 未達成楽曲一覧の条件（FC・SSS・AP…・☆5〜☆7）を、曲の詳細と同じ見た目で出す */
+  var TODO_BADGE = { 'FC':'fc', 'AP':'ap', 'AP+':'app', 'FDX':'fsd', 'FDX+':'fsdp' };
+  function todoModeBadge(key){
+    var box = el('span', {class:'mode-badge'});
+    var m = /^☆(\d)$/.exec(key);
+    if (m){
+      box.classList.add('is-star');
+      box.appendChild(dxStarSvg(+m[1], 17));
+      box.appendChild(el('b', {class:'mode-badge-num', text: m[1]}));
+    } else if (key === 'SSS' || key === 'SSS+'){
+      box.appendChild(el('span', {class:'sd-rank is-sss mode-badge-rank', text: key}));
+    } else if (TODO_BADGE[key]){
+      box.appendChild(el('span', {class:'sd-badge is-' + TODO_BADGE[key], text: key}));
+    } else box.textContent = key;
+    return box;
+  }
+  /* 1譜面ぶんの「自分の記録」。rec＝取り込んだ記録（無ければ null）、未プレイは「-」 */
+  function myRecordBlock(r, hasAnyRecords){
+    var box = el('div', {class:'sd-rec'});
+    var played = !!r;
+    var top = el('div', {class:'sd-rec-top'});
+    var hasAch = played && r.ach != null;
+    var rank = hasAch ? rankOf(r.ach) : '';
+    top.appendChild(el('span', {class:'sd-rank ' + (hasAch ? rankClass(rank) : 'is-none'), text: hasAch ? rank : '-'}));
+    top.appendChild(el('span', {class:'sd-ach', text: hasAch ? (r.ach.toFixed(4) + '%') : '-'}));
+    var badges = el('span', {class:'sd-badges'});
+    var fcl = played ? FC_LABEL[r.fc] : '', syl = played ? SYNC_LABEL[r.sync] : '';
+    badges.appendChild(el('span', {class:'sd-badge ' + (fcl ? 'is-' + r.fc : 'is-none'), text: fcl || '-'}));
+    badges.appendChild(el('span', {class:'sd-badge ' + (syl ? 'is-' + r.sync : 'is-none'), text: syl || '-'}));
+    top.appendChild(badges);
+    box.appendChild(top);
+    /* でらっくすスコアと星 */
+    var dxRow = el('div', {class:'sd-rec-dx'});
+    dxRow.appendChild(el('span', {class:'sd-rec-label', text:'でらっくすスコア'}));
+    var hasDx = played && r.dxMax > 0;
+    dxRow.appendChild(el('span', {class:'sd-dxscore', text: hasDx ? (r.dx.toLocaleString() + ' / ' + r.dxMax.toLocaleString()) : '-'}));
+    var st = hasDx ? dxStarInfo(r.dx, r.dxMax) : null;
+    var star = el('span', {class:'sd-star'});
+    if (st){
+      star.appendChild(dxStarSvg(st.lv, 21));
+      star.appendChild(el('b', {class:'sd-star-num', text: st.dec.toFixed(1)}));
+    } else star.appendChild(document.createTextNode('-'));
+    dxRow.appendChild(star);
+    box.appendChild(dxRow);
+    if (st){
+      var nx = el('div', {class:'sd-rec-next'});
+      if (st.next){
+        nx.appendChild(document.createTextNode('あと '));
+        nx.appendChild(el('b', {text: '+' + st.need}));
+        nx.appendChild(document.createTextNode(' で '));
+        nx.appendChild(dxStarSvg(st.next, 15));
+        nx.appendChild(document.createTextNode(String(st.next)));
+      } else nx.appendChild(document.createTextNode('理論値です'));
+      box.appendChild(nx);
+    }
+    if (!hasAnyRecords) box.appendChild(el('div', {class:'sd-rec-note', text:'maimai NET から取り込むと、自分の記録が表示されます。'}));
+    else if (played && r.manual) box.appendChild(el('div', {class:'sd-rec-note', text:'自分で登録した達成済みから表示しています。'}));
+    else if (played && !hasDx) box.appendChild(el('div', {class:'sd-rec-note', text:'もう一度取り込むと、でらっくすスコアも表示されます。'}));
+    return box;
+  }
+  function openSongDetail(name, type, focus){
+    if (!name) return;
+    var entries = SONG_MASTER_LIST.filter(function(x){ return x.name === name && x.type; });
+    var types = [];
+    entries.forEach(function(x){ if (types.indexOf(x.type) < 0) types.push(x.type); });
+    types.sort(function(a, b){ return a === 'ST' ? -1 : (b === 'ST' ? 1 : 0); });   /* スタンダード → でらっくす */
+    var cur = (type && types.indexOf(type) >= 0) ? type : (types[0] || type || '');
+
+    var backdrop = el('div', {class:'modal-backdrop song-detail-backdrop'});
+    var box = el('div', {class:'modal-box song-detail', role:'dialog', 'aria-modal':'true', 'aria-label': name + ' の詳細'});
+    function close(){ document.removeEventListener('keydown', onKey); closeModal(backdrop); }
+    function onKey(e){ if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onKey);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) close(); });
+    box.appendChild(el('button', {type:'button', class:'sd-close', 'aria-label':'閉じる', text:'×', onclick: close}));
+
+    /* 画像保存（黒・白）。楽曲画像の上に置く */
+    var saveRow = el('div', {class:'sd-save-row'});
+    var saveStatus = el('span', {class:'save-toast', role:'status'});
+    saveRow.appendChild(makeSaveGroup(function(base, btn){
+      var fname = (name + '_詳細').replace(/[\\/:*?"<>|]/g, '') + '.png';
+      captureNodePNG(box, fname, saveStatus, btn, 'sd-export', base, fixSongDetailShot);
+    }));
+    saveRow.appendChild(saveStatus);
+    box.appendChild(saveRow);
+    prefetchHtml2Canvas();
+
+    /* 上：ジャケット・曲名・作曲者 */
+    var head = el('div', {class:'sd-head'});
+    var jk = el('div', {class:'sd-jacket'});
+    var src = resolveSongImage(name);
+    if (src){
+      jk.appendChild(makeSongImg(name, src, getCachedSongImage(name), function(){ jk.classList.add('no-img'); }));
+    } else jk.classList.add('no-img');
+    head.appendChild(jk);
+    var ht = el('div', {class:'sd-head-text'});
+    ht.appendChild(el('div', {class:'sd-title', text: name}));
+    var artistEl = el('div', {class:'sd-artist'});
+    ht.appendChild(artistEl);
+    head.appendChild(ht);
+    box.appendChild(head);
+
+    /* スタンダードとでらっくすの両方がある曲は切り替えられる */
+    var tabs = null;
+    if (types.length > 1){
+      tabs = el('div', {class:'sd-tabs', role:'tablist'});
+      types.forEach(function(t){
+        tabs.appendChild(el('button', {type:'button', class:'sd-tab', 'data-t': t, role:'tab',
+          text: t === 'DX' ? 'でらっくす' : 'スタンダード', onclick: function(){ cur = t; paint(); }}));
+      });
+      box.appendChild(tabs);
+    }
+    /* 読み込みに失敗したときの知らせ（理由と「もう一度読み込む」） */
+    var errBox = el('div', {class:'sd-error', hidden:true});
+    box.appendChild(errBox);
+    var body = el('div', {class:'sd-body'});
+    box.appendChild(body);
+    box.appendChild(el('div', {class:'sd-credit', text:'ノーツ数・BPM・譜面作者・作曲者のデータ: DXRating (dxrating.net)'}));
+    /* 'loading' 読み込み中 / 'ok' 読めた / 'error' 読めなかった */
+    var loadState = SONG_INFO ? 'ok' : 'loading';
+    function ph(){ return loadState === 'loading' ? '読み込み中…' : ''; }
+
+    function row(dl, label, value){
+      dl.appendChild(el('dt', {text: label}));
+      dl.appendChild(el('dd', {text: (value === 0 || value) ? String(value) : '—'}));
+    }
+    function chartBlock(kind, m, info){
+      var isRem = kind === 'rem';
+      var lvLabel = isRem ? m.remas : m.level;
+      var k = isRem ? m.remasKonst : m.konst;
+      var si = info && info.s ? info.s[kind] : null;
+      var b = el('div', {class:'sd-chart' + (isRem ? ' is-rem' : ' is-mas')});
+      /* 取り込んだ記録（MASTER＝3、Re:MASTER＝4） */
+      var recIdx = myRecordIndex();
+      var myRec = recIdx ? recIdx.idx[normSongName(name) + '|' + m.type + '|' + (isRem ? 4 : 3)] : null;
+      var h = el('div', {class:'sd-chart-head'});
+      h.appendChild(el('span', {class:'sd-diff', text: isRem ? 'Re:MASTER' : 'MASTER'}));
+      if (lvLabel) h.appendChild(el('span', {class:'sd-lv', text: 'Lv ' + lvLabel}));
+      var kc = el('span', {class:'sd-konst'});
+      kc.appendChild(el('span', {class:'sd-konst-label', text:'定数'}));
+      kc.appendChild(el('b', {style:{color: k >= 0 ? konstColor(k) : 'var(--text-dim)'}, text: fmtKonst(k)}));
+      h.appendChild(kc);
+      b.appendChild(h);
+      b.appendChild(myRecordBlock(myRec || null, !!recIdx));
+      var dl = el('dl', {class:'sd-dl'});
+      row(dl, '譜面作者', si ? si.d : (info ? '' : ph()));
+      b.appendChild(dl);
+      /* ノーツ数：TOTAL と、TAP・HOLD・SLIDE・（でらっくすのみ TOUCH）・BREAK */
+      var n = si && si.n ? si.n : null;
+      var grid = el('div', {class:'sd-notes'});
+      var cells = [['TOTAL', 5], ['TAP', 0], ['HOLD', 1], ['SLIDE', 2]];
+      if (m.type === 'DX') cells.push(['TOUCH', 3]);
+      cells.push(['BREAK', 4]);
+      /* BREAK の内訳があるときは、BREAK を一番下の横いっぱいの段にする（その分、上の段の列を1つ減らす） */
+      grid.style.setProperty('--cols', String(cells.length - (si && si.bk ? 2 : 1)));
+      cells.forEach(function(c){
+        var cell = el('div', {class:'sd-note' + (c[0] === 'TOTAL' ? ' is-total' : '') + (c[0] === 'BREAK' ? ' is-break' : '')});
+        var lbl = el('span', {class:'sd-note-label'});
+        lbl.appendChild(document.createTextNode(c[0]));
+        cell.appendChild(lbl);
+        var val = n ? n[c[1]] : null;
+        /* BREAK：内訳があれば「通常ブレイク」と「ブレイクスライド・EXブレイク」を上下に分ける（後者が0なら1行） */
+        if (c[0] === 'BREAK' && si && si.bk){
+          cell.classList.add('has-bk');
+          /* 左：BREAK とその合計（他のマスと同じ形）／右：内訳 */
+          cell.removeChild(lbl);
+          var head = el('div', {class:'sd-bk-head'});
+          head.appendChild(lbl);
+          head.appendChild(el('b', {class:'sd-bk-total', text: (val === 0 || val) ? String(val) : String(si.bk[0] + si.bk[1])}));
+          cell.appendChild(head);
+          var bkBox = el('div', {class:'sd-bk'});
+          var r1 = el('div', {class:'sd-bk-row', title:'通常ブレイク'});
+          r1.appendChild(breakNoteSvg(18)); r1.appendChild(el('b', {text: String(si.bk[0])}));
+          bkBox.appendChild(r1);
+          if (si.bk[1] > 0){
+            var r2 = el('div', {class:'sd-bk-row is-ex', title:'ブレイクスライド・EXブレイク'});
+            r2.appendChild(slideChevronSvg(17)); r2.appendChild(exBreakSvg(18)); r2.appendChild(el('b', {text: String(si.bk[1])}));
+            bkBox.appendChild(r2);
+          }
+          cell.appendChild(bkBox);
+          grid.appendChild(cell);
+          return;
+        }
+        if (c[0] === 'BREAK'){
+          /* 内訳が無い曲は、〇と合計の1行 */
+          var one = el('div', {class:'sd-bk-row'});
+          one.appendChild(breakNoteSvg(17)); one.appendChild(el('b', {text: (val === 0 || val) ? String(val) : '—'}));
+          cell.appendChild(one);
+        } else cell.appendChild(el('b', {text: (val === 0 || val) ? String(val) : '—'}));
+        grid.appendChild(cell);
+      });
+      b.appendChild(grid);
+      return b;
+    }
+    function paint(){
+      if (tabs) Array.prototype.forEach.call(tabs.children, function(x){
+        var on = x.getAttribute('data-t') === cur;
+        x.classList.toggle('is-on', on); x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      var m = entries.filter(function(x){ return x.type === cur; })[0] ||
+              { name: name, type: cur, level: '', remas: '', konst: -1, remasKonst: -1, ver: '' };
+      var info = SONG_INFO ? (SONG_INFO[name + '|' + cur] || {}) : null;
+      artistEl.textContent = '作曲者：' + (info ? (info.a || '—') : (ph() || '—'));
+      body.textContent = '';
+      var dl = el('dl', {class:'sd-dl sd-meta'});
+      row(dl, '譜面', cur === 'DX' ? 'でらっくす譜面' : (cur === 'ST' ? 'スタンダード譜面' : ''));
+      row(dl, 'バージョン', m.ver);
+      row(dl, 'ジャンル', info ? info.cat : ph());
+      row(dl, 'BPM', info ? (info.b ? String(Math.round(info.b * 100) / 100) : '') : ph());
+      body.appendChild(dl);
+      var kinds = ['mas'];
+      if (m.remas || m.remasKonst >= 0) kinds.push('rem');
+      if (focus === 'rem' && kinds.length > 1) kinds.reverse();   /* 押した譜面（Re:MASTER）を先に */
+      kinds.forEach(function(kd){ body.appendChild(chartBlock(kd, m, info)); });
+    }
+    paint();
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+    function load(){
+      loadState = SONG_INFO ? 'ok' : 'loading';
+      errBox.hidden = true;
+      paint();
+      if (SONG_INFO) return;
+      loadSongInfo().then(function(){
+        if (!backdrop.isConnected) return;
+        loadState = 'ok'; paint();
+      }).catch(function(e){
+        if (!backdrop.isConnected) return;
+        loadState = 'error'; paint();
+        errBox.textContent = '';
+        errBox.appendChild(el('div', {class:'sd-error-msg', text:'ノーツ数・BPM・譜面作者・作曲者のデータを読み込めませんでした。'}));
+        errBox.appendChild(el('div', {class:'sd-error-why', text:'理由：' + ((e && e.message) || '不明')}));
+        errBox.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'もう一度読み込む', onclick: load}));
+        errBox.hidden = false;
+      });
+    }
+    load();
+  }
+  /* ジャケットをタップしたら詳細。onLongPress があるときは、長押しでそれを行う（達成済みの付け外し） */
+  function attachSongDetail(thumb, name, type, focus, onLongPress){
+    if (!name) return;
+    thumb.classList.add('has-detail');
+    thumb.addEventListener('click', function(e){
+      if (e.defaultPrevented) return;
+      if (e.target.closest && e.target.closest('input, button, select, textarea, a')) return;
+      openSongDetail(name, type, focus);
+    });
+    if (typeof onLongPress !== 'function') return;
+    var timer = null, start = null, fired = false;
+    function cancel(){ if (timer){ clearTimeout(timer); timer = null; } }
+    function begin(x, y){
+      fired = false; start = { x: x, y: y };
+      cancel();
+      timer = setTimeout(function(){ timer = null; fired = true; onLongPress(); }, 500);
+    }
+    function moved(x, y){ if (timer && start && Math.abs(x - start.x) + Math.abs(y - start.y) > 10) cancel(); }
+    /* スマホは touch、PC は mouse で見る（pointer だと画像のドラッグ扱いで途中で取り消されることがある） */
+    thumb.addEventListener('touchstart', function(e){
+      if (e.touches.length !== 1){ cancel(); return; }
+      begin(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    thumb.addEventListener('touchmove', function(e){ if (e.touches[0]) moved(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    thumb.addEventListener('touchend', function(e){
+      cancel();
+      /* 長押しのあとは、指を離したときのタップ（詳細）を起こさない */
+      if (fired && e.cancelable) e.preventDefault();
+    });
+    thumb.addEventListener('touchcancel', cancel);
+    thumb.addEventListener('mousedown', function(e){ if (e.button === 0) begin(e.clientX, e.clientY); });
+    thumb.addEventListener('mousemove', function(e){ moved(e.clientX, e.clientY); });
+    thumb.addEventListener('mouseup', cancel);
+    thumb.addEventListener('mouseleave', cancel);
+    thumb.addEventListener('dragstart', function(e){ e.preventDefault(); });
+    /* 長押ししたときは、指を離したときの「タップ（詳細）」を起こさない */
+    thumb.addEventListener('click', function(e){
+      if (fired){ fired = false; e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
+    thumb.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  }
+
   /* ---- 曲数からの自動計算（下埋め時間・料金） ---- */
   var COLOR_ORDER = ['緑','黄','赤','紫','白'];
   var SEC_PER_CHART = 204; // 3分24秒（基準タイム）
@@ -1846,16 +2598,18 @@
   /* 「<見出し>ON/OFF」の形のボタン。
      いま効いている側を先に出し、緑の太字にする。反対側は白のまま。 */
   /* single … ON のときは「ON」だけ、OFF のときは「OFF」だけを出す（ホームの「ジャケットに曲名を表示」と同じ形） */
-  function makeOnOffButton(prefix, isOn, onToggle, stacked, single){
+  /* words … ON/OFF の代わりに出す言葉（例 ['あり', 'なし']） */
+  function makeOnOffButton(prefix, isOn, onToggle, stacked, single, words){
+    var W = words || ['ON', 'OFF'];
     var btn = el('button', {class:'btn btn-sm onoff-btn' + (stacked ? ' onoff-stacked' : '') + (single ? ' onoff-single' : '')});
     function paint(on){
       btn.textContent = '';
       if (prefix) btn.appendChild(el('span', {class:'onoff-label', text: prefix}));
       var sw = el('span', {class:'onoff-switch'});
-      sw.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
+      sw.appendChild(el('span', {class:'onoff-active', text: on ? W[0] : W[1]}));
       if (!single){
         sw.appendChild(el('span', {class:'onoff-slash', text:'/'}));
-        sw.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+        sw.appendChild(el('span', {class:'onoff-idle',   text: on ? W[1] : W[0]}));
       }
       btn.appendChild(sw);
       if (single) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2536,15 +3290,21 @@
     b.appendChild(lab);
     b.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
     function labelOf(x){ var it = o.items.filter(function(i){ return i[0] === x; })[0]; return it ? it[1] : (o.items[0] ? o.items[0][1] : ''); }
-    wrap.__set = function(x){ o.current = x; lab.textContent = labelOf(x); wrap.classList.toggle('is-none', !x); };
+    /* o.render があるときは、文字の代わりにその見た目（バッジなど）で出す */
+    wrap.__set = function(x){
+      o.current = x; lab.textContent = '';
+      if (o.render){ var k = o.items.some(function(i){ return i[0] === x; }) ? x : (o.items[0] ? o.items[0][0] : ''); lab.appendChild(o.render(k)); }
+      else lab.textContent = labelOf(x);
+      wrap.classList.toggle('is-none', !x);
+    };
     wrap.__set(o.current);
     b.addEventListener('click', function(){
-      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); });
+      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); }, o.render);
     });
     wrap.appendChild(b);
     return wrap;
   }
-  function openSingleWheel(title, items, cur, onDone){
+  function openSingleWheel(title, items, cur, onDone, render){
     var H = 40;
     var idx = Math.max(0, items.map(function(i){ return i[0]; }).indexOf(cur));
     var sel = idx;
@@ -2556,7 +3316,9 @@
     var col = el('div', {class:'wheel-col', tabindex:'0'});
     col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
     items.forEach(function(it, i){
-      col.appendChild(el('div', {class:'wheel-item', text: it[1], onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+      var wi = el('div', {class:'wheel-item' + (render ? ' has-render' : ''), onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }});
+      if (render) wi.appendChild(render(it[0])); else wi.textContent = it[1];
+      col.appendChild(wi);
     });
     col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
     var t = null;
@@ -2644,6 +3406,23 @@
     persistSyncHidden();
   }
 
+  /* シンクの達成日（お相手を書いたときに自動で今日の日付が入る。あとから変えられる） */
+  var SYNC_DATES_KEY = 'mmplate_sync_dates_v1';
+  var syncDates = (function(){
+    if (!storageOK) return {};
+    try{ var raw = localStorage.getItem(SYNC_DATES_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  })();
+  function getSyncDate(versionId, songId){ var m = syncDates[versionId]; return (m && m[songId]) || ''; }
+  function setSyncDate(versionId, songId, ymd){
+    if (!syncDates[versionId]) syncDates[versionId] = {};
+    if (ymd) syncDates[versionId][songId] = ymd; else delete syncDates[versionId][songId];
+    try{ localStorage.setItem(SYNC_DATES_KEY, JSON.stringify(syncDates)); }catch(e){}
+  }
+  function todayYmd(){
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
   function getSyncPartner(versionId, songId){
     var m = syncPartners[versionId];
     return (m && m[songId]) || '';
@@ -3079,18 +3858,41 @@
     if (!syncState.db) return;
     if (syncState.unsubReviews) syncState.unsubReviews();
     reviewsState = { loaded: false, error: '' };
-    syncState.unsubReviews = syncState.db.collection(REVIEWS_COL).onSnapshot(function(snap){
-      /* 電波が悪いときに届く「手元の写しが空」の結果は、まだ受け取れていない扱いにする */
-      if (snap.metadata && snap.metadata.fromCache && snap.empty && !reviewsState.loaded) return;
-      allReviews = snap.docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
+    if (syncState.reviewsTimer){ clearTimeout(syncState.reviewsTimer); syncState.reviewsTimer = null; }
+    function applyReviews(docs){
+      allReviews = docs.map(function(d){ var o = d.data(); o._docId = d.id; return o; });
       allReviews.sort(function(a,b){ return (b.submittedAt||0) - (a.submittedAt||0); });
       reviewsState = { loaded: true, error: '' };
+      if (syncState.reviewsTimer){ clearTimeout(syncState.reviewsTimer); syncState.reviewsTimer = null; }
       renderApp();
+    }
+    /* includeMetadataChanges：レビューが0件のとき、「手元の写しが空」→「サーバーでも空」と確かめられた時点でも知らせてもらう。
+       （これが無いと、0件のままでは2回目の知らせが来ず「読み込み中…」から進まなかった） */
+    syncState.unsubReviews = syncState.db.collection(REVIEWS_COL).onSnapshot({ includeMetadataChanges: true }, function(snap){
+      var fromCache = !!(snap.metadata && snap.metadata.fromCache);
+      /* 電波が悪いときに届く「手元の写しが空」の結果は、まだ受け取れていない扱いにする */
+      if (fromCache && snap.empty && !reviewsState.loaded) return;
+      /* 中身が変わらず、手元の写しかどうかの印だけ変わった知らせは、読み込み済みなら描き直さない */
+      if (reviewsState.loaded && !snap.docChanges().length) return;
+      applyReviews(snap.docs);
     }, function(err){
+      if (syncState.reviewsTimer){ clearTimeout(syncState.reviewsTimer); syncState.reviewsTimer = null; }
       reviewsState = { loaded: false, error: err.message || String(err) };
       syncState.error = '同期エラー（レビュー一覧）: ' + reviewsState.error;
       renderApp();
     });
+    /* 念のため：10秒たっても届かなければ、サーバーに直接聞きにいく。それでもだめなら理由を出す */
+    syncState.reviewsTimer = setTimeout(function(){
+      syncState.reviewsTimer = null;
+      if (reviewsState.loaded || reviewsState.error) return;
+      syncState.db.collection(REVIEWS_COL).get({ source: 'server' }).then(function(snap){
+        if (!reviewsState.loaded) applyReviews(snap.docs);
+      }).catch(function(err){
+        if (reviewsState.loaded) return;
+        reviewsState = { loaded: false, error: 'サーバーにつながりませんでした（' + (err.message || String(err)) + '）' };
+        renderApp();
+      });
+    }, 10000);
   }
 
   function connectSync(configObj, email, password, onDone){
@@ -3151,8 +3953,8 @@
     if (!canEdit()) return;
     if (!SONG_DATA_FULL){ showAlert('楽曲データ（songs.json）の読み込みが終わってから、もう一度押してください。'); return; }
     var msg = IS_TEST_ENV
-      ? '13+〜15 を本番の表と同じ並びにし、13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（曲の赤線は消えません）'
-      : '13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（13+〜15 はそのまま。曲の赤線は消えません）';
+      ? '13+〜15 を本番の表と同じ並びにし、13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（曲の達成の記録は消えません）'
+      : '13以下を「定数→ジャンル→追加日」の順に並べ直しますか？（13+〜15 はそのまま。曲の達成の記録は消えません）';
     showConfirm(msg, function(){
       var getProd = (IS_TEST_ENV && syncState.db)
         ? syncState.db.collection('plates').get().then(function(snap){ return snap.docs.map(function(d){ return d.data(); }); })
@@ -4672,28 +5474,30 @@
             t.appendChild(makeChartTypeMark(ctype));
           }
 
-          /* 斜線：作成者が設定したもの or 閲覧者が自分でつけたもの（表示ONのときのみ） */
+          /* 達成済み：作成者が設定したもの or 閲覧者が自分で付けたもの（プレートを選んでいるときのみ）は薄く表示する */
           function syncSlash(){
-            var existing = t.querySelector('.slash-overlay');
             var on = song.slashed || (!!plateMode && isSongMarked(markKey, song.id));
-            if (on && !existing) t.appendChild(el('div', {class:'slash-overlay'}));
-            if (!on && existing) existing.parentNode.removeChild(existing);
+            t.classList.toggle('is-marked', !!on);
           }
           syncSlash();
 
-          /* 詳細画面かつ赤線ONのときだけ、タップで付け外しできる */
-          if (interactive && plateMode && !song.slashed){
-            t.classList.add('is-markable');
-            t.title = 'タップで斜線をつける／外す';
-            t.addEventListener('click', function(){
+          /* 曲の詳細はタップ。プレートを選んでいるときは、長押しで達成済み（薄く表示）を付け外しできる */
+          if (interactive){
+            var canMark = !!(plateMode && !song.slashed);
+            var onHold = canMark ? function(){
               toggleSongMark(markKey, song.id);
-              /* 非表示ONのときは、赤線をつけた曲をその場で表から外す */
+              /* 非表示ONのときは、達成済みにした曲をその場で表から外す */
               if (hideMarked){
                 var holder = card.parentNode;
                 if (holder){ holder.replaceChild(buildPreviewNode(v, opts), card); return; }
               }
               syncSlash();
-            });
+            } : null;
+            if (canMark){
+              t.classList.add('is-markable');
+              t.title = 'タップで詳細／長押しで達成済み（薄く表示）にする・戻す';
+            }
+            attachSongDetail(t, song.name, songTypeFor(v, song, level.label), isMaiHashaDoc(v) ? 'rem' : 'mas', onHold);
           }
 
           wrap.appendChild(t);
@@ -4813,6 +5617,7 @@
           thumb.classList.add('no-img');
           thumb.appendChild(el('div', {class:'placeholder-text', text: song.name || ''}));
         }
+        attachSongDetail(thumb, song.name, songTypeFor(v, song, level.label), isMaiHashaDoc(v) ? 'rem' : 'mas', false);
         var ctype2 = chartTypeFor(v, song, level.label);
         if (ctype2 && CHART_TYPE_SOURCES[ctype2]){
           thumb.appendChild(makeChartTypeMark(ctype2));
@@ -4822,15 +5627,33 @@
         /* 記入欄と、画像保存のときに使う文字。中身は常に同じにしておく */
         var saved = getSyncPartner(v.id, song.id);
         var printed = el('div', {class:'sync-name-print', text: saved});
-        var input = el('input', {type:'text', class:'sync-name-input'});
+        var input = el('input', {type:'text', class:'sync-name-input', 'aria-label': (song.name || '') + 'のお相手'});
         input.value = saved;
+        /* 達成日：お相手を書くと今日の日付が自動で入る（押すと変えられる）。名前を消すと日付も消える */
+        var sd = getSyncDate(v.id, song.id);
+        var dateBtn = el('button', {type:'button', class:'sync-date' + (sd ? '' : ' is-empty'), text: sd ? fmtYmd(sd) : '達成日',
+          'aria-label': (song.name || '') + 'の達成日'});
+        var datePrint = el('div', {class:'sync-date-print', text: sd ? fmtYmd(sd) : ''});
+        function paintDate(val){
+          dateBtn.textContent = val ? fmtYmd(val) : '達成日';
+          dateBtn.classList.toggle('is-empty', !val);
+          datePrint.textContent = val ? fmtYmd(val) : '';
+        }
+        dateBtn.addEventListener('click', function(){
+          openDateWheel(getSyncDate(v.id, song.id) || '', function(val){ setSyncDate(v.id, song.id, val); paintDate(val); });
+        });
         input.addEventListener('input', function(){
-          setSyncPartner(v.id, song.id, input.value.trim());
+          var name = input.value.trim();
+          setSyncPartner(v.id, song.id, name);
           printed.textContent = input.value;
+          if (name && !getSyncDate(v.id, song.id)){ var t = todayYmd(); setSyncDate(v.id, song.id, t); paintDate(t); }
+          if (!name && getSyncDate(v.id, song.id)){ setSyncDate(v.id, song.id, ''); paintDate(''); }
         });
         var nameWrap = el('div', {class:'sync-name'});
         nameWrap.appendChild(input);
         nameWrap.appendChild(printed);
+        nameWrap.appendChild(dateBtn);
+        nameWrap.appendChild(datePrint);
         row.appendChild(nameWrap);
 
         list.appendChild(row);
@@ -5147,34 +5970,19 @@
     if (!v){
       /* 13以下のON/OFF（全部の表まとめて。舞＆覇者の表は対象外）。
          「13+↓ ON/OFF | ▼」の1つにまとめ、▼で 13+ → 13 → 12+ と切り替える */
-      /* 1段目：上に固定・赤線リセット（・？）／2段目：n〜n・達成済みを非表示・極・将・神・舞 */
+      /* 1段目：上に固定（・？）／2段目：達成済みを表示・n〜n・極・将・神・舞 */
       bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
       var lseg = makeWheelPicker({ title: '表示するプレート', cls: 'mode-picker list-mode-seg',
         items: [['', '未選択'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
         current: commonListMode() || '', onPick: function(m){ setAllPlateModes(m); renderApp(); } });
-      /* 「上に固定」の横に「赤線リセット」、下の段に「赤線楽曲の非表示」と極・将・神・舞 */
+      /* 「上に固定」、下の段に「達成済みを表示」と n〜n・極・将・神・舞 */
       {
         var subRow = el('div', {class:'mark-sub-row'});
         /* 赤線のついた曲を表から隠す（ON/OFF。詳細画面と共通） */
         subRow.appendChild(makeHideMarkedButton(function(){ renderApp(); }));
         /* 表示する難易度（n〜n。全部の表まとめて。舞・覇者の表は別） */
         subRow.appendChild(makeRangePicker('plates'));
-        /* 選んでいるプレートの赤線を、全部の表からまとめて消す */
-        bar.appendChild(el('button', {class:'btn btn-sm mark-clear', type:'button', text:'赤線リセット',
-          onclick: function(){
-            var m = commonListMode();
-            if (!m){ showAlert('極・将・神・舞のどれかを選んでから押してください。'); return; }
-            showDeleteConfirm(PLATE_MODE_LABEL[m] + 'の赤線を全て削除しますか？', function(){
-              allVersions.forEach(function(x){
-                if (x.docType === 'jewel') return;
-                if (getPlateMode(x) === m) delete songMarks[plateMarkKey(x.id, m)];
-              });
-              persistSongMarks();
-              renderApp();
-            }, { yesText: '削除', oneLine: true });
-          }}));
-        bar.appendChild(makeHelpButton('help-btn-list'));
         bar.appendChild(subRow);
       }
       var subRowRef = subRow;
@@ -5187,7 +5995,7 @@
   /* 「？」：赤線がつかないときの説明 */
   function makeHelpButton(extraClass){
     return el('button', {type:'button', class:'help-btn' + (extraClass ? ' ' + extraClass : ''), text:'?',
-      'aria-label':'使い方（赤線がつかないとき）', title:'使い方', onclick: showModeHelp});
+      'aria-label':'使い方（薄く表示されないとき）', title:'使い方', onclick: showModeHelp});
   }
   function showModeHelp(){
     var backdrop = el('div', {class:'modal-backdrop'});
@@ -5197,7 +6005,7 @@
     box.appendChild(el('button', {class:'notice-close', type:'button', 'aria-label':'閉じる', text:'×', onclick: close}));
     var q = el('div', {class:'help-q'});
     q.appendChild(el('span', {class:'help-mark help-mark-q', text:'Q'}));
-    q.appendChild(el('span', {text:'タップしても赤線がつかない'}));
+    q.appendChild(el('span', {text:'長押ししても薄く表示されない'}));
     box.appendChild(q);
     var a = el('div', {class:'help-a'});
     a.appendChild(el('span', {class:'help-mark help-mark-a', text:'A'}));
@@ -5207,7 +6015,7 @@
     var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
     ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
     p1.appendChild(chips);
-    p1.appendChild(document.createTextNode('いずれかを押した上で赤線をつけて下さい。'));
+    p1.appendChild(document.createTextNode('いずれかを押した上で曲を長押しして下さい。'));
     body.appendChild(p1);
     body.appendChild(el('p', {text:'プレートごとに進捗を管理できます。'}));
     a.appendChild(body);
@@ -5815,8 +6623,8 @@
     }
     card.appendChild(metaRow);
 
+    /* ランクの表示ON/OFFは廃止（前に非表示にしたランクも表示する） */
     var any = t.ranks.some(function(r){
-      if (r.hidden) return false;
       return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
     });
     if (!any){
@@ -5825,7 +6633,6 @@
     }
 
     t.ranks.forEach(function(rank){
-      if (rank.hidden) return;          /* 非表示にしたランクは出さない */
       var jiriki = rank.jiriki || [];
       var kojinsa = rank.kojinsa || [];
       if (jiriki.length === 0 && kojinsa.length === 0) return;
@@ -5953,12 +6760,14 @@
 
     var lrRow = el('div', {class:'field', style:{marginTop:'10px'}});
     lrRow.appendChild(el('label', {text:'左右差'}));
+    /* 左右差：「あり」か「なし」の今の方だけを出す。押すと切り替わる */
     var lrBtn = makeOnOffButton('', !!plateTierDraft.showLeftRight, function(){
       plateTierDraft.showLeftRight = !plateTierDraft.showLeftRight;
       renderRanksEditor();
       refreshPreview();
       return plateTierDraft.showLeftRight;
-    });
+    }, false, true, ['あり', 'なし']);
+    lrBtn.title = '押すと、左右差のあり・なしを切り替えます';
     lrRow.appendChild(lrBtn);
     infoCard.appendChild(lrRow);
 
@@ -6010,7 +6819,7 @@
     function renderRanksEditor(){
       ranksContainer.textContent = '';
       plateTierDraft.ranks.forEach(function(rank, rIdx){
-        var block = el('div', {class:'level-block' + (rank.hidden ? ' rank-off' : '')});
+        var block = el('div', {class:'level-block'});
 
         var head = el('div', {class:'level-block-head'});
         var labelInput = el('input', {type:'text'});
@@ -6038,12 +6847,6 @@
           plateTierDraft.ranks[rIdx] = tmp;
           renderRanksEditor(); refreshPreview();
         }}));
-        head.appendChild(makeOnOffButton('このランク', !rank.hidden, function(){
-          rank.hidden = !rank.hidden;
-          renderRanksEditor();
-          refreshPreview();
-          return !rank.hidden;
-        }, true));
         head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
           showDeleteConfirm((rank.label || 'このランク') + 'を削除しますか？', function(){
             plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
@@ -6213,7 +7016,7 @@
 
     var selectedRating = pendingReviewRating || 0;
     pendingReviewRating = 0;
-    var starRow = el('div', {class:'star-row'});
+    var starRow = el('div', {class:'star-row review-stars'});
     var starButtons = [];
     for (var i = 1; i <= 5; i++){
       (function(n){
@@ -6228,10 +7031,10 @@
     }
     card2.appendChild(starRow);
 
-    var msgArea = el('textarea', {placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
+    var msgArea = el('textarea', {class:'review-msg', placeholder:'使ってみた感想や、こうしてほしい機能などをお書きください', style:{width:'100%', minHeight:'100px', background:'var(--panel)', border:'1px solid var(--border-strong)', color:'var(--text)', borderRadius:'8px', padding:'8px 10px', fontSize:'13px', marginTop:'10px'}});
     card2.appendChild(msgArea);
 
-    var sendBtn = el('button', {class:'btn btn-primary', style:{marginTop:'10px'}, text:'送信する'});
+    var sendBtn = el('button', {class:'btn btn-primary review-send', style:{marginTop:'10px'}, text:'送信する'});
     sendBtn.addEventListener('click', function(){
       sendBtn.disabled = true;
       submitReview(msgArea.value, selectedRating, nameInput.value, function(err){
@@ -6292,6 +7095,7 @@
         try{ if (window.firebase && window.firebase.auth) window.firebase.auth().signOut(); }catch(e){}
         syncState.isAdmin = false;
         if (syncState.unsubReviews){ syncState.unsubReviews(); syncState.unsubReviews = null; }
+        if (syncState.reviewsTimer){ clearTimeout(syncState.reviewsTimer); syncState.reviewsTimer = null; }
         allReviews = [];
         reviewsState = { loaded: false, error: '' };
         goList();
@@ -6388,7 +7192,7 @@
     wrap.appendChild(section('はじめに', [
       para(['ご覧いただきありがとうございます。']),
       para(['当サイトをお使いいただくうえで、', b('1つ大切な注意点'), 'があります。']),
-      para(['当サイトの記録（赤線やシンクのお相手記録など）は、', b('お使いのブラウザに保存されます'), '。そのため、タブを閉じても記録は残ります。']),
+      para(['当サイトの記録（達成済みの印やシンクのお相手記録など）は、', b('お使いのブラウザに保存されます'), '。そのため、タブを閉じても記録は残ります。']),
       notice
     ]));
 
@@ -6398,7 +7202,7 @@
       para(['13～12+も楽曲定数順には並んでいますが、定数が同じ場合は、', el('br'),
             'POPS→ニコボカ→東方→ゲーバラ→オリジナル→ゲキチュウ', el('br'),
             '以上の優先度で並んでいます。それでも同じ場合は追加日が早いものを左側に配置しています。'], 'guide-p guide-p-tight'),
-      para(['未達成楽曲一覧も、13～12+と同じ決まりで並んでいます。'], 'guide-p guide-p-tight'),
+      para(['未達成楽曲一覧・定数表は、定数が同じ場合は追加日が早いものを左側に配置しています。'], 'guide-p guide-p-tight'),
       para(['（独断と偏見で軽く決めた左右差なので違和感があった場合はレビュー等へお願いします🙏）'], 'guide-p guide-p-soft')
     ]));
 
@@ -6541,7 +7345,7 @@
     wrap.appendChild(section('注意事項', [
       para(['当サイトは個人が非営利で運営している', b('非公式のファンメイドサイト'), 'です。株式会社セガおよび関連会社とは一切関係ありません。'], 'guide-p guide-p-note'),
       para(['「maimai」「maimai でらっくす」は株式会社セガの商標または登録商標です。'], 'guide-p guide-p-note'),
-      para(['楽曲のジャケット画像・実績プレート画像・実績フレーム画像などの著作権は、株式会社セガおよび各権利者に帰属します。'], 'guide-p guide-p-note'),
+      para(['楽曲画像・実績プレート画像・実績フレーム画像などの著作権は、株式会社セガおよび各権利者に帰属します。'], 'guide-p guide-p-note'),
       para(['掲載している譜面定数・下埋め時間・料金などは、有志による公開データや独自の集計をもとにしたもので、正確さを保証するものではありません。'], 'guide-p guide-p-note'),
       para(['掲載内容に問題がある場合は、X（旧Twitter）の ', contactLink, ' までDMでご連絡ください。確認のうえ、速やかに削除などの対応をいたします。'], 'guide-p guide-p-note')
     ]));
@@ -6692,10 +7496,16 @@
      その端末で1回表示したら、次からは出さない（読み込み直しても出ない）。
      内容を変えて再び出したいときは NOTICE_ID を変える。 */
   /* ---- バージョンと更新履歴（新しい順）。公開したら APP_VERSION と先頭の項目を足す ---- */
-  var APP_VERSION = '2.2';
+  var APP_VERSION = '2.4';
   var CHANGELOG = [
+    { ver:'2.4', date:'2026/11/25', items:[
+      ['使い方ガイド', 'ホームやメニューの「使い方ガイド」から、各機能の使い方を実際の画面で確認できます。'],
+      ['曲の詳細に自分の記録', '楽曲画像をタップすると、ランク・FC/AP・でらっくすスコア・星を確認できます。'],
+      ['未達成楽曲一覧の SSS+・☆5〜☆7', '条件に、SSS+ と でらっくすスコアの☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
+      ['赤線 → 薄く表示', '達成済みの楽曲は、赤線ではなく薄く表示されるようになりました。\n自分で登録するときは、楽曲画像を長押しします（タップは楽曲の詳細）。']
+    ]},
     { ver:'2.2', date:'2026/11/10', items:[
-      ['曲名の表示', 'ジャケットの下に曲名を表示するようにしました（保存画像には入りません）。\nホームの「ジャケットに曲名を表示」でON/OFFできます。'],
+      ['曲名の表示', '楽曲画像の下に曲名を表示するようにしました（保存画像には入りません）。\nホームの「楽曲画像に曲名を表示」でON/OFFできます。'],
       ['未達成楽曲一覧', '「達成済みを表示」で達成済みの楽曲も確認できます。']
     ]},
     { ver:'2.1', date:'2026/10/17', items:[
@@ -6722,18 +7532,24 @@
   ];
   var NOTICE_ID = 'v' + APP_VERSION;
   var NOTICE_KEY = 'mmplate_notice_seen_v1';
-  function maybeShowUpdateNotice(force){
+  /* 更新情報を出す。新しい版をはじめて開いたときだけ（force は「更新情報」ボタン）。
+     出したら true。onClosed は閉じたあとに呼ぶ（このあと使い方ガイドを案内する） */
+  function maybeShowUpdateNotice(force, onClosed){
     if (!force){
-      if (!storageOK) return;
+      if (!storageOK) return false;
       try{
-        if (localStorage.getItem(NOTICE_KEY) === NOTICE_ID) return;
+        if (localStorage.getItem(NOTICE_KEY) === NOTICE_ID) return false;
         localStorage.setItem(NOTICE_KEY, NOTICE_ID);
-      }catch(e){ return; }
+      }catch(e){ return false; }
     }
 
     var backdrop = el('div', {class:'modal-backdrop notice-backdrop'});
     var box = el('div', {class:'modal-box notice-box', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'noticeTitle'});
-    function close(){ closeModal(backdrop); document.removeEventListener('keydown', onKey); }
+    var closedOnce = false;
+    function close(){
+      closeModal(backdrop); document.removeEventListener('keydown', onKey);
+      if (!closedOnce){ closedOnce = true; if (onClosed) setTimeout(onClosed, 250); }
+    }
     function onKey(e){ if (e.key === 'Escape') close(); }
     /* 見出しと × は上に固定し、中身だけをスクロールさせる */
     var headBar = el('div', {class:'notice-head'});
@@ -6762,7 +7578,7 @@
           var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
           ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
           note.appendChild(chips);
-          note.appendChild(document.createTextNode('いずれかを押した上で赤線をつけて下さい。'));
+          note.appendChild(document.createTextNode('いずれかを押した上で曲をタップして下さい。'));
           li.appendChild(note);
         }
         list.appendChild(li);
@@ -6788,6 +7604,7 @@
     backdrop.addEventListener('click', function(e){ if (e.target === backdrop) close(); });
     document.addEventListener('keydown', onKey);
     document.body.appendChild(backdrop);
+    return true;
   }
 
   /* ========================= 赤線のバックアップ（URL） =========================
@@ -6942,8 +7759,8 @@
     pendingBackup = '';
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box'});
-    box.appendChild(el('p', {class:'del-ask', text:'バックアップのURLから赤線を復元しますか？'}));
-    box.appendChild(el('p', {class:'note', text:'この端末の赤線は、バックアップの内容に置き換わります。'}));
+    box.appendChild(el('p', {class:'del-ask', text:'バックアップのURLから達成の記録を復元しますか？'}));
+    box.appendChild(el('p', {class:'note', text:'この端末の達成の記録は、バックアップの内容に置き換わります。'}));
     var actions = el('div', {class:'modal-actions del-actions'});
     actions.appendChild(el('button', {class:'btn del-no', text:'いいえ', onclick: function(){
       closeModal(backdrop); clearBackupHash();
@@ -6953,9 +7770,9 @@
       var r = applyBackupString(str);
       renderApp();
       if (!r.ok){ showAlert('このバックアップのURLは読み込めませんでした。URLが途中で切れていないか確認してください。'); return; }
-      var msg = '赤線を復元しました（' + r.restored + 'か所）。';
+      var msg = '達成の記録を復元しました（' + r.restored + 'か所）。';
       if (r.failed.length){
-        msg += '\n\n次の表は、バックアップを作ったあとに楽曲が追加・変更されたため復元できませんでした（今の赤線のままです）：\n' + r.failed.join('\n');
+        msg += '\n\n次の表は、バックアップを作ったあとに楽曲が追加・変更されたため復元できませんでした（今の記録のままです）：\n' + r.failed.join('\n');
       }
       showAlert(msg);
     }}));
@@ -6968,14 +7785,14 @@
     var r = buildBackupString();
     var backdrop = el('div', {class:'modal-backdrop'});
     var box = el('div', {class:'modal-box'});
-    box.appendChild(el('p', {class:'del-ask', text:'赤線のバックアップ'}));
+    box.appendChild(el('p', {class:'del-ask', text:'達成の記録のバックアップ'}));
     var actions = el('div', {class:'modal-actions'});
     actions.appendChild(el('button', {class:'btn btn-ghost', text:'閉じる', onclick: function(){ closeModal(backdrop); }}));
     if (!r.str){
-      box.appendChild(el('p', {text:'まだ赤線がありません。曲に赤線を付けてから、もう一度開いてください。'}));
+      box.appendChild(el('p', {text:'まだ達成の記録がありません。曲を長押しして達成済みにしてから、もう一度開いてください。'}));
     } else {
       var url = backupUrl(r.str);
-      box.appendChild(el('p', {text:'このURLを保存しておき、別の端末やブラウザで開くと、赤線（' + r.count + 'か所）を復元できます。'}));
+      box.appendChild(el('p', {text:'このURLを保存しておき、別の端末やブラウザで開くと、達成の記録（' + r.count + 'か所）を復元できます。'}));
       var input = el('input', {type:'text', class:'backup-url', readonly:true, 'aria-label':'バックアップのURL'});
       input.value = url;
       input.addEventListener('focus', function(){ input.select(); });
@@ -7206,8 +8023,9 @@
     for (var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = (x + ((x << 1) + (x << 4) + (x << 7) + (x << 8) + (x << 24))) >>> 0; }
     return x.toString(36);
   }
-  function saveNetRecords(records){
-    var o = { at: Date.now(), records: records, sig: tablesSignature() };
+  function saveNetRecords(records, ver){
+    /* v：取り込みプログラムの版（2 から DXスコアも読む） */
+    var o = { at: Date.now(), records: records, sig: tablesSignature(), v: ver || 1 };
     netRecordsMemo = o; netSigCheckedFor = allVersions;
     if (!storageOK) return;
     try{ localStorage.setItem(NET_RECORDS_KEY, JSON.stringify(o)); }catch(e){}
@@ -7244,7 +8062,9 @@
     pendingImport = null;
     if (d.error || !Array.isArray(d.records)){ hideImportProgress(); showAlert(d.error || '記録を受け取れませんでした。'); return; }
     var p = buildImportPlan(d.records.slice(0, 20000));
-    saveNetRecords(d.records.slice(0, 20000));
+    /* はじめての取り込みか（使い方ガイドの続きを案内するかどうかに使う） */
+    var firstImport = !netRecordIndex();
+    saveNetRecords(d.records.slice(0, 20000), +d.v || 1);
     /* 確認なしで、プレートごとに達成済みの曲へ赤線を付ける（「全」はそのまま） */
     p.plan.forEach(function(it){
       Object.keys(it.maps).forEach(function(m){
@@ -7255,12 +8075,43 @@
     persistSongMarks();
     renderApp();
     finishImportProgress();
-    showAlert('取り込みました。');
+    /* ガイドの途中で取り込みに行った人、または はじめて取り込んでガイドを最後まで見ていない人には、続きを案内する
+       （ホーム画面に追加したアプリと Safari では保存場所が別なので、目印が無くても はじめての取り込みなら案内する） */
+    var resume = takeTourResume();
+    if (resume || (firstImport && !tourFinished())) setTimeout(showTourResume, 300);
+    else showAlert('取り込みました。');
   }
 
   function renderImportSection(root){
     var wrap = el('div', {class:'simple-page'});
     wrap.appendChild(el('h2', {class:'page-title', text:'maimai NET から取り込む'}));
+    /* まだ取り込んでいなくて、使い方ガイドを最後まで見ていない人：取り込み後に「続きを見る」が出ることを先に知らせる */
+    if (!netRecordIndex() && !tourFinished()){
+      var tp = el('div', {class:'tour-resume-bar is-before'});
+      tp.appendChild(iconNode('tour', 'tour-resume-icon'));
+      var tpt = el('div', {class:'tour-resume-text'});
+      tpt.appendChild(el('strong', {text:'取り込みが終わったら'}));
+      var tps = el('span');
+      tps.appendChild(document.createTextNode('画面に '));
+      tps.appendChild(el('span', {class:'tour-ui is-primary', text:'続きを見る'}));
+      tps.appendChild(document.createTextNode(' が出ます。押すと使い方ガイドの続きから見られます。'));
+      tpt.appendChild(tps);
+      tp.appendChild(tpt);
+      wrap.appendChild(tp);
+    }
+    /* 取り込みが済んでいて、使い方ガイドを最後まで見ていない人：続きへの入り口 */
+    if (netRecordIndex() && !tourFinished()){
+      var tr = el('div', {class:'tour-resume-bar'});
+      tr.appendChild(iconNode('tour', 'tour-resume-icon'));
+      var trt = el('div', {class:'tour-resume-text'});
+      trt.appendChild(el('strong', {text:'記録を取り込みました'}));
+      trt.appendChild(el('span', {text:'使い方ガイドの続きを、自分の記録で見てみましょう。'}));
+      tr.appendChild(trt);
+      tr.appendChild(el('button', {type:'button', class:'btn btn-sm btn-primary tour-resume-go', text:'続きを見る', onclick: resumeTour}));
+      /* もう見ない人は消せる（あとからでもホームやメニューの「使い方ガイド」で見られる） */
+      tr.appendChild(el('button', {type:'button', class:'tour-resume-close', 'aria-label':'この案内を閉じる', text:'×', onclick: function(){ markTourFinished(); renderApp(); }}));
+      wrap.appendChild(tr);
+    }
     var steps = el('ol', {class:'steps'});
     [
       ['コピー', '下のボタンで取り込み用のコードをコピー'],
@@ -7355,13 +8206,67 @@
   function netRecordIndex(){
     var o = loadNetRecords();
     if (!o || !Array.isArray(o.records)) return null;
-    var idx = {}, lower = false;
+    var idx = {}, lower = false, hasDx = false;
     o.records.forEach(function(r){
       if (!Array.isArray(r) || r.length < 6) return;
       if (+r[2] < 3) lower = true;
-      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || '') };
+      /* 7・8番目：DXスコアとその理論値（新しい取り込みから） */
+      var dx = +r[6] || 0, dxMax = +r[7] || 0;
+      if (dxMax > 0) hasDx = true;
+      idx[normSongName(r[0]) + '|' + r[1] + '|' + r[2]] = { ach: (+r[3] || 0) / 10000, fc: String(r[4] || ''), sync: String(r[5] || ''), dx: dx, dxMax: dxMax };
     });
-    return { idx: idx, hasLower: lower, at: o.at };
+    return { idx: idx, hasLower: lower, hasDx: hasDx, v: +o.v || 1, at: o.at };
+  }
+  /* 自分で登録した達成済み（プレート表で長押し）を記録として扱う。
+     極＝FC、将＝SSS（ちょうど 100.0000%）、神＝AP（100.9500%）、舞＝FDX。AP+ は 101.0000%。
+     取り込んだ記録の方が良ければそちらを残す */
+  var FC_RANK = { fc:1, fcp:2, ap:3, app:4 };
+  var SYNC_RANK = { sync:1, fs:2, fsp:3, fsd:4, fdx:4, fsdp:5, fdxp:5 };
+  var MANUAL_SET = { '極': { fc:'fc' }, '将': { ach:100 }, '神': { fc:'ap', ach:100.95 }, '舞舞': { sync:'fdx' } };
+  function mergeManual(r, set){
+    if (set.ach != null && !(r.ach >= set.ach)){ r.ach = set.ach; r.manualAch = true; }
+    if (set.fc && (FC_RANK[set.fc] || 0) > (FC_RANK[r.fc] || 0)) r.fc = set.fc;
+    if (set.sync && (SYNC_RANK[set.sync] || 0) > (SYNC_RANK[r.sync] || 0)) r.sync = set.sync;
+    if (r.fc === 'app' && !(r.ach >= 101)){ r.ach = 101; r.manualAch = true; }
+  }
+  function manualRecordEntries(){
+    var out = {};
+    (allVersions || []).forEach(function(v){
+      if (!v || v.docType === 'jewel') return;
+      var mai = isMaiHashaDoc(v), diff = mai ? 4 : 3;
+      Object.keys(MANUAL_SET).forEach(function(mode){
+        var marks = songMarks[plateMarkKey(v.id, mode)];
+        if (!marks) return;
+        (v.levels || []).forEach(function(l){
+          (l.songs || []).forEach(function(s){
+            if (!s.name || !marks[s.id]) return;
+            var ty = tableSongType(v, s, mai);
+            (ty ? [ty] : ['ST', 'DX']).forEach(function(x){
+              var k = normSongName(s.name) + '|' + x + '|' + diff;
+              var r = out[k] || (out[k] = { ach: null, fc: '', sync: '', dx: 0, dxMax: 0, manual: true });
+              mergeManual(r, MANUAL_SET[mode]);
+            });
+          });
+        });
+      });
+    });
+    return out;
+  }
+  /* 取り込んだ記録＋自分で登録した達成済み。どちらも無ければ null */
+  function myRecordIndex(){
+    var net = netRecordIndex(), man = manualRecordEntries(), mk = Object.keys(man);
+    if (!net && !mk.length) return null;
+    var idx = {};
+    if (net) Object.keys(net.idx).forEach(function(k){ idx[k] = net.idx[k]; });
+    mk.forEach(function(k){
+      var m = man[k], r = idx[k];
+      if (!r){ idx[k] = m; return; }
+      var x = { ach: r.ach, fc: r.fc, sync: r.sync, dx: r.dx, dxMax: r.dxMax };
+      mergeManual(x, { ach: m.ach, fc: m.fc, sync: m.sync });
+      idx[k] = x;
+    });
+    return { idx: idx, hasNet: !!net, hasLower: net ? net.hasLower : false, hasDx: net ? net.hasDx : false,
+             v: net ? net.v : 0, at: net ? net.at : 0 };
   }
   function fillDocs(){
     return listOrderedVersions().filter(function(v){ return v.docType !== 'jewel' && !isMaiHashaDoc(v); });
@@ -7750,13 +8655,19 @@
   var TODO_MODES = [
     { key: 'FC',  cond: '極' },
     { key: 'SSS', cond: '将' },
+    { key: 'SSS+', test: function(x){ return x.ach >= 100.5; } },
     { key: 'AP',  cond: '神' },
     /* 理論値（AP+ ＝ 101.0000%） */
     { key: 'AP+', test: function(x){ return x.fc === 'app' || x.ach >= 101; } },
     { key: 'FDX', cond: '舞舞' },
     /* FDX+（FULL SYNC DX+） */
-    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } }
+    { key: 'FDX+', test: function(x){ return /^(fdxp|fsdp)$/.test(x.sync); } },
+    /* DXスコアの星：理論値（総ノーツ数×3）に対して ☆5＝97%以上・☆6＝99%以上・☆7＝100%（理論値） */
+    { key: '☆5', dx: 97 }, { key: '☆6', dx: 99 }, { key: '☆7', dx: 100 }
   ];
+  TODO_MODES.forEach(function(m){
+    if (m.dx) m.test = function(x){ return x.dxMax > 0 && x.dx >= Math.ceil(x.dxMax * m.dx / 100); };
+  });
   var todoKind = null;
   var TODO_MODE_KEY = 'mmplate_todo_mode_v1';
   var todoMode = (function(){ try{ var x = sessionStorage.getItem(TODO_MODE_KEY); return TODO_MODES.some(function(m){ return m.key === x; }) ? x : 'FC'; }catch(e){ return 'FC'; } })();
@@ -7870,7 +8781,7 @@
     if (todoKind && TODO_KINDS[todoKind]){ renderTodoDetail(root, todoKind); return; }
     todoKind = null;
     root.appendChild(el('h2', {class:'page-title', text:'未達成楽曲一覧'}));
-    var grid = el('div', {class:'versions-grid simple-grid'});
+    var grid = el('div', {class:'versions-grid simple-grid todo-kinds'});
     ['master', 'mai'].forEach(function(kind){
       var col = kind === 'mai' ? todoMaiColor() : TODO_KINDS[kind].color;
       var card = el('button', {type:'button', class:'version-card simple-card todo-card', onclick: function(){ goTodo(kind); }});
@@ -7886,9 +8797,10 @@
     var col = kind === 'mai' ? todoMaiColor() : K.color;
     root.appendChild(el('h2', {class:'page-title', style:{color: col}, text: K.label}));
     var bar = el('div', {class:'detail-actions'});
-    /* FC・SSS・AP・AP+・FDX・FDX+ をスクロールで選ぶ */
+    /* FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆5・☆6・☆7 をスクロールで選ぶ */
     var seg = makeWheelPicker({ title: '見る条件', cls: 'mode-picker todo-mode-seg',
       items: TODO_MODES.map(function(m){ return [m.key, m.key]; }),
+      render: todoModeBadge,
       current: todoMode, onPick: function(k){ setTodoMode(k); renderApp(); } });
     var tStatus = el('span', {class:'save-toast', role:'status'});
     var cardRef = null;
@@ -7903,17 +8815,24 @@
     if (!SONG_DATA_FULL){ root.appendChild(el('div', {class:'note', text:'楽曲データを読み込み中…'})); return; }
     /* 定数で細かく選べる「↓ ON/OFF ｜ ▼」 */
     var cutRow = el('div', {class:'mark-toggle-bar todo-cut-row'});
-    /* 左から：達成済みを表示 → n〜n → FC・SSS・AP・AP+・FDX・FDX+ */
+    /* 左から：達成済みを表示 → n〜n → FC・SSS・SSS+・AP・AP+・FDX・FDX+・☆5〜☆7 */
     var doneBtn = makeOnOffButton('達成済みを表示', todoShowDone, function(){ setTodoShowDone(!todoShowDone); renderApp(); return todoShowDone; }, false, true);
     doneBtn.classList.add('todo-done-btn');
     cutRow.appendChild(doneBtn);
     cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
     cutRow.appendChild(seg);
     root.appendChild(cutRow);
-    var rec = netRecordIndex();
-    if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。'); return; }
+    var rec = myRecordIndex();
+    if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。\n取り込めない方は、実績プレート表で楽曲画像を長押しして達成済みを登録すると、ここにも反映されます。'); return; }
 
     var mode = TODO_MODES.filter(function(m){ return m.key === todoMode; })[0] || TODO_MODES[0];
+    /* ☆5〜☆7 は DXスコアが要る（前の取り込み方では DXスコアを読んでいない） */
+    if (mode.dx && !rec.hasDx){
+      needImportNote(root, !rec.hasNet ? '☆5〜☆7 を見るには、maimai NET から記録を取り込んでください（DXスコアが必要です）。' : rec.v >= 2
+        ? 'maimai NET の一覧から DXスコアを読み取れませんでした。\n☆5〜☆7 はまだ使えません（お手数ですが開発者に知らせてください）。'
+        : '☆5〜☆7 を見るには DXスコアが必要です。\n取り込みが DXスコアも読むようになったので、もう一度 maimai NET から取り込んでください（ブックマークはそのままで大丈夫です）。');
+      return;
+    }
     var cond = mode.test || PLATE_COND[mode.cond];
     var all = todoCharts(kind);
     var left = all.filter(function(x){
@@ -7976,10 +8895,13 @@
       if (kind === 'master' && types[x.s.name] && types[x.s.name].ST && types[x.s.name].DX){
         t.appendChild(makeChartTypeMark(String(x.s.type).toLowerCase()));
       }
+      attachSongDetail(t, x.s.name, x.s.type, kind === 'mai' ? 'rem' : 'mas', false);
       grid.appendChild(t);
     });
     root.appendChild(card);
-    root.appendChild(el('div', {class:'pv-caption', text:'取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'}));
+    root.appendChild(el('div', {class:'pv-caption', text: rec.hasNet
+      ? '取り込んだ日: ' + fmtDate(rec.at) + '　スコアを更新したら、もう一度取り込んでください。'
+      : '実績プレート表で自分で登録した達成済みから表示しています。'}));
   }
 
   /* ========================= 定数表 =========================
@@ -8060,6 +8982,7 @@
       if (types[x.s.name] && types[x.s.name].ST && types[x.s.name].DX){
         t.appendChild(makeChartTypeMark(String(x.s.type).toLowerCase()));
       }
+      attachSongDetail(t, x.s.name, x.s.type, x.rm ? 'rem' : 'mas', false);
       grid.appendChild(t);
     });
     root.appendChild(card);
@@ -8223,6 +9146,7 @@
         }
         var ct = chartTypeFor(v, song, level.label);
         if (ct && CHART_TYPE_SOURCES[ct]) thumb.appendChild(makeChartTypeMark(ct));
+        attachSongDetail(thumb, song.name, songTypeFor(v, song, level.label), isMaiHashaDoc(v) ? 'rem' : 'mas', false);
         item.appendChild(thumb);
 
         var rec = getCountRec(v.id, mode, song.id) || {};
@@ -8383,6 +9307,7 @@
     count:   svgIcon('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8 14h3M8 17h6"/>'),
     todo:    svgIcon('<rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/><circle cx="17.2" cy="16.6" r="0.1" stroke-width="2.6" stroke="#e0463f"/>'),
     /* 定数表：定数の見出し（色の線）の下にジャケット（四角）が並ぶ。右端の紫は Re:MASTER */
+    tour:    svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.6v6.8l5.4-3.4z" fill="currentColor"/>'),
     konst:   svgIcon('<rect x="2.5" y="1.8" width="8" height="2.8" rx="1.4" fill="#d357fe" stroke="none"/><rect x="2.5" y="6" width="5.4" height="5.4" rx="1.3" fill="currentColor" stroke="none"/><rect x="9.3" y="6" width="5.4" height="5.4" rx="1.3" fill="currentColor" stroke="none"/><rect x="16.1" y="6" width="5.4" height="5.4" rx="1.3" fill="#a77bff" stroke="none"/><rect x="2.5" y="13.2" width="8" height="2.8" rx="1.4" fill="#52d6fc" stroke="none"/><rect x="2.5" y="17.4" width="5.4" height="5.4" rx="1.3" fill="currentColor" stroke="none"/><rect x="9.3" y="17.4" width="5.4" height="5.4" rx="1.3" fill="currentColor" stroke="none"/><rect x="16.1" y="17.4" width="5.4" height="5.4" rx="1.3" fill="#a77bff" stroke="none"/>'),
     frame:   svgIcon('<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18"/><path d="M9.5 4 8 9l4 11 4-11-1.5-5"/><path d="M12 4v5" opacity=".0"/>'),
     pin:     svgIcon('<path d="M9 3.5h6l-1 5 3 3v1.5H7V11.5l3-3z"/><path d="M12 13v7.5"/>'),
@@ -8393,6 +9318,541 @@
     s.innerHTML = ICONS[name] || '';   /* 中身は上で固定した図形だけ */
     return s;
   }
+  /* ========== 使い方ガイド（初めて来た人に一度だけ案内。メニューの「使い方ガイド」からいつでも見られる） ========== */
+  var TOUR_KEY = 'mmplate_tour_done_v1';
+  /* 各機能を実際に開いて、操作の場所を1つずつ照らしながら説明する。
+     sel が見つからないとき（記録がまだ無い等）は alt を、それも無ければ画面のまん中に説明だけ出す。
+     説明文の中の [ui:文字] はボタンの見た目、[tap]・[hold] は操作の印、[sw:EXPERT] などは色見本、改行は行を分ける */
+  function tourWaitFor(test, ms){
+    return new Promise(function(resolve){
+      var t0 = Date.now();
+      (function tick(){
+        var r = test();
+        if (r || Date.now() - t0 > (ms || 2500)){ resolve(r); return; }
+        setTimeout(tick, 40);
+      })();
+    });
+  }
+  /* 今その画面を表示しているか（'#/' はホーム） */
+  function tourAt(hash){ return routeFromState() === (hash === '#/' ? '' : hash); }
+  /* その画面へ移る。もう表示しているなら何もしない（待ち時間なし）。移ったときは true */
+  function tourRoute(hash){
+    if (tourAt(hash)) return Promise.resolve(false);
+    location.hash = hash;
+    return tourWaitFor(function(){ return tourAt(hash); }, 2000).then(function(){ return true; });
+  }
+  /* 一覧の先頭のバージョンを開く（プレート表・下埋め進捗） */
+  function tourOpenFirst(listHash, isOpen){
+    if (isOpen()) return Promise.resolve(false);
+    return tourRoute(listHash).then(function(){
+      return tourWaitFor(function(){ return document.querySelector('#app .version-card'); }, 2500);
+    }).then(function(card){
+      if (card) card.click();
+      return tourWaitFor(function(){ return isOpen(); }, 1500);
+    }).then(function(){ return true; });
+  }
+  function tourPlateDetail(){ return tourOpenFirst('#/plates', function(){ return section === 'plates' && view === 'detail'; }); }
+  function tourFillDetail(){ return tourOpenFirst('#/fill', function(){ return section === 'fill' && fillView === 'detail'; }); }
+  function tourCountDetail(){ return tourOpenFirst('#/count', function(){ return section === 'count' && countView === 'detail'; }); }
+  function tourSyncDetail(){ return tourOpenFirst('#/sync', function(){ return section === 'sync' && syncView === 'detail'; }); }
+  /* プレート難易度メーカー：一覧／作りかけの見本（保存はしない） */
+  function tourTierList(){
+    if (section === 'plateTiers' && plateTierView === 'list') return Promise.resolve(false);
+    if (section === 'plateTiers' || location.hash === '#/tiers') goPlateTierList();
+    else location.hash = '#/tiers';
+    return tourWaitFor(function(){ return section === 'plateTiers' && plateTierView === 'list'; }, 2000).then(function(){ return true; });
+  }
+  function tourTierEdit(){
+    if (section === 'plateTiers' && plateTierView === 'edit') return Promise.resolve(false);
+    return tourTierList().then(function(){ goPlateTierEditNew('極', true); return true; });
+  }
+  function hasNetRecords(){ return !!netRecordIndex(); }
+  var TOUR_SECTIONS = ['maimai NET 取り込み', '実績プレート表', '実績フレーム表', '定数表', '未達成楽曲一覧', '回数と日付の記録', 'シンクのお相手記録', 'プレート難易度メーカー', '下埋め進捗', 'レビュー'];
+  var TOUR_SHORT = ['取り込み', 'プレート表', 'フレーム表', '定数表', '未達成表', '回数・日付', 'シンク記録', '表メーカー', '下埋め', 'レビュー'];
+  function R(h){ return function(){ return tourRoute(h); }; }
+  var TOUR_STEPS = [
+    /* ---- maimai NET 取り込み ---- */
+    { sec:0, go:R('#/import'), sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
+      text:'[ui:コードをコピー] を押して、取り込み用のコードをコピーします。' },
+    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(2)', title:'② ブックマークを作る',
+      text:'ブラウザでブックマークを1つ作り、URL の欄にコピーしたコードをペーストします。' },
+    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', title:'③ maimai NET で開く',
+      text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開きます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。（1分半〜2分ほど）' },
+    { sec:0, go:R('#/import'), sel:'#app .import-caution', title:'プレイしたら取り込み直す',
+      text:'記録は自動では更新されません。\nスコアが変わったら、もう一度 ③ をしてください。' },
+    /* 記録がまだ無い人：ここで取り込んでもらい、取り込みが終わったら続き（プレート表〜）を始める */
+    { sec:0, gate:true, go:R('#/import'), sel:'#app .page-actions .btn-primary', need:function(){ return !hasNetRecords(); },
+      title:'実際に取り込み',
+      text:'プレート表・未達成楽曲一覧表・下埋め進捗は取り込んだ記録を使います。\n取り込みが終わると [go:続きを見る] が出るので、押すとこの続きから再開できます。\nまずは取り込んでみましょう！' },
+    /* ---- 実績プレート表 ---- */
+    { sec:1, go:R('#/plates'), sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'見たいバージョンを押すと、その表が開きます。' },
+    { sec:1, go:R('#/plates'), sel:'#app .pin-btn', icon:'pin', title:'上に固定',
+      text:'選択したバージョンを上部に固定します。\n取り組み中のプレートがあるバージョンを固定してみて下さい。' },
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'表示するプレートを選ぶ',
+      text:'極・将・神・舞から、進捗を表示するプレートを選びます。' },
+    { sec:1, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'画像タップでの操作',
+      text:'[tap] で楽曲の詳細を表示します。\nmaimai NET から取り込めない方は、極・将・神・舞を選択後 [hold] で達成済みの楽曲を薄く表示させることができます。' },
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .hide-marked-btn', title:'達成済みを表示',
+      text:'[ui:ON] にすると、選んだプレートの条件を達成した楽曲が薄く表示されます。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
+    { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'譜面定数の範囲',
+      text:'表示する楽曲の範囲を選べます。' },
+    { sec:1, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
+      text:'表示している状態の表を画像保存します。\n保存する画像のテーマを [blk:黒]・[wht:白] から選んで保存できます。\n様々な箇所に画像保存機能を設けているのでぜひご利用下さい。' },
+    /* ---- 実績フレーム表 ---- */
+    { sec:2, go:R('#/frames'), sel:'#app .jewel-grid .jewel-cell-title || #app .jewel-grid .jewel-img-row img', title:'実績フレーム表',
+      text:'実績フレームのデザインを確認できます。',
+      alt:{ sel:'#app .version-card', text:'見たい実績フレーム表を押すと、実績フレームのデザインを確認できます。' } },
+    /* ---- 定数表 ---- */
+    { sec:3, go:R('#/konst'), sel:'#app .konst-card-body .todo-konst || #app .konst-card-body .todo-grid', title:'楽曲の定数',
+      text:'楽曲の定数を、高い順に確認できます。\n楽曲画像を [tap] すると、楽曲の詳細も見られます。' },
+    { sec:3, go:R('#/konst'), sel:'#app .konst-cut-row .range-picker', title:'譜面定数の範囲',
+      text:'表示する定数の範囲を指定できます。' },
+    { sec:3, go:R('#/konst'), sel:'#app .save-group', title:'画像保存',
+      text:'指定した定数の範囲のまま、表を画像保存できます。\n楽曲数が多いと保存に時間がかかるため、保存の前に確認が表示されます。' },
+    /* ---- 未達成楽曲一覧 ---- */
+    { sec:4, go:R('#/todo'), sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
+      text:'MASTER の全譜面か、舞・覇者（Re:MASTER）を選びます。' },
+    { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
+      text:'[mk:SSS]・[mk:SSS+]・[mk:FC]〜[mk:AP+]・[mk:FS]〜[mk:FDX+]・[mk:☆5]〜[mk:☆7] から選ぶと、まだ達成していない譜面が並びます。' },
+    { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .range-picker', title:'譜面定数の範囲',
+      text:'表示する楽曲の範囲を選べます。' },
+    { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
+      text:'プレート表と同じです。\n[ui:ON] にすると、APやFDX等を達成済みの楽曲が薄く表示されるようになります。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
+    { sec:4, go:R('#/todo/master'), sel:'#app .todo-card-body .todo-thumb', title:'楽曲の詳細',
+      text:'楽曲画像を [tap] すると、楽曲の詳細情報を見ることができます。',
+      alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに未達成の譜面が並びます。' } },
+    /* ---- 回数と日付の記録 ---- */
+    { sec:5, go:R('#/count'), sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'記録したいバージョンを押すと、そのバージョンの表が開きます。' },
+    { sec:5, go:tourCountDetail, sel:'#app .count-plate-dates', title:'確定日・獲得日',
+      text:'プレートの確定日と獲得日を記録できます。' },
+    { sec:5, go:tourCountDetail, sel:'#app .count-input || #app .count-date', title:'回数と日付',
+      text:'楽曲ごとに、達成までにかかった回数と達成した日付を記録できます。' },
+    { sec:5, go:tourCountDetail, sel:'#app .count-cut-row', title:'表示する範囲とプレート',
+      text:'表示する難易度の範囲と、記録するプレート（極・将・神・舞）を選べます。' },
+    { sec:5, go:tourCountDetail, sel:'#app .save-group', title:'画像保存',
+      text:'記録した表を画像保存できます。' },
+    /* ---- シンクのお相手記録 ---- */
+    { sec:6, go:R('#/sync'), sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'まずは記録したいバージョンを選びます。' },
+    { sec:6, go:tourSyncDetail, sel:'#app .sync-row .sync-name', title:'シンクのお相手を記録',
+      text:'楽曲ごとに、シンクのお相手の名前を記録できます。\n記録すると、達成日も自動で入力されます。' },
+    { sec:6, go:tourSyncDetail, sel:'#app .sync-cut-row .range-picker', title:'表示する難易度',
+      text:'表示する難易度の範囲を選べます。' },
+    { sec:6, go:tourSyncDetail, sel:'#app .save-group', title:'画像保存',
+      text:'記録した表を画像保存できます。' },
+    /* ---- プレート難易度メーカー ---- */
+    { sec:7, go:tourTierList, sel:'#app .btn-primary', title:'プレート難易度表を作る',
+      text:'極・将・神・舞舞それぞれのプレート難易度表を作ることができます。\n作るときに、プレートの種類と左右差のあり・なしを選びます。' },
+    { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field .onoff-btn', title:'左右差',
+      text:'作成するプレート表に左右差を設けるか設定します。' },
+    { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field input', title:'製作者名',
+      text:'製作者名を入れると、表に名前が入ります。\n空欄でも大丈夫です。' },
+    { sec:7, go:tourTierEdit, sel:'#app .level-block .tier-edit-group', title:'プレートを置く・動かす',
+      text:'プレートを追加して、[hold] でつかむと別のランクへ移動できます。' },
+    { sec:7, go:tourTierEdit, sel:'#app .level-block input', title:'ランク名',
+      text:'ランク名は自由に変更できます。' },
+    { sec:7, go:tourTierEdit, sel:'#app .level-block .btn-danger', title:'ランクの削除',
+      text:'いらないランクは削除できます。' },
+    { sec:7, go:tourTierEdit, sel:'#app .view-topbar .btn-primary', title:'保存と画像保存',
+      text:'[go:保存する] を押すと作成した表が保存されます。[go:保存する] を押さなかった場合保存されない場合があるのでご注意下さい。\n完成した表は画像保存できます。' },
+    /* ---- 下埋め進捗 ---- */
+    { sec:8, go:R('#/fill'), sel:'#app .version-card', title:'バージョンを選ぶ',
+      text:'押すと、そのプレート取得までに必要な BASIC〜EXPERT（下埋め）の残りの譜面数等を見ることができます。' },
+    { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', title:'合計を見る',
+      text:'押してからバージョンをいくつか選ぶと、その合計の進捗を見ることができます。' },
+    { sec:8, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
+      text:'極・将・神・舞から、下埋め進捗を見るプレートを選びます。' },
+    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'帯の見方',
+      text:'帯の色は、残っている難易度です。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成\n右の % が進み具合です。',
+      alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに残りが帯で表示されます。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成' } },
+    { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-stats', optional:true,
+      need:function(){ var r = netRecordIndex(); return !!(r && r.hasLower); }, title:'残りの譜面・時間・料金',
+      text:'残りの譜面数と、終えるまでの時間・料金（1人／2人）の目安です。' },
+    /* ---- レビュー ---- */
+    { sec:9, go:R('#/review'), sel:'#app .review-name-field', title:'送信時の名前',
+      text:'デフォルトネームは「匿名さん」です。\n好きな名前に変えられますし、このままでも送ることができます。' },
+    { sec:9, go:R('#/review'), sel:'#app .review-stars', title:'星で評価',
+      text:'星を [tap] して評価します。星だけでも送ることができます。' },
+    { sec:9, go:R('#/review'), sel:'#app .review-msg', title:'感想・要望',
+      text:'感想や「こんな機能がほしい」等の要望を自由に送ることができますのでお気軽にお送り下さい！\nレビューのリクエストから実装された機能も多いのでぜひぜひお願いします。\n必ず実装されるわけではないのでご了承下さい。\n読むことができるのは開発者のみです。' },
+    { sec:9, go:R('#/review'), sel:'#app .review-send', title:'送信',
+      text:'[go:送信する] で開発者にレビューが届きます。送ったレビューは、この下で見返せます。\nレビューはホーム画面右上の [rate] や、ホーム画面・メニューの [rev:レビュー] からも送ることができます。' },
+    /* ---- おわり ---- */
+    { sec:-1, go:R('#/'), sel:null, title:'説明はこれでおしまいです',
+      text:'ホームやメニューの「使い方ガイド」から、いつでも見直せます。' }
+  ];
+  /* 各メニューの説明の最初に「ホーム画面のここから開けます」を1つずつ入れる */
+  var TOUR_HOME_KEYS = ['import', 'plates', 'frames', 'konst', 'todo', 'count', 'sync', 'plateTiers', 'fill', 'reviews'];
+  (function(){
+    var out = [], seen = {};
+    TOUR_STEPS.forEach(function(st){
+      if (st.sec >= 0 && !seen[st.sec]){
+        seen[st.sec] = true;
+        out.push({ sec: st.sec, go: R('#/'), sel: '#app .home-card[data-key="' + TOUR_HOME_KEYS[st.sec] + '"]', home: true,
+          title: 'ホーム画面から開く', text: 'ここから' + TOUR_SECTIONS[st.sec] + 'を開くことができます。' });
+      }
+      out.push(st);
+    });
+    TOUR_STEPS = out;
+  })();
+  /* 説明文を、ボタンの見た目・操作の印・色見本つきの行に組み立てる */
+  var TOUR_SW = { EXPERT:'#e0463f', ADVANCED:'#f2b705', BASIC:'#3fbf5f' };
+  function tourRich(text){
+    var box = el('div', {class:'tour-text'});
+    String(text).split('\n').forEach(function(line){
+      var row = el('div', {class:'tour-line'});
+      line.split(/(\[[^\]]+\])/).forEach(function(part){
+        if (!part) return;
+        var m = /^\[(ui|go|sw):(.+)\]$/.exec(part), m2;
+        if (m && m[1] === 'ui'){ row.appendChild(el('span', {class:'tour-ui', text: m[2]})); return; }
+        /* 青いボタン（実際の「続きを見る」などと同じ色） */
+        if (m && m[1] === 'go'){ row.appendChild(el('span', {class:'tour-ui is-primary', text: m[2]})); return; }
+        if (m && m[1] === 'sw'){
+          var sw = el('i', {class:'tour-sw' + (m[2] === 'done' ? ' is-done' : '')});
+          if (TOUR_SW[m[2]]) sw.style.background = TOUR_SW[m[2]];
+          row.appendChild(sw); return;
+        }
+        /* 未達成楽曲一覧の条件のマーク（SSS・FC・AP+・FS・FDX+・☆5 など。曲の詳細と同じ見た目） */
+        if (m2 = /^\[mk:(.+)\]$/.exec(part)){
+          var mk = el('span', {class:'tour-mk'});
+          if (m2[1] === 'FS' || m2[1] === 'FS+') mk.appendChild(el('span', {class:'sd-badge is-' + (m2[1] === 'FS' ? 'fs' : 'fsp'), text: m2[1]}));
+          else mk.appendChild(todoModeBadge(m2[1]));
+          row.appendChild(mk); return;
+        }
+        /* 画像保存の「黒」「白」 */
+        if (m2 = /^\[(blk|wht):(.+)\]$/.exec(part)){ row.appendChild(el('span', {class:'tour-ui is-' + m2[1], text: m2[2]})); return; }
+        /* ホーム右上の「評価:☆☆☆☆☆」 */
+        if (part === '[rate]'){
+          var rt = el('span', {class:'tour-ui tour-rate'});
+          rt.appendChild(el('span', {class:'tour-rate-label', text:'評価:'}));
+          rt.appendChild(el('span', {class:'tour-rate-stars', text:'☆☆☆☆☆'}));
+          row.appendChild(rt); return;
+        }
+        /* ホーム・メニューの「レビュー」（アイコンつき） */
+        if (m2 = /^\[rev:(.+)\]$/.exec(part)){
+          var rv = el('span', {class:'tour-ui tour-ui-icon'});
+          rv.appendChild(iconNode('review', 'tour-ui-ico'));
+          rv.appendChild(document.createTextNode(m2[1]));
+          row.appendChild(rv); return;
+        }
+        if (part === '[tap]' || part === '[hold]'){
+          var g = el('span', {class:'tour-gest' + (part === '[hold]' ? ' is-hold' : '')});
+          g.appendChild(el('i', {class:'tour-gest-dot'}));
+          g.appendChild(document.createTextNode(part === '[hold]' ? '長押し' : 'タップ'));
+          row.appendChild(g); return;
+        }
+        row.appendChild(document.createTextNode(part));
+      });
+      box.appendChild(row);
+    });
+    return box;
+  }
+  function isFirstVisit(){
+    if (!storageOK) return false;
+    try{ return !localStorage.getItem(TOUR_KEY) && !localStorage.getItem(NOTICE_KEY); }catch(e){ return false; }
+  }
+  function markTourDone(){
+    try{
+      localStorage.setItem(TOUR_KEY, '1');
+      /* 初めての人には今の版の更新情報はいらないので、見たことにしておく */
+      if (!localStorage.getItem(NOTICE_KEY)) localStorage.setItem(NOTICE_KEY, NOTICE_ID);
+    }catch(e){}
+  }
+  /* 使い方ガイドの案内を出したか（版ごとに1回だけ） */
+  var TOUR_INVITE_KEY = 'mmplate_tour_invite_v1';
+  function markTourInviteSeen(){ try{ localStorage.setItem(TOUR_INVITE_KEY, NOTICE_ID); }catch(e){} }
+  function maybeInviteTourAfterUpdate(){
+    if (!storageOK || tourLayer) return;
+    try{
+      if (localStorage.getItem(TOUR_INVITE_KEY)) return;          /* もう案内した */
+      if (localStorage.getItem(TOUR_FINISHED_KEY) === '1') return; /* もう最後まで見た */
+    }catch(e){ return; }
+    markTourInviteSeen();
+    showTourInvite(true);
+  }
+  /* 最初の案内：受けるのをおすすめしつつ、スキップもできる（updated＝アップデート後に来た人向けの見出し） */
+  function showTourInvite(updated){
+    var backdrop = el('div', {class:'modal-backdrop tour-invite-backdrop'});
+    var box = el('div', {class:'modal-box tour-invite', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'tourInviteTitle'});
+    box.appendChild(iconNode('tour', 'tour-invite-icon'));
+    box.appendChild(el('h3', {id:'tourInviteTitle', class:'tour-invite-title', text: updated ? '使い方ガイドができました！' : 'maiプレートへようこそ！'}));
+    box.appendChild(el('p', {class:'tour-invite-text', text:'10のメニューを、実際の画面で順番に紹介します。'}));
+    box.appendChild(el('p', {class:'tour-invite-text tour-invite-emph', text:'所要時間は10分ほどです。細かい機能が多いので、使いこなす為にもぜひご覧下さい！'}));
+    box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'使い方ガイドを見る', onclick: function(){ closeModal(backdrop); startTour(); }}));
+    box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'スキップする', onclick: function(){
+      markTourDone(); closeModal(backdrop); setTimeout(showGuideHomeHint, 300);
+    }}));
+    box.appendChild(el('p', {class:'tour-invite-note', text:'途中でやめても、ホームやメニューの「使い方ガイド」からいつでも見られます。'}));
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+  /* ガイドをスキップした人に、ホーム画面の「使い方ガイド」の場所を1回だけ教える */
+  var GUIDE_HINT_KEY = 'mmplate_guide_hint_v1';
+  function showGuideHomeHint(){
+    try{ if (localStorage.getItem(GUIDE_HINT_KEY)) return; localStorage.setItem(GUIDE_HINT_KEY, '1'); }catch(e){ return; }
+    if (location.hash !== '#/' && location.hash !== ''){ location.hash = '#/'; }
+    setTimeout(function(){
+      var card = document.querySelector('#app .home-card[data-key="tour"]');
+      if (!card) return;
+      card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      setTimeout(function(){
+        var r = card.getBoundingClientRect();
+        var layer = el('div', {class:'guide-hint-layer', role:'dialog', 'aria-modal':'true', 'aria-label':'使い方ガイドの場所'});
+        var hole = el('div', {class:'guide-hint-hole'});
+        hole.style.left = (r.left - 6) + 'px'; hole.style.top = (r.top - 6) + 'px';
+        hole.style.width = (r.width + 12) + 'px'; hole.style.height = (r.height + 12) + 'px';
+        layer.appendChild(hole);
+        var tip = el('div', {class:'guide-hint-tip'});
+        tip.appendChild(el('p', {class:'guide-hint-text', text:'使い方ガイドは、ホーム画面のここからいつでも見直せます。'}));
+        tip.appendChild(el('button', {type:'button', class:'btn btn-primary btn-sm guide-hint-ok', text:'OK', onclick: function(){ closeHint(); }}));
+        layer.appendChild(tip);
+        var below = r.top < window.innerHeight * 0.55;
+        tip.style.left = Math.max(12, Math.min(window.innerWidth - 292, r.left + r.width / 2 - 140)) + 'px';
+        if (below) tip.style.top = (r.bottom + 16) + 'px';
+        else tip.style.bottom = (window.innerHeight - r.top + 16) + 'px';
+        function closeHint(){ window.removeEventListener('hashchange', closeHint); if (layer.parentNode) layer.parentNode.removeChild(layer); }
+        layer.addEventListener('click', function(e){ if (e.target === layer) closeHint(); });
+        /* 戻るボタンなどで別の画面に移ったら閉じる */
+        window.addEventListener('hashchange', closeHint);
+        document.body.appendChild(layer);
+      }, 450);
+    }, 400);
+  }
+  function startTour(){ try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(0); }
+  /* ガイドを最後（おしまいの画面）まで見たか */
+  var TOUR_FINISHED_KEY = 'mmplate_tour_finished_v1';
+  function tourFinished(){ try{ return localStorage.getItem(TOUR_FINISHED_KEY) === '1'; }catch(e){ return true; } }
+  function markTourFinished(){ try{ localStorage.setItem(TOUR_FINISHED_KEY, '1'); localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} }
+  function setTourResume(){ try{ localStorage.setItem(TOUR_RESUME_KEY, '1'); }catch(e){} }
+  /* 続き（実績プレート表〜）から始める */
+  function resumeTour(){ try{ localStorage.removeItem(TOUR_RESUME_KEY); }catch(e){} runTour(firstStepOf(1)); }
+  /* 「取り込む」でガイドを閉じた人：取り込みが終わったら、続き（実績プレート表〜）を案内する */
+  var TOUR_RESUME_KEY = 'mmplate_tour_resume_v1';
+  function takeTourResume(){
+    try{ if (localStorage.getItem(TOUR_RESUME_KEY) !== '1') return false; localStorage.removeItem(TOUR_RESUME_KEY); return true; }catch(e){ return false; }
+  }
+  function firstStepOf(sec){ for (var j = 0; j < TOUR_STEPS.length; j++){ if (TOUR_STEPS[j].sec === sec) return j; } return TOUR_STEPS.length - 1; }
+  function showTourResume(){
+    var backdrop = el('div', {class:'modal-backdrop tour-invite-backdrop'});
+    var box = el('div', {class:'modal-box tour-invite', role:'dialog', 'aria-modal':'true', 'aria-labelledby':'tourResumeTitle'});
+    box.appendChild(iconNode('tour', 'tour-invite-icon'));
+    box.appendChild(el('h3', {id:'tourResumeTitle', class:'tour-invite-title', text:'取り込みました！'}));
+    box.appendChild(el('p', {class:'tour-invite-text', text:'取り込んだ記録で、使い方ガイドの続き（実績プレート表〜レビュー）を見てみましょう。'}));
+    box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'続きを見る', onclick: function(){ closeModal(backdrop); resumeTour(); }}));
+    box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'あとで見る', onclick: function(){ closeModal(backdrop); renderApp(); }}));
+    box.appendChild(el('p', {class:'tour-invite-note', text:'あとで見るときは、この取り込みの画面の上にある「使い方ガイドの続きを見る」からどうぞ。'}));
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+  }
+  var tourLayer = null, tourRun = 0;
+  function endTour(goHome){
+    markTourDone();
+    tourRun++;
+    if (tourLayer){
+      window.removeEventListener('resize', tourLayer.__place);
+      window.removeEventListener('scroll', tourLayer.__place, true);
+      document.removeEventListener('keydown', tourLayer.__key);
+      if (tourLayer.parentNode) tourLayer.parentNode.removeChild(tourLayer);
+      tourLayer = null;
+    }
+    if (goHome && location.hash !== '#/') location.hash = '#/';
+  }
+  function ensureTourLayer(){
+    if (tourLayer) return tourLayer;
+    tourLayer = el('div', {class:'tour-layer', role:'dialog', 'aria-modal':'true', 'aria-label':'使い方ガイド'});
+    tourLayer.appendChild(el('div', {class:'tour-hole'}));
+    tourLayer.appendChild(el('div', {class:'tour-tip'}));
+    tourLayer.__key = function(e){
+      if (!tourLayer) return;
+      if (e.key === 'Escape') endTour(false);
+      if (e.key === 'ArrowRight' && tourLayer.__next) tourLayer.__next();
+      if (e.key === 'ArrowLeft' && tourLayer.__prev) tourLayer.__prev();
+    };
+    document.addEventListener('keydown', tourLayer.__key);
+    document.body.appendChild(tourLayer);
+    return tourLayer;
+  }
+  /* 'A || B' と書くと A と B をまとめて1つの枠で照らす（A が無ければ見つからない扱い） */
+  function tourQuery(sel){
+    if (!sel) return null;
+    var parts = sel.split('||'), first = document.querySelector(parts[0].trim());
+    if (!first) return null;
+    var out = [first];
+    parts.slice(1).forEach(function(q){ var e = document.querySelector(q.trim()); if (e) out.push(e); });
+    return out;
+  }
+  function tourRect(els){
+    var l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+    els.forEach(function(e){ var x = e.getBoundingClientRect(); l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom); });
+    return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+  }
+  function stepShown(x){ return !x.need || x.need(); }
+  /* 吹き出しの上：全体の進み具合（10のメニューを細い帯で）と、いまのメニュー名・その中の何番目か */
+  function tourProgress(step){
+    var wrap = el('div', {class:'tour-prog'});
+    var bar = el('ol', {class:'tour-secs', 'aria-label':'全体の進み具合', style:{gridTemplateColumns:'repeat(' + TOUR_SECTIONS.length + ', 1fr)'}});
+    TOUR_SECTIONS.forEach(function(nm, k){
+      var li = el('li', {class:'tour-secs-item ' + (k < step.sec ? 'is-done' : (k === step.sec ? 'is-on' : '')), title: nm});
+      if (k === step.sec) li.setAttribute('aria-current', 'step');
+      bar.appendChild(li);
+    });
+    wrap.appendChild(bar);
+    var inSec = TOUR_STEPS.filter(function(x){ return x.sec === step.sec && stepShown(x); });
+    var pos = inSec.indexOf(step);
+    var sub = el('div', {class:'tour-sub'});
+    var nmBox = el('span', {class:'tour-sub-left'});
+    nmBox.appendChild(el('span', {class:'tour-sub-no', text: (step.sec + 1) + ' / ' + TOUR_SECTIONS.length}));
+    nmBox.appendChild(el('span', {class:'tour-sub-name', text: TOUR_SECTIONS[step.sec]}));
+    sub.appendChild(nmBox);
+    var dots = el('span', {class:'tour-sub-dots', 'aria-hidden':'true'});
+    inSec.forEach(function(_, k){ dots.appendChild(el('i', {class: k < pos ? 'is-done' : (k === pos ? 'is-on' : '')})); });
+    sub.appendChild(dots);
+    sub.appendChild(el('span', {class:'tour-sub-count', text: (pos + 1) + ' / ' + inSec.length}));
+    wrap.appendChild(sub);
+    return wrap;
+  }
+  function runTour(i, dir){
+    dir = dir || 1;
+    if (i < 0) i = 0;
+    if (i >= TOUR_STEPS.length){ endTour(true); return; }
+    var step = TOUR_STEPS[i];
+    /* 記録が無いと出せない説明（need）は、進んでいる向きにとばす */
+    if (!stepShown(step)){ runTour(i + dir, dir); return; }
+    var myRun = ++tourRun;
+    var layer = ensureTourLayer();
+    var hole = layer.querySelector('.tour-hole');
+    var tip = layer.querySelector('.tour-tip');
+    layer.__next = layer.__prev = null;
+    layer.onclick = null;
+    tip.classList.add('is-busy');
+    /* 画面を切り替えるときだけ暗くして待つ（同じ画面の中ならすぐ次へ） */
+    var moved = false;
+    var slow = setTimeout(function(){ if (myRun === tourRun && tourLayer) layer.classList.add('is-moving'); }, 90);
+    Promise.resolve(step.go ? step.go() : null).then(function(m){
+      moved = !!m;
+      if (myRun !== tourRun) return;
+      return tourWaitFor(function(){
+        return (step.sel && document.querySelector(step.sel.split('||')[0].trim())) || (step.alt && document.querySelector(step.alt.sel)) || (!step.sel ? true : null);
+      }, !step.sel ? 10 : moved ? 1500 : 400);
+    }).then(function(){
+      clearTimeout(slow);
+      if (myRun !== tourRun || !tourLayer) return;
+      var target = tourQuery(step.sel), text = step.text, selUsed = step.sel;
+      if (!target && step.alt){ target = tourQuery(step.alt.sel); text = step.alt.text; selUsed = step.alt.sel; }
+      if (!target && step.optional){ runTour(i + dir, dir); return; }
+      layer.classList.remove('is-moving');
+      tip.classList.remove('is-busy');
+      var goNext = function(){ runTour(i + 1); };
+      var goPrev = function(){ if (i > 0) runTour(i - 1, -1); };
+      layer.__next = goNext; layer.__prev = goPrev;
+      var last = i === TOUR_STEPS.length - 1;
+
+      /* ---- 吹き出しの中身 ---- */
+      tip.textContent = '';
+      if (step.sec >= 0) tip.appendChild(tourProgress(step));
+      var titleEl = el('div', {class:'tour-title'});
+      if (step.icon) titleEl.appendChild(iconNode(step.icon, 'tour-title-icon'));
+      titleEl.appendChild(document.createTextNode(step.title));
+      tip.appendChild(titleEl);
+      tip.appendChild(tourRich(text));
+      var nav = el('div', {class:'tour-nav'});
+      var primary;
+      if (last){
+        markTourFinished();
+        primary = el('button', {type:'button', class:'btn btn-primary tour-next', text:'はじめる', onclick: function(){ endTour(true); }});
+        nav.appendChild(primary);
+        /* 最後の説明は、吹き出しの外を押しても閉じる（ここへ来たときのクリックでは閉じないよう、少しあとから） */
+        setTimeout(function(){
+          if (myRun === tourRun && tourLayer) layer.onclick = function(e){ if (!tip.contains(e.target)) endTour(true); };
+        }, 0);
+      } else {
+        if (i > 0) nav.appendChild(el('button', {type:'button', class:'btn tour-back', text:'戻る', onclick: goPrev}));
+        if (step.gate){
+          primary = el('button', {type:'button', class:'btn btn-primary tour-next', text:'取り込む', onclick: function(){
+            setTourResume();
+            /* 「取り込む」で取り込み用のコードもコピーする（①のボタンと同じ） */
+            var cp = document.querySelector('#app .page-actions .btn-primary');
+            if (cp) cp.click();
+            endTour(false);
+          }});
+        } else {
+          primary = el('button', {type:'button', class:'btn btn-primary tour-next', text:'次へ', onclick: goNext});
+        }
+        nav.appendChild(primary);
+      }
+      tip.appendChild(nav);
+      if (!last){
+        var foot = el('div', {class:'tour-foot'});
+        foot.appendChild(el('button', {type:'button', class:'tour-link', text:'ガイドを終了', onclick: function(){
+          /* 取り込みの説明の途中でやめた人は、取り込みが終わったら続きを案内する */
+          if (step.sec === 0 && !hasNetRecords()) setTourResume();
+          endTour(false);
+        }}));
+        /* 次のメニュー（プレート表・未達成表…）の説明へとぶ（いまのメニューの残りはとばす） */
+        var nextSec = -1, j = i + 1;
+        while (j < TOUR_STEPS.length && (TOUR_STEPS[j].sec === step.sec || !stepShown(TOUR_STEPS[j]))) j++;
+        if (j < TOUR_STEPS.length) nextSec = TOUR_STEPS[j].sec;
+        var jumpLabel = nextSec >= 0 ? ('次のメニュー：' + TOUR_SHORT[nextSec]) : 'おわりへ';
+        foot.appendChild(el('button', {type:'button', class:'tour-jump', onclick: function(){ runTour(j); }}, [jumpLabel, el('span', {class:'tour-jump-arrow', 'aria-hidden':'true', text:'›'})]));
+        tip.appendChild(foot);
+      }
+
+      function place(){
+        if (!tourLayer) return;
+        if (target && !target[0].isConnected && selUsed) target = tourQuery(selUsed);
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var tw = Math.min(380, vw - 24);
+        tip.style.width = tw + 'px';
+        var th = tip.offsetHeight;
+        if (!target){
+          hole.style.display = 'none';
+          layer.classList.add('no-target');
+          tip.style.left = Math.round((vw - tw) / 2) + 'px';
+          tip.style.top = Math.max(12, Math.round((vh - th) / 2)) + 'px';
+          return;
+        }
+        layer.classList.remove('no-target');
+        hole.style.display = '';
+        var r = tourRect(target), pad = 6;
+        /* 照らす枠が画面の左右からはみ出さないように、画面の内側に収める */
+        var hl = Math.max(5, r.left - pad), hr = Math.min(vw - 5, r.right + pad);
+        hole.style.left = hl + 'px'; hole.style.top = (r.top - pad) + 'px';
+        hole.style.width = Math.max(0, hr - hl) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+        tip.style.left = Math.round(Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2))) + 'px';
+        var top;
+        if (r.bottom + 14 + th <= vh - 10) top = r.bottom + 14;            /* 下に置ける */
+        else if (r.top - 14 - th >= 10) top = r.top - 14 - th;             /* 上に置ける */
+        else top = vh - th - 12;                                            /* 大きい場所：画面の下に重ねる */
+        tip.style.top = Math.round(top) + 'px';
+      }
+      window.removeEventListener('resize', layer.__place);
+      window.removeEventListener('scroll', layer.__place, true);
+      layer.__place = place;
+      window.addEventListener('resize', place);
+      window.addEventListener('scroll', place, true);
+      /* 照らす場所が見える位置までスクロール（上の固定バーと吹き出しの分を空ける） */
+      if (!target) window.scrollTo({ top: 0, behavior: 'auto' });
+      else {
+        place();
+        var rr = tourRect(target), vh2 = window.innerHeight, th2 = tip.offsetHeight;
+        var topGap = 76;
+        var want;
+        if (rr.height + th2 + 40 <= vh2 - topGap) want = rr.top + window.scrollY - Math.max(topGap, (vh2 - rr.height - th2 - 14) / 2);
+        else want = rr.top + window.scrollY - topGap;
+        var cur = window.scrollY;
+        if (Math.abs(want - cur) > 4 && (rr.top < topGap || rr.bottom > vh2 - 10 || rr.bottom + th2 + 24 > vh2 && rr.top - th2 - 24 < 0)){
+          window.scrollTo({ top: Math.max(0, want), behavior: moved ? 'auto' : 'smooth' });
+        }
+      }
+      place();
+      setTimeout(place, 120);
+      setTimeout(place, 450);
+      try{ primary.focus({ preventScroll: true }); }catch(e){}
+    });
+  }
+
   var MENU_ITEMS = [
     { key:'home',       icon:'home',   label:'ホーム' },
     { key:'plates',     icon:'table',  label:'実績プレート表',       group:'楽曲表' },
@@ -8404,14 +9864,17 @@
     { key:'count',      icon:'count',  label:'回数と日付の記録',     group:'記録・進捗' },
     { key:'plateTiers', icon:'tiers',  label:'プレート難易度メーカー', group:'記録・進捗' },
     { key:'import',     icon:'import', label:'maimai NET 取り込み',  group:'その他' },
-    { key:'guide',      icon:'guide',  label:'表の解説',             group:'その他' },
+    { key:'reviews',    icon:'review', label:'レビュー',             group:'その他' },
+    /* 使い方ガイド（押すと各機能を順に照らして説明する） */
+    { key:'tour',       icon:'tour',   label:'使い方ガイド',         group:'その他' },
     { key:'notice',     icon:'notice', label:'更新情報',             group:'その他' },
-    { key:'reviews',    icon:'review', label:'レビュー',             group:'その他' }
+    { key:'guide',      icon:'guide',  label:'表の解説',             group:'その他' }
   ];
   var MENU_GROUPS = ['楽曲表', '記録・進捗', 'その他'];
   function runMenuItem(key){
     if (key === 'backup'){ openBackupModal(); return; }
     if (key === 'notice'){ maybeShowUpdateNotice(true); return; }
+    if (key === 'tour'){ startTour(); return; }
     goSection(key);
   }
 
@@ -8466,7 +9929,7 @@
   /* ---- ホーム画面 ---- */
   var HOME_FEATURES = [
     ['table',  '実績プレート表・実績フレーム表を確認'],
-    ['mark',   '取り込みやタップで赤線をつけ進捗管理'],
+    ['mark',   '取り込みや長押しで達成済みを薄く表示し進捗管理'],
     ['todo',   '未達成楽曲の一覧'],
     ['fill',   '下埋めの進捗管理'],
     ['sync',   'シンクのお相手を記録'],
@@ -8614,7 +10077,7 @@
     var ttBtn = el('button', {type:'button', class:'btn btn-sm onoff-btn title-toggle-btn'});
     function paintTt(){
       ttBtn.textContent = '';
-      ttBtn.appendChild(el('span', {class:'onoff-label', text:'ジャケットに曲名を表示'}));
+      ttBtn.appendChild(el('span', {class:'onoff-label', text:'楽曲画像に曲名を表示'}));
       ttBtn.appendChild(el('span', {class:'onoff-switch'}, [el('span', {class:'onoff-active', text: showSongTitles ? 'ON' : 'OFF'})]));
       ttBtn.setAttribute('aria-pressed', showSongTitles ? 'true' : 'false');
     }
@@ -8626,16 +10089,13 @@
 
     /* 内容ごとに分けて並べる：楽曲表／記録・進捗／その他 */
     MENU_GROUPS.forEach(function(g){
-      var items = MENU_ITEMS.filter(function(it){ return it.group === g; });
-      /* ホームだけ「表の解説」と「レビュー」の位置を入れ替える（メニューの並びはそのまま） */
-      var gi = -1, ri = -1;
-      items.forEach(function(it, i){ if (it.key === 'guide') gi = i; if (it.key === 'reviews') ri = i; });
-      if (gi >= 0 && ri >= 0){ var tmp = items[gi]; items[gi] = items[ri]; items[ri] = tmp; }
+      var items = MENU_ITEMS.filter(function(it){ return it.group === g && !it.menuOnly; });
+      /* その他：取り込み → レビュー → 使い方ガイド → 更新情報 → 表の解説（MENU_ITEMS の順） */
       if (!items.length) return;
       wrap.appendChild(el('h3', {class:'home-h', text: g}));
       var grid = el('div', {class:'home-cards'});
       items.forEach(function(it){
-        var c = el('button', {class:'home-card', type:'button', onclick: function(){ runMenuItem(it.key); }});
+        var c = el('button', {class:'home-card', type:'button', 'data-key': it.key, onclick: function(){ runMenuItem(it.key); }});
         c.appendChild(iconNode(it.icon, 'home-card-icon'));
         var lb = el('span', {class:'home-card-label', text: it.label});
         /* ホームのカードだけ、2行目を足す（未達成楽曲一覧 → 改行して「定数表」） */
@@ -8728,10 +10188,12 @@
     if (!bar && back){ bar = back; generic = true; backOnly = true; }
     if (!bar || !('IntersectionObserver' in window)) return;
     var toggles = generic ? [] : Array.prototype.slice.call(bar.querySelectorAll(':scope > .onoff-btn:not(.hide-marked-btn), :scope > .cut-picker, :scope > .mark-sub-row > .cut-picker'));
+    /* 「達成済みを表示」も上に残す（n〜n の左） */
+    var hideMarkedBtn = generic ? null : bar.querySelector(':scope > .mark-sub-row > .hide-marked-btn');
     var help = generic ? null : root.querySelector('.help-btn');
     var seg = generic ? null : bar.querySelector('.plate-mode-seg');
 
-    var dock = el('div', {class:'sticky-tools' + (section === 'todo' && todoKind ? ' sticky-todo' : ''), 'aria-hidden':'true'});
+    var dock = el('div', {class:'sticky-tools' + (section === 'todo' && todoKind ? ' sticky-todo' : '') + (section === 'plates' ? ' sticky-plates' : ''), 'aria-hidden':'true'});
     var inner = el('div', {class:'sticky-inner'});
     dock.appendChild(inner);
     function mirror(orig, after){
@@ -8786,9 +10248,10 @@
       if (back && back.isConnected){
         var bm = mirror(back);
         /* 未達成楽曲一覧：スマホ幅では「＜ 未達成楽曲」と短くして1行に収める */
-        if (section === 'todo' && todoKind){
+        var shortLabel = (section === 'todo' && todoKind) ? '未達成楽曲' : (section === 'plates' && view === 'detail') ? 'プレート表' : '';
+        if (shortLabel){
           var bl = bm.querySelector('.page-back-label');
-          if (bl){ bl.classList.add('back-full'); bl.after(el('span', {class:'page-back-label back-short', text:'未達成楽曲'})); }
+          if (bl){ bl.classList.add('back-full'); bl.after(el('span', {class:'page-back-label back-short', text: shortLabel})); }
         }
         inner.appendChild(bm);
       }
@@ -8796,6 +10259,7 @@
       /* 「？」は出さない。n〜n は 極・将・神・舞 と一緒に右側へ */
       toggles.forEach(function(t){ if (t.isConnected && !t.classList.contains('cut-picker')) inner.appendChild(mirror(t, build)); });
       inner.appendChild(el('div', {class:'sticky-spacer'}));
+      if (hideMarkedBtn && hideMarkedBtn.isConnected) inner.appendChild(mirror(hideMarkedBtn, build));
       toggles.forEach(function(t){ if (t.isConnected && t.classList.contains('cut-picker')) inner.appendChild(mirror(t, build)); });
       if (seg && seg.isConnected) inner.appendChild(mirrorSeg(seg));
     }
@@ -8951,16 +10415,17 @@
 
   if (!isBackupHash(location.hash)) applyRoute(currentRouteHash());
   routeReady = true;
-  /* アプリとして使うための裏方（sw.js）を登録。対応していないブラウザ・手元のファイルでは何もしない */
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
-    window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
-    });
-  }
+  /* sw.js（アプリ用の裏方）は置いていないので、登録しない（前は毎回読みにいって見つからなかった） */
   loadSongsJson();
   renderApp();
   /* バックアップのURLから開いたときは、復元の確認を先に出す（お知らせは次に開いたとき） */
-  if (!pendingBackup && section !== 'import') setTimeout(function(){ maybeShowUpdateNotice(false); }, 600);
+  if (!pendingBackup && section !== 'import') setTimeout(function(){
+    /* 初めて来た人には、更新情報の代わりに使い方ガイドを案内する。
+       アップデート後に来た人には、まず更新情報（初回だけ）→ 閉じたら使い方ガイドの案内（初回だけ） */
+    if (isFirstVisit()){ markTourInviteSeen(); showTourInvite(false); return; }
+    var shown = maybeShowUpdateNotice(false, function(){ maybeInviteTourAfterUpdate(); });
+    if (!shown) maybeInviteTourAfterUpdate();
+  }, 600);
 
   /* 画面の向きや幅が変わったら、一覧のプレビューの高さを合わせ直す（高さだけの変化は無視） */
   (function refitOnResize(){
