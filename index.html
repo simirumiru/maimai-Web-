@@ -68,7 +68,7 @@
   }catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&text=TopBtmai%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E6%A5%B5%E5%B0%86%E7%A5%9E%E8%88%9E%E8%A6%87&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -758,6 +758,32 @@
   .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
   .tour-invite-text + .tour-invite-text{margin-top:-8px;}
   .tour-mk{display:inline-flex;vertical-align:middle;margin:0 1px;}
+  /* ---- 極・将・神・舞舞・覇の印 ---- */
+  .pm-badge{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;box-sizing:border-box;
+    font-family:'M PLUS Rounded 1c',var(--font-body);font-weight:900;font-size:14px;line-height:1;letter-spacing:.05em;
+    padding:3px 10px 4px;border-radius:999px;border:2px solid currentColor;white-space:nowrap;}
+  .pm-kiwami{color:#4fc3f7;}
+  .pm-sho{color:#c2185b;}
+  .pm-shin{color:#e8c24a;}
+  .pm-hasha{color:#9b7bd9;}
+  .pm-other{color:var(--text);}
+  /* 舞舞：プレート難易度表のバーと同じ淡い虹を、文字と楕円の線に */
+  .pm-maimai{border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
+    linear-gradient(90deg,#f2b8c6,#f6d9b0,#f2eeb3,#bfe3c6,#b8d8ee,#cfc2e8,#eebfd6) border-box;}
+  .pm-maimai .pm-text{background:linear-gradient(90deg,#f2b8c6,#f6d9b0,#f2eeb3,#bfe3c6,#b8d8ee,#cfc2e8,#eebfd6);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  /* 白い画面では淡い色が見えにくいので、同じ色合いを少し濃くする */
+  html:not([data-theme="dark"]) .pm-kiwami{color:#1fa3dc;}
+  html:not([data-theme="dark"]) .pm-shin{color:#d4a017;}
+  html:not([data-theme="dark"]) .pm-maimai{background:linear-gradient(var(--panel),var(--panel)) padding-box,
+    linear-gradient(90deg,#ec7f9c,#f2b26a,#e3c94a,#6fc48a,#5aaee0,#9b86d6,#e78bb8) border-box;}
+  html:not([data-theme="dark"]) .pm-maimai .pm-text{background:linear-gradient(90deg,#ec7f9c,#f2b26a,#e3c94a,#6fc48a,#5aaee0,#9b86d6,#e78bb8);
+    -webkit-background-clip:text;background-clip:text;}
+  .pm-none{font-weight:800;}
+  .pm-row{display:inline-flex;gap:5px;margin:0 4px;vertical-align:middle;flex-wrap:wrap;}
+  .range-label .pm-badge{font-size:13px;padding:2px 9px 3px;}
+  .wheel-item .pm-badge{font-size:16px;padding:4px 13px 5px;}
+  .tour-line .pm-badge{font-size:13px;padding:2px 8px 3px;margin:0 1px;}
   .tour-mk .mode-badge{display:inline-flex;align-items:center;gap:2px;}
   .tour-mk .mode-badge-rank{font-size:16px;min-width:0;}
   .tour-mk .sd-badge{min-width:0;padding:1px 7px;font-size:11px;}
@@ -774,7 +800,19 @@
   .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
   .tour-invite-skip{margin-top:10px;background:none;border:0;color:var(--text-dim);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;}
   .tour-invite-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;}
-  .tour-layer{position:fixed;inset:0;z-index:1200;}
+  .tour-layer{position:fixed;inset:0;z-index:1200;pointer-events:none;}
+  /* 光っている所だけは下の画面を実際に押せる。まわり（tour-block）は押せない */
+  .tour-layer .tour-tip, .tour-layer .tour-block, .tour-layer .tour-block-all{pointer-events:auto;}
+  .tour-block{position:fixed;display:none;}
+  .tour-block-all{position:fixed;inset:0;}
+  .tour-layer.is-paused{display:none;}
+  .tour-try{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:12.5px;font-weight:800;color:var(--accent);}
+  .tour-try i{font-style:normal;font-size:15px;}
+  /* 押したあと：ヒントの行と同じ大きさ・形で、緑の丸いチェックと文字だけ（目立ちすぎないように） */
+  .tour-tried{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:12.5px;font-weight:800;color:var(--ok);animation:tourTried .3s ease-out;}
+  .tour-tried i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;
+    border:1.5px solid currentColor;font-style:normal;font-size:10px;line-height:1;}
+  @keyframes tourTried{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
   .tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,18,28,.62), 0 0 0 3px var(--accent), 0 0 18px 4px var(--accent-line);transition:left .22s ease, top .22s ease, width .22s ease, height .22s ease;pointer-events:none;}
   .tour-tip{position:fixed;box-sizing:border-box;background:var(--panel);color:var(--text);border:1px solid var(--border-ctl);border-radius:16px;padding:12px 14px 10px;box-shadow:var(--shadow-md);transition:top .22s ease, left .22s ease;}
   .tour-tip.is-busy .tour-nav, .tour-tip.is-busy .tour-foot{pointer-events:none;opacity:.6;}
@@ -3479,7 +3517,18 @@
   /* ---- プレートごとの進捗（全・極・将・神・舞舞・覇者） ----
      「全」は今までの赤線。それ以外は「表のID::プレート種別」で別々に保存する。 */
   var PLATE_MODE_ORDER = ['極', '将', '神', '舞舞', '覇者'];
-  var PLATE_MODE_LABEL = { '':'全', '極':'極', '将':'将', '神':'神', '舞舞':'舞', '覇者':'覇' };
+  var PLATE_MODE_LABEL = { '':'全', '極':'極', '将':'将', '神':'神', '舞舞':'舞舞', '覇者':'覇' };
+  /* 極・将・神・舞舞・覇の印：プレート難易度表のバーと同じ色の文字を、楕円の線で囲む */
+  var PM_CLASS = { '極':'kiwami', '将':'sho', '神':'shin', '舞舞':'maimai', '覇者':'hasha' };
+  function plateModeBadge(mode){
+    var b = el('span', {class:'pm-badge pm-' + (PM_CLASS[mode] || 'other')});
+    b.appendChild(el('span', {class:'pm-text', text: PLATE_MODE_LABEL[mode] || mode}));
+    return b;
+  }
+  /* スクロールで選ぶボタン用（'' は「なし」「未選択」などの文字） */
+  function plateModeRender(noneText){
+    return function(k){ return k ? plateModeBadge(k) : el('span', {class:'pm-none', text: noneText || 'なし'}); };
+  }
   var PLATE_MODE_KEY = 'mmplate_plate_mode_v1';
   /* 選んでいるプレート（極〜覇）は、そのタブを開いている間だけ覚える。
      サイトを新しく開いたときは、何も選ばれていない状態から始まる */
@@ -5974,7 +6023,8 @@
       bar.appendChild(makePinButton());
       /* 極・将・神・舞（全部の表がそのプレートの表示になる） */
       var lseg = makeWheelPicker({ title: '表示するプレート', cls: 'mode-picker list-mode-seg',
-        items: [['', '未選択'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞']],
+        items: [['', '未選択'], ['極', '極'], ['将', '将'], ['神', '神'], ['舞舞', '舞舞']],
+        render: plateModeRender('未選択'),
         current: commonListMode() || '', onPick: function(m){ setAllPlateModes(m); renderApp(); } });
       /* 「上に固定」、下の段に「達成済みを表示」と n〜n・極・将・神・舞 */
       {
@@ -6012,8 +6062,8 @@
     var body = el('div', {class:'help-a-body'});
     var p1 = el('p');
     p1.appendChild(document.createTextNode('ご自身で登録する際は'));
-    var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
-    ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
+    var chips = el('span', {class:'pm-row', 'aria-hidden':'true'});
+    ['極', '将', '神', '舞舞', '覇者'].forEach(function(m){ chips.appendChild(plateModeBadge(m)); });
     p1.appendChild(chips);
     p1.appendChild(document.createTextNode('いずれかを押した上で曲を長押しして下さい。'));
     body.appendChild(p1);
@@ -6164,6 +6214,7 @@
         /* 極・将・神・舞（・覇）をスクロールで選ぶ。それぞれ別々に赤線を記録できる。「なし」で解除 */
         modePicker = makeWheelPicker({ title: '進捗を記録するプレート', cls: 'mode-picker',
           items: [['', 'なし']].concat(modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; })),
+          render: plateModeRender('なし'),
           current: getPlateMode(v) || '', onPick: function(m){ selectPlateMode(m); } });
         /* 画像保存の下の段：達成済みを表示 → n〜n → なし・極・将・神・舞 */
         hideBtn = makeHideMarkedButton(function(){ redrawPreview(); });
@@ -7575,8 +7626,8 @@
           /* 「極 将 神 舞 覇」は実際のボタンと同じ見た目で文中に出す */
           var note = el('div', {class:'notice-emph'});
           note.appendChild(document.createTextNode('ご自身で登録する際は'));
-          var chips = el('span', {class:'plate-mode-seg notice-seg', 'aria-hidden':'true'});
-          ['極', '将', '神', '舞', '覇'].forEach(function(t){ chips.appendChild(el('span', {class:'notice-seg-btn', text: t})); });
+          var chips = el('span', {class:'pm-row', 'aria-hidden':'true'});
+          ['極', '将', '神', '舞舞', '覇者'].forEach(function(m){ chips.appendChild(plateModeBadge(m)); });
           note.appendChild(chips);
           note.appendChild(document.createTextNode('いずれかを押した上で曲をタップして下さい。'));
           li.appendChild(note);
@@ -8336,6 +8387,7 @@
   function makeModeSeg(modes, cur, onPick, label){
     return makeWheelPicker({ title: label || 'プレート', cls: 'mode-picker',
       items: modes.map(function(m){ return [m, PLATE_MODE_LABEL[m]]; }),
+      render: plateModeRender('なし'),
       current: modes.indexOf(cur) >= 0 ? cur : modes[0], onPick: onPick });
   }
   function needImportNote(root, text){
@@ -9374,9 +9426,9 @@
     /* ---- maimai NET 取り込み ---- */
     { sec:0, go:R('#/import'), sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
       text:'[ui:コードをコピー] を押して、取り込み用のコードをコピーします。' },
-    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(2)', title:'② ブックマークを作る',
+    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(2)', noTouch:true, title:'② ブックマークを作る',
       text:'ブラウザでブックマークを1つ作り、URL の欄にコピーしたコードをペーストします。' },
-    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', title:'③ maimai NET で開く',
+    { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', noTouch:true, title:'③ maimai NET で開く',
       text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開きます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。（1分半〜2分ほど）' },
     { sec:0, go:R('#/import'), sel:'#app .import-caution', title:'プレイしたら取り込み直す',
       text:'記録は自動では更新されません。\nスコアが変わったら、もう一度 ③ をしてください。' },
@@ -9390,9 +9442,9 @@
     { sec:1, go:R('#/plates'), sel:'#app .pin-btn', icon:'pin', title:'上に固定',
       text:'選択したバージョンを上部に固定します。\n取り組み中のプレートがあるバージョンを固定してみて下さい。' },
     { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'表示するプレートを選ぶ',
-      text:'極・将・神・舞から、進捗を表示するプレートを選びます。' },
+      text:'[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] から、進捗を表示するプレートを選びます。' },
     { sec:1, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'画像タップでの操作',
-      text:'[tap] で楽曲の詳細を表示します。\nmaimai NET から取り込めない方は、極・将・神・舞を選択後 [hold] で達成済みの楽曲を薄く表示させることができます。' },
+      text:'[tap] で楽曲の詳細を表示します。\nmaimai NET から取り込めない方は、[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] を選択後 [hold] で達成済みの楽曲を薄く表示させることができます。' },
     { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .hide-marked-btn', title:'達成済みを表示',
       text:'[ui:ON] にすると、選んだプレートの条件を達成した楽曲が薄く表示されます。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
     { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'譜面定数の範囲',
@@ -9430,7 +9482,7 @@
     { sec:5, go:tourCountDetail, sel:'#app .count-input || #app .count-date', title:'回数と日付',
       text:'楽曲ごとに、達成までにかかった回数と達成した日付を記録できます。' },
     { sec:5, go:tourCountDetail, sel:'#app .count-cut-row', title:'表示する範囲とプレート',
-      text:'表示する難易度の範囲と、記録するプレート（極・将・神・舞）を選べます。' },
+      text:'表示する難易度の範囲と、記録するプレート（[pm:極]・[pm:将]・[pm:神]・[pm:舞舞]）を選べます。' },
     { sec:5, go:tourCountDetail, sel:'#app .save-group', title:'画像保存',
       text:'記録した表を画像保存できます。' },
     /* ---- シンクのお相手記録 ---- */
@@ -9443,8 +9495,8 @@
     { sec:6, go:tourSyncDetail, sel:'#app .save-group', title:'画像保存',
       text:'記録した表を画像保存できます。' },
     /* ---- プレート難易度メーカー ---- */
-    { sec:7, go:tourTierList, sel:'#app .btn-primary', title:'プレート難易度表を作る',
-      text:'極・将・神・舞舞それぞれのプレート難易度表を作ることができます。\n作るときに、プレートの種類と左右差のあり・なしを選びます。' },
+    { sec:7, go:tourTierList, sel:'#app .btn-primary', noTouch:true, title:'プレート難易度表を作る',
+      text:'[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] それぞれのプレート難易度表を作ることができます。\n作るときに、プレートの種類と左右差のあり・なしを選びます。' },
     { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field .onoff-btn', title:'左右差',
       text:'作成するプレート表に左右差を設けるか設定します。' },
     { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field input', title:'製作者名',
@@ -9453,17 +9505,17 @@
       text:'プレートを追加して、[hold] でつかむと別のランクへ移動できます。' },
     { sec:7, go:tourTierEdit, sel:'#app .level-block input', title:'ランク名',
       text:'ランク名は自由に変更できます。' },
-    { sec:7, go:tourTierEdit, sel:'#app .level-block .btn-danger', title:'ランクの削除',
+    { sec:7, go:tourTierEdit, sel:'#app .level-block .btn-danger', noTouch:true, title:'ランクの削除',
       text:'いらないランクは削除できます。' },
-    { sec:7, go:tourTierEdit, sel:'#app .view-topbar .btn-primary', title:'保存と画像保存',
+    { sec:7, go:tourTierEdit, sel:'#app .view-topbar .btn-primary', noTouch:true, title:'保存と画像保存',
       text:'[go:保存する] を押すと作成した表が保存されます。[go:保存する] を押さなかった場合保存されない場合があるのでご注意下さい。\n完成した表は画像保存できます。' },
     /* ---- 下埋め進捗 ---- */
     { sec:8, go:R('#/fill'), sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'押すと、そのプレート取得までに必要な BASIC〜EXPERT（下埋め）の残りの譜面数等を見ることができます。' },
-    { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', title:'合計を見る',
+    { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', noTouch:true, title:'合計を見る',
       text:'押してからバージョンをいくつか選ぶと、その合計の進捗を見ることができます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
-      text:'極・将・神・舞から、下埋め進捗を見るプレートを選びます。' },
+      text:'[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] から、下埋め進捗を見るプレートを選びます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', title:'帯の見方',
       text:'帯の色は、残っている難易度です。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成\n右の % が進み具合です。',
       alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに残りが帯で表示されます。\n[sw:EXPERT] EXPERT　[sw:ADVANCED] ADVANCED　[sw:BASIC] BASIC　[sw:done] 達成' } },
@@ -9477,7 +9529,7 @@
       text:'星を [tap] して評価します。星だけでも送ることができます。' },
     { sec:9, go:R('#/review'), sel:'#app .review-msg', title:'感想・要望',
       text:'感想や「こんな機能がほしい」等の要望を自由に送ることができますのでお気軽にお送り下さい！\nレビューのリクエストから実装された機能も多いのでぜひぜひお願いします。\n必ず実装されるわけではないのでご了承下さい。\n読むことができるのは開発者のみです。' },
-    { sec:9, go:R('#/review'), sel:'#app .review-send', title:'送信',
+    { sec:9, go:R('#/review'), sel:'#app .review-send', noTouch:true, title:'送信',
       text:'[go:送信する] で開発者にレビューが届きます。送ったレビューは、この下で見返せます。\nレビューはホーム画面右上の [rate] や、ホーム画面・メニューの [rev:レビュー] からも送ることができます。' },
     /* ---- おわり ---- */
     { sec:-1, go:R('#/'), sel:null, title:'説明はこれでおしまいです',
@@ -9514,6 +9566,8 @@
           if (TOUR_SW[m[2]]) sw.style.background = TOUR_SW[m[2]];
           row.appendChild(sw); return;
         }
+        /* 極・将・神・舞舞の印 */
+        if (m2 = /^\[pm:(.+)\]$/.exec(part)){ row.appendChild(plateModeBadge(m2[1])); return; }
         /* 未達成楽曲一覧の条件のマーク（SSS・FC・AP+・FS・FDX+・☆5 など。曲の詳細と同じ見た目） */
         if (m2 = /^\[mk:(.+)\]$/.exec(part)){
           var mk = el('span', {class:'tour-mk'});
@@ -9654,6 +9708,8 @@
       window.removeEventListener('resize', tourLayer.__place);
       window.removeEventListener('scroll', tourLayer.__place, true);
       document.removeEventListener('keydown', tourLayer.__key);
+      document.removeEventListener('click', tourLayer.__click, true);
+      if (tourLayer.__obs) tourLayer.__obs.disconnect();
       if (tourLayer.parentNode) tourLayer.parentNode.removeChild(tourLayer);
       tourLayer = null;
     }
@@ -9663,9 +9719,39 @@
     if (tourLayer) return tourLayer;
     tourLayer = el('div', {class:'tour-layer', role:'dialog', 'aria-modal':'true', 'aria-label':'使い方ガイド'});
     tourLayer.appendChild(el('div', {class:'tour-hole'}));
+    /* 光っている所のまわりを覆う板（上・左・右・下）と、全体を覆う板 */
+    ['t', 'l', 'r', 'b'].forEach(function(k){ tourLayer.appendChild(el('div', {class:'tour-block tour-block-' + k})); });
+    tourLayer.appendChild(el('div', {class:'tour-block-all'}));
     tourLayer.appendChild(el('div', {class:'tour-tip'}));
+    /* 光っている所を実際に押したら「✓ 操作できました」。画面が切り替わったら次の説明へ進む */
+    tourLayer.__click = function(e){
+      var L = tourLayer;
+      if (!L || !L.__touch || !L.__target) return;
+      var inside = L.__target.some(function(x){ return x && x.contains && x.contains(e.target); });
+      if (!inside) return;
+      tourMarkTried();
+      var h0 = location.hash, idx = L.__stepIndex, run = tourRun;
+      [450, 1100].forEach(function(ms){
+        setTimeout(function(){
+          if (run !== tourRun || !tourLayer || tourLayer.classList.contains('is-paused')) return;
+          if (location.hash !== h0) runTour(idx + 1);
+        }, ms);
+      });
+    };
+    document.addEventListener('click', tourLayer.__click, true);
+    /* 押して開いた画面（選ぶ画面・曲の詳細など）があいだは、ガイドを隠して操作できるようにする */
+    tourLayer.__obs = new MutationObserver(function(){
+      if (!tourLayer) return;
+      var open = !!document.querySelector('body > .modal-backdrop');
+      var was = tourLayer.classList.contains('is-paused');
+      tourLayer.classList.toggle('is-paused', open);
+      if (was && !open && tourLayer.__place){ setTimeout(function(){ if (tourLayer && tourLayer.__place) tourLayer.__place(); }, 60); }
+    });
+    tourLayer.__obs.observe(document.body, { childList: true });
     tourLayer.__key = function(e){
       if (!tourLayer) return;
+      /* 入力欄に文字を打っているときの ← → はガイドを動かさない */
+      if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
       if (e.key === 'Escape') endTour(false);
       if (e.key === 'ArrowRight' && tourLayer.__next) tourLayer.__next();
       if (e.key === 'ArrowLeft' && tourLayer.__prev) tourLayer.__prev();
@@ -9713,6 +9799,28 @@
     wrap.appendChild(sub);
     return wrap;
   }
+  /* 板の位置：rect が無いときは全体を覆う（押せない） */
+  function tourSetBlocks(layer, rect){
+    var all = layer.querySelector('.tour-block-all');
+    var bs = {}; ['t', 'l', 'r', 'b'].forEach(function(k){ bs[k] = layer.querySelector('.tour-block-' + k); });
+    if (!rect){ all.style.display = ''; Object.keys(bs).forEach(function(k){ bs[k].style.display = 'none'; }); return; }
+    all.style.display = 'none';
+    var vw = window.innerWidth, vh = window.innerHeight;
+    function put(e, l, tp, w, h){ e.style.display = ''; e.style.left = l + 'px'; e.style.top = tp + 'px'; e.style.width = Math.max(0, w) + 'px'; e.style.height = Math.max(0, h) + 'px'; }
+    put(bs.t, 0, 0, vw, rect.t);
+    put(bs.b, 0, rect.b, vw, vh - rect.b);
+    put(bs.l, 0, rect.t, rect.l, rect.b - rect.t);
+    put(bs.r, rect.r, rect.t, vw - rect.r, rect.b - rect.t);
+  }
+  function tourMarkTried(){
+    var tip = tourLayer && tourLayer.querySelector('.tour-tip');
+    if (!tip || tip.querySelector('.tour-tried')) return;
+    var hint = tip.querySelector('.tour-try');
+    var ok = el('div', {class:'tour-tried'});
+    ok.appendChild(el('i', {'aria-hidden':'true', text:'✓'}));
+    ok.appendChild(document.createTextNode('実際に操作できました'));
+    if (hint) hint.parentNode.replaceChild(ok, hint); else tip.insertBefore(ok, tip.querySelector('.tour-nav'));
+  }
   function runTour(i, dir){
     dir = dir || 1;
     if (i < 0) i = 0;
@@ -9726,6 +9834,8 @@
     var tip = layer.querySelector('.tour-tip');
     layer.__next = layer.__prev = null;
     layer.onclick = null;
+    layer.__touch = false; layer.__target = null; layer.__stepIndex = i;
+    tourSetBlocks(layer, null);
     tip.classList.add('is-busy');
     /* 画面を切り替えるときだけ暗くして待つ（同じ画面の中ならすぐ次へ） */
     var moved = false;
@@ -9757,6 +9867,15 @@
       titleEl.appendChild(document.createTextNode(step.title));
       tip.appendChild(titleEl);
       tip.appendChild(tourRich(text));
+      /* 光っている所は実際に押して試せる（送信・削除・保存など、押すと困るものは除く） */
+      var touchable = !!target && !step.noTouch;
+      layer.__touch = touchable; layer.__target = target;
+      if (touchable){
+        var tryEl = el('div', {class:'tour-try'});
+        tryEl.appendChild(el('i', {'aria-hidden':'true', text:'👆'}));
+        tryEl.appendChild(document.createTextNode('光っている所は、実際に押して試せます'));
+        tip.appendChild(tryEl);
+      }
       var nav = el('div', {class:'tour-nav'});
       var primary;
       if (last){
@@ -9801,13 +9920,14 @@
 
       function place(){
         if (!tourLayer) return;
-        if (target && !target[0].isConnected && selUsed) target = tourQuery(selUsed);
+        if (target && !target[0].isConnected && selUsed){ target = tourQuery(selUsed); layer.__target = target; }
         var vw = window.innerWidth, vh = window.innerHeight;
         var tw = Math.min(380, vw - 24);
         tip.style.width = tw + 'px';
         var th = tip.offsetHeight;
         if (!target){
           hole.style.display = 'none';
+          tourSetBlocks(layer, null);
           layer.classList.add('no-target');
           tip.style.left = Math.round((vw - tw) / 2) + 'px';
           tip.style.top = Math.max(12, Math.round((vh - th) / 2)) + 'px';
@@ -9816,17 +9936,26 @@
         layer.classList.remove('no-target');
         hole.style.display = '';
         var r = tourRect(target), pad = 6;
+        /* 画面の切り替え直後に、前に開いていた場所へ自動でスクロールされて照らす所が画面の外に出たときは、照らす所へ戻す */
+        if (Date.now() < settleUntil && (r.bottom < 60 || r.top > vh - 60)){
+          window.scrollTo({ top: Math.max(0, r.top + window.scrollY - 96), behavior: 'auto' });
+          r = tourRect(target);
+        }
         /* 照らす枠が画面の左右からはみ出さないように、画面の内側に収める */
         var hl = Math.max(5, r.left - pad), hr = Math.min(vw - 5, r.right + pad);
         hole.style.left = hl + 'px'; hole.style.top = (r.top - pad) + 'px';
         hole.style.width = Math.max(0, hr - hl) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+        tourSetBlocks(layer, touchable ? { l: hl, t: r.top - pad, r: hr, b: r.bottom + pad } : null);
         tip.style.left = Math.round(Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2))) + 'px';
         var top;
         if (r.bottom + 14 + th <= vh - 10) top = r.bottom + 14;            /* 下に置ける */
         else if (r.top - 14 - th >= 10) top = r.top - 14 - th;             /* 上に置ける */
         else top = vh - th - 12;                                            /* 大きい場所：画面の下に重ねる */
+        /* 吹き出しは必ず画面の中に出す（「次へ」が押せなくならないように） */
+        top = Math.max(10, Math.min(vh - th - 10, top));
         tip.style.top = Math.round(top) + 'px';
       }
+      var settleUntil = Date.now() + 1200;
       window.removeEventListener('resize', layer.__place);
       window.removeEventListener('scroll', layer.__place, true);
       layer.__place = place;
