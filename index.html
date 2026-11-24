@@ -9291,7 +9291,7 @@
       if (st.sec >= 0 && !seen[st.sec]){
         seen[st.sec] = true;
         out.push({ sec: st.sec, go: R('#/'), sel: '#app .home-card[data-key="' + TOUR_HOME_KEYS[st.sec] + '"]', home: true,
-          title: TOUR_SECTIONS[st.sec], text: 'ホーム画面のここから開けます。' });
+          title: 'ホーム画面から開く', text: 'ここから' + TOUR_SECTIONS[st.sec] + 'を開くことができます。' });
       }
       out.push(st);
     });
