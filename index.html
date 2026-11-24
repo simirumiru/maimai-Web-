@@ -767,7 +767,7 @@
   .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
   .tour-invite-text + .tour-invite-text{margin-top:-8px;}
   .tour-mk{display:inline-flex;vertical-align:middle;margin:0 1px;}
-  /* 取り込み方（かんたん／すべて） */
+  /* 取り込み方（スピード／すべて） */
   .import-modes{margin:14px 0 4px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--panel);display:flex;flex-direction:column;gap:8px;}
   .import-modes-title{font-size:13px;font-weight:800;color:var(--text-dim);}
   .import-mode{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.6;}
@@ -7614,7 +7614,7 @@
       ['曲の詳細に自分の記録', '楽曲画像をタップすると、ランク・FC/AP・でらっくすスコア・星を確認できます。'],
       ['未達成楽曲一覧の SSS+・☆4〜☆7', '条件に、SSS+ と でらっくすスコアの☆4・☆5・☆6・☆7を追加しました。\n自分で登録した達成済みも反映されます。'],
       ['赤線 → 薄く表示', '達成済みの楽曲は、赤線ではなく薄く表示されるようになりました。\n自分で登録するときは、楽曲画像を長押しします（タップは楽曲の詳細）。'],
-      ['取り込みの高速化', '取り込みが速くなりました。NET の画面で「かんたん（MASTER・Re:MASTER）」を選ぶと、さらに早く終わります。\n下埋め進捗を見るときは「すべて」を選んでください。ブックマークはそのままで大丈夫です。']
+      ['取り込みの高速化', '取り込みが速くなりました。NET の画面で「スピード（MASTER・Re:MASTER）」を選ぶと、さらに早く終わります。\n下埋め進捗を見るときは「すべて」を選んでください。ブックマークはそのままで大丈夫です。']
     ]},
     { ver:'2.2', date:'2026/11/10', items:[
       ['曲名の表示', '楽曲画像の下に曲名を表示するようにしました（保存画像には入りません）。\nホームの「楽曲画像に曲名を表示」でON/OFFできます。'],
@@ -8138,7 +8138,7 @@
   function saveNetRecords(records, ver, extra){
     /* v：取り込みプログラムの版（2 から DXスコアも読む）
        mode：'quick'（MASTER・Re:MASTER だけ）／'all'（BASIC〜Re:MASTER）
-       lowerAt：BASIC〜EXPERT の記録を読んだ日（「かんたん」で取り込んだときは前の「すべて」の日のまま） */
+       lowerAt：BASIC〜EXPERT の記録を読んだ日（「スピード」で取り込んだときは前の「すべて」の日のまま） */
     var o = { at: Date.now(), records: records, sig: tablesSignature(), v: ver || 1 };
     if (extra){ if (extra.mode) o.mode = extra.mode; if (extra.lowerAt) o.lowerAt = extra.lowerAt; }
     netRecordsMemo = o; netSigCheckedFor = allVersions;
@@ -8181,7 +8181,7 @@
     var firstImport = !netRecordIndex();
     var recs = d.records.slice(0, 20000), extra = { mode: d.mode === 'quick' ? 'quick' : 'all' };
     if (extra.mode === 'quick'){
-      /* かんたん（MASTER・Re:MASTER だけ）：前に取り込んだ BASIC〜EXPERT の記録は消さずに残す（下埋め進捗で使う） */
+      /* スピード（MASTER・Re:MASTER だけ）：前に取り込んだ BASIC〜EXPERT の記録は消さずに残す（下埋め進捗で使う） */
       var prev = loadNetRecords();
       var keep = (prev && Array.isArray(prev.records)) ? prev.records.filter(function(r){ return Array.isArray(r) && +r[2] < 3; }) : [];
       if (keep.length){ recs = keep.concat(recs); extra.lowerAt = prev.lowerAt || prev.at; }
@@ -8238,7 +8238,7 @@
     [
       ['コピー', '下のボタンで取り込み用のコードをコピー'],
       ['ブックマーク', 'ブックマークを1つ作り、URLをコピーしたコードに書き換える'],
-      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開いて「かんたん」か「すべて」を選ぶ（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
+      ['開く', 'maimai でらっくす NET にログインし、そのブックマークを開いて「スピード」か「すべて」を選ぶ（スマホは NET の画面のまま待ち、読み取りが終わったら「maiプレートに送る」を押す）']
     ].forEach(function(s, i){
       var li = el('li', {class:'step'});
       li.appendChild(el('span', {class:'step-num', text: String(i + 1)}));
@@ -8253,7 +8253,7 @@
     /* 取り込み方（NET の画面で選ぶ） */
     var modes = el('div', {class:'import-modes'});
     modes.appendChild(el('div', {class:'import-modes-title', text:'取り込み方（NET の画面で選びます）'}));
-    [['かんたん', 'is-quick', 'MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。'],
+    [['スピード', 'is-quick', 'MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。'],
      ['すべて', 'is-all', 'BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んでください。']].forEach(function(m){
       var row = el('div', {class:'import-mode'});
       row.appendChild(el('span', {class:'import-mode-tag ' + m[1], text: m[0]}));
@@ -8616,7 +8616,7 @@
     }
     if (!rec.hasLower){
       needImportNote(root, rec.mode === 'quick'
-        ? '「かんたん」で取り込んだ記録には BASIC〜EXPERT が入っていません。\n下埋め進捗を見るときは、取り込むときに「すべて」を選んでください（ブックマークはそのままで大丈夫です）。'
+        ? '「スピード」で取り込んだ記録には BASIC〜EXPERT が入っていません。\n下埋め進捗を見るときは、取り込むときに「すべて」を選んでください（ブックマークはそのままで大丈夫です）。'
         : '取り込んだ記録に BASIC〜EXPERT が入っていません。\n取り込み用のコードが新しくなったので、ブックマークを作り直してもう一度取り込んでください。');
       return;
     }
@@ -8723,7 +8723,7 @@
     });
     stats.appendChild(ps);
     card.appendChild(stats);
-    /* 「かんたん」で取り込んだあとは、BASIC〜EXPERT は前に「すべて」で取り込んだ日の記録 */
+    /* 「スピード」で取り込んだあとは、BASIC〜EXPERT は前に「すべて」で取り込んだ日の記録 */
     var lowerOld = rec.lowerAt && rec.lowerAt < rec.at - 60000;
     card.appendChild(el('div', {class:'export-only-note', text:'取り込んだ日: ' + fmtDate(lowerOld ? rec.lowerAt : rec.at)}));
     root.appendChild(card);
@@ -9512,15 +9512,18 @@
   var TOUR_SHORT = ['取り込み', 'プレート表', 'フレーム表', '定数表', '未達成表', '回数・日付', 'シンク記録', '表メーカー', '下埋め', 'レビュー'];
   function R(h){ return function(){ return tourRoute(h); }; }
   var TOUR_STEPS = [
+    /* ---- はじめに：テーマカラー（どのメニューにも入らない独立した説明。進み具合にも数えない） ---- */
+    { sec:-2, go:R('#/'), sel:'#app .theme-seg || #app .theme-colors', title:'テーマカラー',
+      text:'テーマカラーを選択できます。\nまずはツール全体をあなたの好きな色に設定しましょう！' },
     /* ---- maimai NET 取り込み ---- */
     { sec:0, go:R('#/import'), sel:'#app .page-actions .btn-primary', title:'① コードをコピー',
       text:'[ui:コードをコピー] を押して、取り込み用のコードをコピーします。' },
     { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(2)', noTouch:true, title:'② ブックマークを作る',
       text:'ブラウザでブックマークを1つ作り、URL の欄にコピーしたコードをペーストします。' },
     { sec:0, go:R('#/import'), sel:'#app .steps .step:nth-child(3)', noTouch:true, title:'③ maimai NET で開く',
-      text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開き、[ui:かんたん] か [ui:すべて] を選びます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。' },
+      text:'ログイン中のmaimai NET を開いた状態で先ほどのブックマークを開き、[ui:スピード] か [ui:すべて] を選びます。\n読み取りが終わったら「maiプレートに送る」を押して下さい。' },
     { sec:0, go:R('#/import'), sel:'#app .import-modes', noTouch:true, title:'取り込み方を選ぶ',
-      text:'[ui:かんたん] MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。\n[ui:すべて] BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んで下さい。' },
+      text:'[ui:スピード] MASTER・Re:MASTER だけを読むので早く終わります。プレート表・未達成楽曲一覧・曲の詳細はこれで使えます。\n[ui:すべて] BASIC〜Re:MASTER を読みます。下埋め進捗を見るときはこちらを選んで下さい。' },
     { sec:0, go:R('#/import'), sel:'#app .import-caution', noTouch:true, title:'プレイしたら取り込み直す',
       text:'記録は自動では更新されません。\nスコアが変わったら、もう一度 ③ をしてください。' },
     /* 記録がまだ無い人：ここで取り込んでもらい、取り込みが終わったら続き（プレート表〜）を始める */
@@ -9825,6 +9828,8 @@
       var inside = L.__target.some(function(x){ return x && x.contains && x.contains(e.target); });
       if (!inside) return;
       tourMarkTried();
+      /* 押したことで照らす所の大きさが変わる（色の選択が出るなど）ことがあるので、少しあとで置き直す */
+      [80, 320].forEach(function(ms){ setTimeout(function(){ if (tourLayer === L && L.__place) L.__place(); }, ms); });
       var h0 = location.hash, idx = L.__stepIndex, run = tourRun;
       [450, 1100].forEach(function(ms){
         setTimeout(function(){
@@ -9866,7 +9871,10 @@
   }
   function tourRect(els){
     var l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
-    els.forEach(function(e){ var x = e.getBoundingClientRect(); l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom); });
+    /* 隠れている部品（大きさ0）は数えない（例：テーマの色は「カラフル」を選ぶまで隠れている） */
+    var rs = els.map(function(e){ return e.getBoundingClientRect(); });
+    var shown = rs.filter(function(x){ return x.width > 0 || x.height > 0; });
+    (shown.length ? shown : rs.slice(0, 1)).forEach(function(x){ l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom); });
     return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
   }
   function stepShown(x){ return !x.need || x.need(); }
@@ -10299,12 +10307,12 @@
     if (mark && mark.firstElementChild) bigMark.appendChild(mark.firstElementChild.cloneNode(true));
     hero.appendChild(bigMark);
     var seg = el('div', {class:'theme-seg', role:'group', 'aria-label':'表示モード'});
-    [['normal', 'ノーマル'], ['dark', 'ダーク'], ['custom', 'カスタム']].forEach(function(o){
+    [['normal', 'ノーマル'], ['dark', 'ダーク'], ['custom', 'カラフル']].forEach(function(o){
       var b = el('button', {type:'button', text: o[1], onclick: function(){ setTheme(o[0]); paintTheme(); }});
       b.__t = o[0];
       seg.appendChild(b);
     });
-    /* カスタムのときだけ、ロゴの7色から選べる */
+    /* カラフル（中では 'custom'）のときだけ、ロゴの7色から選べる */
     var colors = el('div', {class:'theme-colors', role:'group', 'aria-label':'テーマカラー'});
     CUSTOM_COLORS.forEach(function(c){
       var b = el('button', {type:'button', class:'theme-color', title: c[1], 'aria-label': c[1], style:{background: c[0]},
