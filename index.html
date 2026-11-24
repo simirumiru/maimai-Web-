@@ -757,6 +757,11 @@
   .tour-invite-title{font-size:19px;font-weight:800;margin:4px 0 8px;}
   .tour-invite-text{font-size:14px;line-height:1.7;margin:0 0 16px;}
   .tour-invite-text + .tour-invite-text{margin-top:-8px;}
+  .tour-mk{display:inline-flex;vertical-align:middle;margin:0 1px;}
+  .tour-mk .mode-badge{display:inline-flex;align-items:center;gap:2px;}
+  .tour-mk .mode-badge-rank{font-size:16px;min-width:0;}
+  .tour-mk .sd-badge{min-width:0;padding:1px 7px;font-size:11px;}
+  .tour-mk .mode-badge-num{font-size:13px;}
   .tour-invite-emph{font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 12px;}
   /* ガイドをスキップした人へ：ホームの「使い方ガイド」の場所を照らす */
   .guide-hint-layer{position:fixed;inset:0;z-index:2000;}
@@ -2593,16 +2598,18 @@
   /* 「<見出し>ON/OFF」の形のボタン。
      いま効いている側を先に出し、緑の太字にする。反対側は白のまま。 */
   /* single … ON のときは「ON」だけ、OFF のときは「OFF」だけを出す（ホームの「ジャケットに曲名を表示」と同じ形） */
-  function makeOnOffButton(prefix, isOn, onToggle, stacked, single){
+  /* words … ON/OFF の代わりに出す言葉（例 ['あり', 'なし']） */
+  function makeOnOffButton(prefix, isOn, onToggle, stacked, single, words){
+    var W = words || ['ON', 'OFF'];
     var btn = el('button', {class:'btn btn-sm onoff-btn' + (stacked ? ' onoff-stacked' : '') + (single ? ' onoff-single' : '')});
     function paint(on){
       btn.textContent = '';
       if (prefix) btn.appendChild(el('span', {class:'onoff-label', text: prefix}));
       var sw = el('span', {class:'onoff-switch'});
-      sw.appendChild(el('span', {class:'onoff-active', text: on ? 'ON' : 'OFF'}));
+      sw.appendChild(el('span', {class:'onoff-active', text: on ? W[0] : W[1]}));
       if (!single){
         sw.appendChild(el('span', {class:'onoff-slash', text:'/'}));
-        sw.appendChild(el('span', {class:'onoff-idle',   text: on ? 'OFF' : 'ON'}));
+        sw.appendChild(el('span', {class:'onoff-idle',   text: on ? W[1] : W[0]}));
       }
       btn.appendChild(sw);
       if (single) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -6616,8 +6623,8 @@
     }
     card.appendChild(metaRow);
 
+    /* ランクの表示ON/OFFは廃止（前に非表示にしたランクも表示する） */
     var any = t.ranks.some(function(r){
-      if (r.hidden) return false;
       return (r.jiriki || []).length > 0 || (r.kojinsa || []).length > 0;
     });
     if (!any){
@@ -6626,7 +6633,6 @@
     }
 
     t.ranks.forEach(function(rank){
-      if (rank.hidden) return;          /* 非表示にしたランクは出さない */
       var jiriki = rank.jiriki || [];
       var kojinsa = rank.kojinsa || [];
       if (jiriki.length === 0 && kojinsa.length === 0) return;
@@ -6754,12 +6760,14 @@
 
     var lrRow = el('div', {class:'field', style:{marginTop:'10px'}});
     lrRow.appendChild(el('label', {text:'左右差'}));
+    /* 左右差：「あり」か「なし」の今の方だけを出す。押すと切り替わる */
     var lrBtn = makeOnOffButton('', !!plateTierDraft.showLeftRight, function(){
       plateTierDraft.showLeftRight = !plateTierDraft.showLeftRight;
       renderRanksEditor();
       refreshPreview();
       return plateTierDraft.showLeftRight;
-    });
+    }, false, true, ['あり', 'なし']);
+    lrBtn.title = '押すと、左右差のあり・なしを切り替えます';
     lrRow.appendChild(lrBtn);
     infoCard.appendChild(lrRow);
 
@@ -6811,7 +6819,7 @@
     function renderRanksEditor(){
       ranksContainer.textContent = '';
       plateTierDraft.ranks.forEach(function(rank, rIdx){
-        var block = el('div', {class:'level-block' + (rank.hidden ? ' rank-off' : '')});
+        var block = el('div', {class:'level-block'});
 
         var head = el('div', {class:'level-block-head'});
         var labelInput = el('input', {type:'text'});
@@ -6839,12 +6847,6 @@
           plateTierDraft.ranks[rIdx] = tmp;
           renderRanksEditor(); refreshPreview();
         }}));
-        head.appendChild(makeOnOffButton('このランク', !rank.hidden, function(){
-          rank.hidden = !rank.hidden;
-          renderRanksEditor();
-          refreshPreview();
-          return !rank.hidden;
-        }, true));
         head.appendChild(el('button', {class:'btn btn-sm btn-danger', text:'削除', onclick: function(){
           showDeleteConfirm((rank.label || 'このランク') + 'を削除しますか？', function(){
             plateTierDraft.ranks = plateTierDraft.ranks.filter(function(r){ return r.id !== rank.id; });
@@ -9412,11 +9414,11 @@
     { sec:4, go:R('#/todo'), sel:'#app .todo-kinds', title:'譜面の種類を選ぶ',
       text:'MASTER の全譜面か、舞・覇者（Re:MASTER）を選びます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .mode-picker', title:'条件を選ぶ',
-      text:'FC〜FDX+・☆5〜☆7 から選ぶと、まだ達成していない譜面が並びます。' },
+      text:'[mk:SSS]・[mk:SSS+]・[mk:FC]〜[mk:AP+]・[mk:FS]〜[mk:FDX+]・[mk:☆5]〜[mk:☆7] から選ぶと、まだ達成していない譜面が並びます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .range-picker', title:'譜面定数の範囲',
       text:'表示する楽曲の範囲を選べます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
-      text:'プレート表と同じです。\n[ui:ON] にすると、APやFDX等が達成済みの楽曲が薄く表示されるようになります。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
+      text:'プレート表と同じです。\n[ui:ON] にすると、APやFDX等を達成済みの楽曲が薄く表示されるようになります。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-card-body .todo-thumb', title:'楽曲の詳細',
       text:'楽曲画像を [tap] すると、楽曲の詳細情報を見ることができます。',
       alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに未達成の譜面が並びます。' } },
@@ -9451,15 +9453,13 @@
       text:'プレートを追加して、[hold] でつかむと別のランクへ移動できます。' },
     { sec:7, go:tourTierEdit, sel:'#app .level-block input', title:'ランク名',
       text:'ランク名は自由に変更できます。' },
-    { sec:7, go:tourTierEdit, sel:'#app .level-block .onoff-stacked', title:'ランクの表示',
-      text:'ランクごとに、表に表示するかを [ui:ON]・[ui:OFF] で切り替えられます。' },
     { sec:7, go:tourTierEdit, sel:'#app .level-block .btn-danger', title:'ランクの削除',
       text:'いらないランクは削除できます。' },
     { sec:7, go:tourTierEdit, sel:'#app .view-topbar .btn-primary', title:'保存と画像保存',
-      text:'[go:保存する] で表が完成します。完成した表は画像保存できます。' },
+      text:'[go:保存する] を押すと作成した表が保存されます。[go:保存する] を押さなかった場合保存されない場合があるのでご注意下さい。\n完成した表は画像保存できます。' },
     /* ---- 下埋め進捗 ---- */
     { sec:8, go:R('#/fill'), sel:'#app .version-card', title:'バージョンを選ぶ',
-      text:'押すと、そのプレート取得までに必要な BASIC〜EXPERT（下埋め）の残り譜面等を見ることができます。' },
+      text:'押すと、そのプレート取得までに必要な BASIC〜EXPERT（下埋め）の残りの譜面数等を見ることができます。' },
     { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', title:'合計を見る',
       text:'押してからバージョンをいくつか選ぶと、その合計の進捗を見ることができます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
@@ -9474,7 +9474,7 @@
     { sec:9, go:R('#/review'), sel:'#app .review-name-field', title:'送信時の名前',
       text:'デフォルトネームは「匿名さん」です。\n好きな名前に変えられますし、このままでも送ることができます。' },
     { sec:9, go:R('#/review'), sel:'#app .review-stars', title:'星で評価',
-      text:'星を [tap] して評価します。星だけで送ることができます。' },
+      text:'星を [tap] して評価します。星だけでも送ることができます。' },
     { sec:9, go:R('#/review'), sel:'#app .review-msg', title:'感想・要望',
       text:'感想や「こんな機能がほしい」等の要望を自由に送ることができますのでお気軽にお送り下さい！\nレビューのリクエストから実装された機能も多いのでぜひぜひお願いします。\n必ず実装されるわけではないのでご了承下さい。\n読むことができるのは開発者のみです。' },
     { sec:9, go:R('#/review'), sel:'#app .review-send', title:'送信',
@@ -9513,6 +9513,13 @@
           var sw = el('i', {class:'tour-sw' + (m[2] === 'done' ? ' is-done' : '')});
           if (TOUR_SW[m[2]]) sw.style.background = TOUR_SW[m[2]];
           row.appendChild(sw); return;
+        }
+        /* 未達成楽曲一覧の条件のマーク（SSS・FC・AP+・FS・FDX+・☆5 など。曲の詳細と同じ見た目） */
+        if (m2 = /^\[mk:(.+)\]$/.exec(part)){
+          var mk = el('span', {class:'tour-mk'});
+          if (m2[1] === 'FS' || m2[1] === 'FS+') mk.appendChild(el('span', {class:'sd-badge is-' + (m2[1] === 'FS' ? 'fs' : 'fsp'), text: m2[1]}));
+          else mk.appendChild(todoModeBadge(m2[1]));
+          row.appendChild(mk); return;
         }
         /* 画像保存の「黒」「白」 */
         if (m2 = /^\[(blk|wht):(.+)\]$/.exec(part)){ row.appendChild(el('span', {class:'tour-ui is-' + m2[1], text: m2[2]})); return; }
@@ -9572,7 +9579,7 @@
     box.appendChild(iconNode('tour', 'tour-invite-icon'));
     box.appendChild(el('h3', {id:'tourInviteTitle', class:'tour-invite-title', text: updated ? '使い方ガイドができました！' : 'maiプレートへようこそ！'}));
     box.appendChild(el('p', {class:'tour-invite-text', text:'10のメニューを、実際の画面で順番に紹介します。'}));
-    box.appendChild(el('p', {class:'tour-invite-text tour-invite-emph', text:'所要時間は5〜10分ほどです。細かい機能が多いので、使いこなす為にもぜひご覧下さい！'}));
+    box.appendChild(el('p', {class:'tour-invite-text tour-invite-emph', text:'所要時間は10分ほどです。細かい機能が多いので、使いこなす為にもぜひご覧下さい！'}));
     box.appendChild(el('button', {type:'button', class:'btn btn-primary tour-invite-go', text:'使い方ガイドを見る', onclick: function(){ closeModal(backdrop); startTour(); }}));
     box.appendChild(el('button', {type:'button', class:'tour-invite-skip', text:'スキップする', onclick: function(){
       markTourDone(); closeModal(backdrop); setTimeout(showGuideHomeHint, 300);
@@ -9809,8 +9816,10 @@
         layer.classList.remove('no-target');
         hole.style.display = '';
         var r = tourRect(target), pad = 6;
-        hole.style.left = (r.left - pad) + 'px'; hole.style.top = (r.top - pad) + 'px';
-        hole.style.width = (r.width + pad * 2) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+        /* 照らす枠が画面の左右からはみ出さないように、画面の内側に収める */
+        var hl = Math.max(5, r.left - pad), hr = Math.min(vw - 5, r.right + pad);
+        hole.style.left = hl + 'px'; hole.style.top = (r.top - pad) + 'px';
+        hole.style.width = Math.max(0, hr - hl) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
         tip.style.left = Math.round(Math.max(12, Math.min(vw - tw - 12, r.left + r.width / 2 - tw / 2))) + 'px';
         var top;
         if (r.bottom + 14 + th <= vh - 10) top = r.bottom + 14;            /* 下に置ける */
