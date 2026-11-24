@@ -889,6 +889,38 @@
   .dx-star-0{filter:none;color:var(--text-dim);}
   .sd-rec-next{margin-top:4px;text-align:right;font-size:12px;color:var(--text-dim);display:flex;justify-content:flex-end;align-items:center;gap:3px;}
   .sd-rec-next b{color:var(--accent);font-size:13px;}
+  /* 条件のバッジ（未達成楽曲一覧のスクロールで選ぶ所） */
+  .mode-badge{display:inline-flex;align-items:center;gap:3px;line-height:1;vertical-align:middle;}
+  .mode-badge .sd-badge{min-width:0;padding:2px 8px;font-size:11px;}
+  .mode-badge-rank{font-size:15px;min-width:0;}
+  .mode-badge-num{font-size:13px;font-weight:900;color:var(--text);}
+  .wheel-item.has-render{display:flex;align-items:center;justify-content:center;}
+  .wheel-item.has-render .mode-badge .sd-badge{font-size:13px;padding:3px 12px;}
+  .wheel-item.has-render .mode-badge-rank{font-size:19px;}
+  .wheel-item.has-render .mode-badge-num{font-size:15px;}
+  .wheel-item.has-render .dx-star{width:22px;height:22px;}
+  .sd-note-label{display:inline-flex;align-items:center;gap:3px;}
+  /* ブレイク：濃い縁・白っぽい縁・赤橙黄の輪・白っぽい縁・暗いまん中 */
+  .break-note{display:inline-block;flex:none;border-radius:50%;box-sizing:border-box;
+    background:
+      radial-gradient(circle, #50557a 0, #3a3d58 22%, #2c2d44 30%, #f6d4c6 31%, #f6d4c6 36%, transparent 37%),
+      conic-gradient(from 0deg, #ff6a10 0deg, #ffb31c 40deg, #ffd52c 80deg, #ffc022 115deg, #ff6012 150deg, #ff2c0c 185deg, #ff7414 220deg, #ffc62a 260deg, #ffb01c 285deg, #ff3a0e 320deg, #ff6a10 360deg);
+    box-shadow:inset 0 0 0 1.2px #f8d8cb, inset 0 0 0 2px #ffb59a, 0 0 0 1px #1c2136;}
+  /* EXブレイク：黄色〜橙の輪、まわりが白っぽく光る、まん中は黒 */
+  .break-note.is-ex{
+    background:
+      radial-gradient(circle, #000 0, #000 31%, #fff3c4 32%, #fff3c4 37%, transparent 38%),
+      conic-gradient(from 0deg, #ffd83a 0deg, #ffe85a 70deg, #ffcf2e 130deg, #ff9a1c 190deg, #ff6414 240deg, #ff5a12 270deg, #ff8a18 310deg, #ffd83a 360deg);
+    box-shadow:inset 0 0 0 1.2px #fff6c8, 0 0 0 1.5px #fff1a6, 0 0 4px 2px rgba(255,226,110,.95), 0 0 9px 3px rgba(255,190,40,.55);}
+  .break-chevrons{flex:none;margin-right:-1px;filter:drop-shadow(0 0 1.5px rgba(255,80,0,.75));}
+  /* BREAK の内訳（上：通常ブレイク／下：ブレイクスライド・EXブレイク） */
+  .sd-note.has-bk{grid-column:1 / -1;flex-direction:row;justify-content:center;gap:14px;padding:6px 10px;}
+  .sd-bk{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding-left:14px;border-left:1px solid var(--border);}
+  .sd-bk-head{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .sd-bk-total{font-size:18px;}
+  .sd-bk-row{display:inline-flex;align-items:center;gap:4px;}
+  .sd-bk-row b{font-size:15px;}
+  .sd-note.is-break.has-bk .sd-note-label .break-note{display:none;}
   .sd-rec-note{margin-top:6px;font-size:11.5px;color:var(--text-dim);}
   .sd-credit{font-size:10.5px;color:var(--text-dim);margin-top:12px;text-align:right;}
   .home-title-toggle{display:flex;justify-content:center;margin-top:12px;}
@@ -2017,7 +2049,7 @@
     }
     return { lv: lv, dec: Math.floor(dec * 10) / 10, next: lv < 7 ? lv + 1 : 0, need: lv < 7 ? dxNeed(max, lv + 1) - dx : 0 };
   }
-  /* 星の絵：0＝枠だけ、1・2＝緑、3・4＝橙、5＝金、6＝パール、7＝虹 */
+  /* 星の絵：0＝枠だけ、1・2＝緑、3・4＝橙、5＝金、6＝虹、7＝パール */
   var dxStarSeq = 0;
   function dxStarSvg(lv, size){
     var ns = 'http://www.w3.org/2000/svg', id = 'dxs' + (++dxStarSeq);
@@ -2028,15 +2060,18 @@
     path.setAttribute('d', 'M12 1.5c.9 5.1 2.6 7.6 9.5 10.5-6.9 2.9-8.6 5.4-9.5 10.5-.9-5.1-2.6-7.6-9.5-10.5 6.9-2.9 8.6-5.4 9.5-10.5z');
     path.setAttribute('stroke-linejoin', 'round');
     var stops = null;
-    if (lv === 6) stops = [['0', '#fff6fb'], ['.25', '#ffd6ec'], ['.45', '#ffffff'], ['.65', '#cdeffd'], ['.85', '#e4dcff'], ['1', '#fff3d6']];   /* パール */
-    if (lv === 7) stops = [['0', '#ff1f4b'], ['.17', '#ff7a00'], ['.34', '#ffd000'], ['.5', '#19d35f'], ['.67', '#0a8cff'], ['.84', '#7b2cff'], ['1', '#ff2bc8']];
+    if (lv === 7) stops = [['0', '#ffb3d9'], ['.2', '#fff0f8'], ['.38', '#c7a8ff'], ['.55', '#9fdcff'], ['.7', '#f4fbff'], ['.85', '#ffd09e'], ['1', '#ff9fcf']];   /* ☆7 パール：ピンク・薄紫・水色・桃の強い光沢 */
+    if (lv === 6) stops = [['0', '#e8003d'], ['.167', '#ff6a00'], ['.333', '#ffc400'], ['.5', '#00c853'], ['.667', '#00b0ff'], ['.833', '#2962ff'], ['1', '#aa00ff']];   /* ☆6 虹：宝石のような濃い色のなめらかなグラデーション */
     if (stops){
       var defs = document.createElementNS(ns, 'defs'), g = document.createElementNS(ns, 'linearGradient');
-      g.setAttribute('id', id); g.setAttribute('x1', '0'); g.setAttribute('y1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y2', '1');
+      g.setAttribute('id', id);
+      /* 虹は星のまん中に6色がすべて入るよう、真ん中の範囲だけで色を変える */
+      if (lv === 6){ g.setAttribute('x1', '.28'); g.setAttribute('y1', '.28'); g.setAttribute('x2', '.72'); g.setAttribute('y2', '.72'); }
+      else { g.setAttribute('x1', '0'); g.setAttribute('y1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y2', '1'); }
       stops.forEach(function(st){ var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', st[1]); g.appendChild(e); });
       defs.appendChild(g); svg.appendChild(defs);
       path.setAttribute('fill', 'url(#' + id + ')');
-      path.setAttribute('stroke', lv === 6 ? '#9a86b8' : '#4a2d6b'); path.setAttribute('stroke-width', '1.3');
+      path.setAttribute('stroke', lv === 7 ? '#8a5fb8' : '#5b2a86'); path.setAttribute('stroke-width', lv === 7 ? '1.4' : '1.3');
     } else if (lv === 0){
       path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '1.6');
     } else {
@@ -2044,7 +2079,62 @@
       path.setAttribute('fill', c); path.setAttribute('stroke', '#ffffff'); path.setAttribute('stroke-width', '1.2');
     }
     svg.appendChild(path);
+    /* 虹（☆6）は上に白い光沢をうっすら重ねて、宝石のようなつやを出す */
+    if (lv === 6){
+      var sid = id + 's', sg = document.createElementNS(ns, 'linearGradient');
+      sg.setAttribute('id', sid); sg.setAttribute('x1', '1'); sg.setAttribute('y1', '0'); sg.setAttribute('x2', '0'); sg.setAttribute('y2', '1');
+      [['0', 0], ['.38', .25], ['.52', 0], ['1', 0]].forEach(function(st){
+        var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); sg.appendChild(e);
+      });
+      svg.querySelector('defs').appendChild(sg);
+      var shine = document.createElementNS(ns, 'path');
+      shine.setAttribute('d', path.getAttribute('d')); shine.setAttribute('fill', 'url(#' + sid + ')');
+      svg.appendChild(shine);
+    }
     return svg;
+  }
+  /* ブレイクノーツの絵：ゲームの見た目に合わせ、濃い縁 → 白っぽい縁 → 赤・橙・黄がうねる輪 → 白っぽい縁 → 暗いまん中。
+     色が輪のまわりで変わる（円すい状のグラデーション）ので、SVG ではなく CSS で描く */
+  var breakSeq = 0;
+  function breakNoteSvg(size){
+    var e = el('span', {class:'break-note', 'aria-hidden':'true'});
+    e.style.width = e.style.height = size + 'px';
+    return e;
+  }
+  /* EXブレイク（光るブレイク）：黄色〜橙の輪のまわりが白っぽく光り、まん中は黒 */
+  function exBreakSvg(size){
+    var e = el('span', {class:'break-note is-ex', 'aria-hidden':'true'});
+    e.style.width = e.style.height = size + 'px';
+    return e;
+  }
+  /* ブレイクスライドの「＞＞＞」（黄色〜橙の矢印） */
+  function slideChevronSvg(size){
+    var ns = 'http://www.w3.org/2000/svg', id = 'chv' + (++breakSeq);
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 34 18'); svg.setAttribute('width', Math.round(size * 34 / 18)); svg.setAttribute('height', size);
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('class', 'break-chevrons');
+    /* 上半分が橙、下半分が黄色（境目はくっきり） */
+    var g = '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8c00"/><stop offset=".5" stop-color="#ff9a00"/><stop offset=".5" stop-color="#ffe600"/><stop offset="1" stop-color="#fff200"/></linearGradient></defs>';
+    var p = '';
+    [0, 11, 22].forEach(function(x){ p += '<path d="M' + (x + .8) + ' 1.5 L' + (x + 6.8) + ' 9 L' + (x + .8) + ' 16.5 L' + (x + 6.3) + ' 16.5 L' + (x + 12.3) + ' 9 L' + (x + 6.3) + ' 1.5 Z" fill="url(#' + id + ')" stroke="#ff4d00" stroke-width=".7" stroke-linejoin="round"/>'; });
+    svg.innerHTML = g + p;
+    return svg;
+  }
+  /* 未達成楽曲一覧の条件（FC・SSS・AP…・☆5〜☆7）を、曲の詳細と同じ見た目で出す */
+  var TODO_BADGE = { 'FC':'fc', 'AP':'ap', 'AP+':'app', 'FDX':'fsd', 'FDX+':'fsdp' };
+  function todoModeBadge(key){
+    var box = el('span', {class:'mode-badge'});
+    var m = /^☆(\d)$/.exec(key);
+    if (m){
+      box.classList.add('is-star');
+      box.appendChild(dxStarSvg(+m[1], 17));
+      box.appendChild(el('b', {class:'mode-badge-num', text: m[1]}));
+    } else if (key === 'SSS'){
+      box.appendChild(el('span', {class:'sd-rank is-sss mode-badge-rank', text:'SSS'}));
+    } else if (TODO_BADGE[key]){
+      box.appendChild(el('span', {class:'sd-badge is-' + TODO_BADGE[key], text: key}));
+    } else box.textContent = key;
+    return box;
   }
   /* 1譜面ぶんの「自分の記録」。rec＝取り込んだ記録（無ければ null）、未プレイは「-」 */
   function myRecordBlock(r, hasAnyRecords){
@@ -2170,12 +2260,42 @@
       var cells = [['TOTAL', 5], ['TAP', 0], ['HOLD', 1], ['SLIDE', 2]];
       if (m.type === 'DX') cells.push(['TOUCH', 3]);
       cells.push(['BREAK', 4]);
-      grid.style.setProperty('--cols', String(cells.length - 1));
+      /* BREAK の内訳があるときは、BREAK を一番下の横いっぱいの段にする（その分、上の段の列を1つ減らす） */
+      grid.style.setProperty('--cols', String(cells.length - (si && si.bk ? 2 : 1)));
       cells.forEach(function(c){
-        var cell = el('div', {class:'sd-note' + (c[0] === 'TOTAL' ? ' is-total' : '')});
-        cell.appendChild(el('span', {class:'sd-note-label', text: c[0]}));
+        var cell = el('div', {class:'sd-note' + (c[0] === 'TOTAL' ? ' is-total' : '') + (c[0] === 'BREAK' ? ' is-break' : '')});
+        var lbl = el('span', {class:'sd-note-label'});
+        lbl.appendChild(document.createTextNode(c[0]));
+        cell.appendChild(lbl);
         var val = n ? n[c[1]] : null;
-        cell.appendChild(el('b', {text: (val === 0 || val) ? String(val) : '—'}));
+        /* BREAK：内訳があれば「通常ブレイク」と「ブレイクスライド・EXブレイク」を上下に分ける（後者が0なら1行） */
+        if (c[0] === 'BREAK' && si && si.bk){
+          cell.classList.add('has-bk');
+          /* 左：BREAK とその合計（他のマスと同じ形）／右：内訳 */
+          cell.removeChild(lbl);
+          var head = el('div', {class:'sd-bk-head'});
+          head.appendChild(lbl);
+          head.appendChild(el('b', {class:'sd-bk-total', text: (val === 0 || val) ? String(val) : String(si.bk[0] + si.bk[1])}));
+          cell.appendChild(head);
+          var bkBox = el('div', {class:'sd-bk'});
+          var r1 = el('div', {class:'sd-bk-row', title:'通常ブレイク'});
+          r1.appendChild(breakNoteSvg(18)); r1.appendChild(el('b', {text: String(si.bk[0])}));
+          bkBox.appendChild(r1);
+          if (si.bk[1] > 0){
+            var r2 = el('div', {class:'sd-bk-row is-ex', title:'ブレイクスライド・EXブレイク'});
+            r2.appendChild(slideChevronSvg(17)); r2.appendChild(exBreakSvg(18)); r2.appendChild(el('b', {text: String(si.bk[1])}));
+            bkBox.appendChild(r2);
+          }
+          cell.appendChild(bkBox);
+          grid.appendChild(cell);
+          return;
+        }
+        if (c[0] === 'BREAK'){
+          /* 内訳が無い曲は、〇と合計の1行 */
+          var one = el('div', {class:'sd-bk-row'});
+          one.appendChild(breakNoteSvg(17)); one.appendChild(el('b', {text: (val === 0 || val) ? String(val) : '—'}));
+          cell.appendChild(one);
+        } else cell.appendChild(el('b', {text: (val === 0 || val) ? String(val) : '—'}));
         grid.appendChild(cell);
       });
       b.appendChild(grid);
@@ -3022,15 +3142,21 @@
     b.appendChild(lab);
     b.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
     function labelOf(x){ var it = o.items.filter(function(i){ return i[0] === x; })[0]; return it ? it[1] : (o.items[0] ? o.items[0][1] : ''); }
-    wrap.__set = function(x){ o.current = x; lab.textContent = labelOf(x); wrap.classList.toggle('is-none', !x); };
+    /* o.render があるときは、文字の代わりにその見た目（バッジなど）で出す */
+    wrap.__set = function(x){
+      o.current = x; lab.textContent = '';
+      if (o.render){ var k = o.items.some(function(i){ return i[0] === x; }) ? x : (o.items[0] ? o.items[0][0] : ''); lab.appendChild(o.render(k)); }
+      else lab.textContent = labelOf(x);
+      wrap.classList.toggle('is-none', !x);
+    };
     wrap.__set(o.current);
     b.addEventListener('click', function(){
-      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); });
+      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); }, o.render);
     });
     wrap.appendChild(b);
     return wrap;
   }
-  function openSingleWheel(title, items, cur, onDone){
+  function openSingleWheel(title, items, cur, onDone, render){
     var H = 40;
     var idx = Math.max(0, items.map(function(i){ return i[0]; }).indexOf(cur));
     var sel = idx;
@@ -3042,7 +3168,9 @@
     var col = el('div', {class:'wheel-col', tabindex:'0'});
     col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
     items.forEach(function(it, i){
-      col.appendChild(el('div', {class:'wheel-item', text: it[1], onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }}));
+      var wi = el('div', {class:'wheel-item' + (render ? ' has-render' : ''), onclick: function(){ col.scrollTo({ top: i * H, behavior: 'smooth' }); }});
+      if (render) wi.appendChild(render(it[0])); else wi.textContent = it[1];
+      col.appendChild(wi);
     });
     col.appendChild(el('div', {class:'wheel-pad'})); col.appendChild(el('div', {class:'wheel-pad'}));
     var t = null;
@@ -8472,6 +8600,7 @@
     /* FC・SSS・AP・AP+・FDX・FDX+・☆5・☆6・☆7 をスクロールで選ぶ */
     var seg = makeWheelPicker({ title: '見る条件', cls: 'mode-picker todo-mode-seg',
       items: TODO_MODES.map(function(m){ return [m.key, m.key]; }),
+      render: todoModeBadge,
       current: todoMode, onPick: function(k){ setTodoMode(k); renderApp(); } });
     var tStatus = el('span', {class:'save-toast', role:'status'});
     var cardRef = null;
@@ -9056,6 +9185,8 @@
     /* ---- 実績プレート表 ---- */
     { sec:1, go:R('#/plates'), sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'見たいバージョンを押すと、その表が開きます。' },
+    { sec:1, go:R('#/plates'), sel:'#app .pin-btn', icon:'pin', title:'上に固定',
+      text:'選択したバージョンを上部に固定します。\n取り組み中のプレートがあるバージョンを固定してみて下さい。' },
     { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .mode-picker', title:'表示するプレートを選ぶ',
       text:'極・将・神・舞から、進捗を表示するプレートを選びます。' },
     { sec:1, go:tourPlateDetail, sel:'#app .pv-thumb.has-detail', title:'画像タップでの操作',
@@ -9064,9 +9195,6 @@
       text:'[ui:ON] にすると、選んだプレートの条件を達成した楽曲が薄く表示されます。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
     { sec:1, go:tourPlateDetail, sel:'#app .mark-sub-row .range-picker', title:'譜面定数の範囲',
       text:'表示する楽曲の範囲を選べます。' },
-    /* 一覧の「上に固定」 */
-    { sec:1, go:R('#/plates'), sel:'#app .pin-btn', icon:'pin', title:'上に固定',
-      text:'選択したバージョンを上部に固定します。\n取り組み中のプレートがあるバージョンを固定してみて下さい。' },
     { sec:1, go:tourPlateDetail, sel:'#app .save-group', title:'画像保存',
       text:'表示している状態の表を画像保存します。\n保存する画像のテーマを [blk:黒]・[wht:白] から選んで保存できます。\n様々な箇所に画像保存機能を設けているのでぜひご利用下さい。' },
     /* ---- 実績フレーム表 ---- */
@@ -9106,8 +9234,8 @@
     /* ---- シンクのお相手記録 ---- */
     { sec:6, go:R('#/sync'), sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'まずは記録したいバージョンを選びます。' },
-    { sec:6, go:tourSyncDetail, sel:'#app .sync-row .sync-name', title:'お相手を記録',
-      text:'楽曲ごとに、シンクのお相手の名前を記録できます。\n記録すると、達成日も自動で入力されます（押すと変更できます）。' },
+    { sec:6, go:tourSyncDetail, sel:'#app .sync-row .sync-name', title:'シンクのお相手を記録',
+      text:'楽曲ごとに、シンクのお相手の名前を記録できます。\n記録すると、達成日も自動で入力されます。' },
     { sec:6, go:tourSyncDetail, sel:'#app .sync-cut-row .range-picker', title:'表示する難易度',
       text:'表示する難易度の範囲を選べます。' },
     { sec:6, go:tourSyncDetail, sel:'#app .save-group', title:'画像保存',
@@ -9116,9 +9244,9 @@
     { sec:7, go:tourTierList, sel:'#app .btn-primary', title:'プレート難易度表を作る',
       text:'極・将・神・舞舞それぞれのプレート難易度表を作ることができます。\n作るときに、プレートの種類と左右差のあり・なしを選びます。' },
     { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field .onoff-btn', title:'左右差',
-      text:'左右差（地力・個人差）の表示を [ui:ON]・[ui:OFF] で切り替えられます。' },
+      text:'作成するプレート表に左右差を設けるか設定します。' },
     { sec:7, go:tourTierEdit, sel:'#app .edit-grid .field input', title:'製作者名',
-      text:'製作者名を入れると、表に名前が入ります。' },
+      text:'製作者名を入れると、表に名前が入ります。\n空欄でも大丈夫です。' },
     { sec:7, go:tourTierEdit, sel:'#app .level-block .tier-edit-group', title:'プレートを置く・動かす',
       text:'プレートを追加して、[hold] でつかむと別のランクへ移動できます。' },
     { sec:7, go:tourTierEdit, sel:'#app .level-block input', title:'ランク名',
@@ -9155,6 +9283,20 @@
     { sec:-1, go:R('#/'), sel:null, title:'説明はこれでおしまいです',
       text:'ホームやメニューの「使い方ガイド」から、いつでも見直せます。' }
   ];
+  /* 各メニューの説明の最初に「ホーム画面のここから開けます」を1つずつ入れる */
+  var TOUR_HOME_KEYS = ['import', 'plates', 'frames', 'konst', 'todo', 'count', 'sync', 'plateTiers', 'fill', 'reviews'];
+  (function(){
+    var out = [], seen = {};
+    TOUR_STEPS.forEach(function(st){
+      if (st.sec >= 0 && !seen[st.sec]){
+        seen[st.sec] = true;
+        out.push({ sec: st.sec, go: R('#/'), sel: '#app .home-card[data-key="' + TOUR_HOME_KEYS[st.sec] + '"]', home: true,
+          title: TOUR_SECTIONS[st.sec], text: 'ホーム画面のここから開けます。' });
+      }
+      out.push(st);
+    });
+    TOUR_STEPS = out;
+  })();
   /* 説明文を、ボタンの見た目・操作の印・色見本つきの行に組み立てる */
   var TOUR_SW = { EXPERT:'#e0463f', ADVANCED:'#f2b705', BASIC:'#3fbf5f' };
   function tourRich(text){
