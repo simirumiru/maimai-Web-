@@ -2187,17 +2187,18 @@
     path.setAttribute('stroke-linejoin', 'round');
     var stops = null;
     if (lv === 7) stops = [['0', '#ffb3d9'], ['.2', '#fff0f8'], ['.38', '#c7a8ff'], ['.55', '#9fdcff'], ['.7', '#f4fbff'], ['.85', '#ffd09e'], ['1', '#ff9fcf']];   /* ☆7 パール：ピンク・薄紫・水色・桃の強い光沢 */
-    if (lv === 6) stops = [['0', '#e8003d'], ['.167', '#ff6a00'], ['.333', '#ffc400'], ['.5', '#00c853'], ['.667', '#00b0ff'], ['.833', '#2962ff'], ['1', '#aa00ff']];   /* ☆6 虹：宝石のような濃い色のなめらかなグラデーション */
+    if (lv === 6) stops = [['0', '#ff7aa8'], ['.2', '#ffc06a'], ['.38', '#ffe36a'], ['.55', '#7ee0a6'], ['.72', '#6cc8ff'], ['.88', '#9b8cff'], ['1', '#e07aff']];   /* ☆6 透ける虹ガラス：中が白く透けて、縁に虹が残る */
     if (stops){
       var defs = document.createElementNS(ns, 'defs'), g = document.createElementNS(ns, 'linearGradient');
       g.setAttribute('id', id);
       /* 虹は星のまん中に6色がすべて入るよう、真ん中の範囲だけで色を変える */
-      if (lv === 6){ g.setAttribute('x1', '.28'); g.setAttribute('y1', '.28'); g.setAttribute('x2', '.72'); g.setAttribute('y2', '.72'); }
+      if (lv === 6){ g.setAttribute('x1', '.2'); g.setAttribute('y1', '.2'); g.setAttribute('x2', '.8'); g.setAttribute('y2', '.8'); }
       else { g.setAttribute('x1', '0'); g.setAttribute('y1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y2', '1'); }
       stops.forEach(function(st){ var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', st[1]); g.appendChild(e); });
       defs.appendChild(g); svg.appendChild(defs);
       path.setAttribute('fill', 'url(#' + id + ')');
-      path.setAttribute('stroke', lv === 7 ? '#8a5fb8' : '#5b2a86'); path.setAttribute('stroke-width', lv === 7 ? '1.4' : '1.3');
+      if (lv === 7){ path.setAttribute('stroke', '#8a5fb8'); path.setAttribute('stroke-width', '1.4'); }
+      else { path.setAttribute('fill-opacity', '.7'); }
     } else if (lv === 0){
       path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '1.6');
     } else {
@@ -2205,17 +2206,21 @@
       path.setAttribute('fill', c); path.setAttribute('stroke', '#ffffff'); path.setAttribute('stroke-width', '1.2');
     }
     svg.appendChild(path);
-    /* 虹（☆6）は上に白い光沢をうっすら重ねて、宝石のようなつやを出す */
+    /* ☆6（透ける虹ガラス）：まん中を白く透かし、縁を虹色の線でなぞる */
     if (lv === 6){
-      var sid = id + 's', sg = document.createElementNS(ns, 'linearGradient');
-      sg.setAttribute('id', sid); sg.setAttribute('x1', '1'); sg.setAttribute('y1', '0'); sg.setAttribute('x2', '0'); sg.setAttribute('y2', '1');
-      [['0', 0], ['.38', .25], ['.52', 0], ['1', 0]].forEach(function(st){
-        var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); sg.appendChild(e);
+      var wid = id + 'w', rg = document.createElementNS(ns, 'radialGradient');
+      rg.setAttribute('id', wid); rg.setAttribute('cx', '.5'); rg.setAttribute('cy', '.5'); rg.setAttribute('r', '.5');
+      [['0', .85], ['.55', .45], ['1', 0]].forEach(function(st){
+        var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); rg.appendChild(e);
       });
-      svg.querySelector('defs').appendChild(sg);
-      var shine = document.createElementNS(ns, 'path');
-      shine.setAttribute('d', path.getAttribute('d')); shine.setAttribute('fill', 'url(#' + sid + ')');
-      svg.appendChild(shine);
+      svg.querySelector('defs').appendChild(rg);
+      var glass = document.createElementNS(ns, 'path');
+      glass.setAttribute('d', path.getAttribute('d')); glass.setAttribute('fill', 'url(#' + wid + ')');
+      svg.appendChild(glass);
+      var rim = document.createElementNS(ns, 'path');
+      rim.setAttribute('d', path.getAttribute('d')); rim.setAttribute('fill', 'none'); rim.setAttribute('stroke', 'url(#' + id + ')');
+      rim.setAttribute('stroke-width', '1.3'); rim.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(rim);
     }
     /* ☆6・☆7：AP+・FDX+ と同じように、光の帯が星の上を流れる。
        帯は初めは星の外（左）に置き、CSS のアニメーションで右へ動かす。
