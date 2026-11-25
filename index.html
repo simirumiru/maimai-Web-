@@ -799,11 +799,11 @@
   .tour-mk .mode-badge-num{font-size:13px;}
   .tour-invite-emph{font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 12px;}
   /* ガイドをスキップした人へ：ホームの「使い方ガイド」の場所を照らす */
-  .guide-hint-layer{position:fixed;inset:0;z-index:2000;}
-  .guide-hint-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px var(--accent),0 0 18px var(--accent);pointer-events:none;
+  .guide-hint-layer{position:absolute;left:0;top:0;z-index:2000;}
+  .guide-hint-hole{position:absolute;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px var(--accent),0 0 18px var(--accent);pointer-events:none;
     animation:guideHintPulse 1.6s ease-in-out infinite;}
   @keyframes guideHintPulse{0%,100%{box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px var(--accent),0 0 10px var(--accent);}50%{box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 5px var(--accent),0 0 24px var(--accent);}}
-  .guide-hint-tip{position:fixed;width:280px;background:var(--panel);border:1px solid var(--border-ctl);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-md);
+  .guide-hint-tip{position:absolute;width:280px;box-sizing:border-box;background:var(--panel);border:1px solid var(--border-ctl);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-md);
     display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
   .guide-hint-text{margin:0;font-size:14px;font-weight:700;line-height:1.6;align-self:stretch;}
   .tour-invite-go{display:flex;width:100%;box-sizing:border-box;padding:12px 16px;font-size:15px;font-weight:800;justify-content:center;align-items:center;text-align:center;}
@@ -9758,25 +9758,60 @@
       if (!card) return;
       card.scrollIntoView({ block: 'center', behavior: 'smooth' });
       setTimeout(function(){
-        var r = card.getBoundingClientRect();
         var layer = el('div', {class:'guide-hint-layer', role:'dialog', 'aria-modal':'true', 'aria-label':'使い方ガイドの場所'});
         var hole = el('div', {class:'guide-hint-hole'});
-        hole.style.left = (r.left - 6) + 'px'; hole.style.top = (r.top - 6) + 'px';
-        hole.style.width = (r.width + 12) + 'px'; hole.style.height = (r.height + 12) + 'px';
         layer.appendChild(hole);
         var tip = el('div', {class:'guide-hint-tip'});
         tip.appendChild(el('p', {class:'guide-hint-text', text: msg}));
         tip.appendChild(el('button', {type:'button', class:'btn btn-primary btn-sm guide-hint-ok', text:'OK', onclick: function(){ closeHint(); }}));
         layer.appendChild(tip);
-        var below = r.top < window.innerHeight * 0.55;
-        tip.style.left = Math.max(12, Math.min(window.innerWidth - 292, r.left + r.width / 2 - 140)) + 'px';
-        if (below) tip.style.top = (r.bottom + 16) + 'px';
-        else tip.style.bottom = (window.innerHeight - r.top + 16) + 'px';
-        function closeHint(){ window.removeEventListener('hashchange', closeHint); if (layer.parentNode) layer.parentNode.removeChild(layer); }
+        /* 照らす枠と吹き出しはページの上に置き（ガイドと同じ）、スクロール・拡大・画面の向きが変わるたびに置き直す */
+        function place(){
+          if (!layer.parentNode) return;
+          var c = document.querySelector('#app .home-card[data-key="tour"]') || card;
+          if (!c.isConnected){ closeHint(); return; }
+          var de = document.documentElement;
+          layer.style.width = Math.max(de.scrollWidth, window.innerWidth) + 'px';
+          layer.style.height = Math.max(de.scrollHeight, window.innerHeight) + 'px';
+          var lr = layer.getBoundingClientRect(), ox = -lr.left, oy = -lr.top;
+          var r = c.getBoundingClientRect();
+          hole.style.left = (r.left - 6 + ox) + 'px'; hole.style.top = (r.top - 6 + oy) + 'px';
+          hole.style.width = (r.width + 12) + 'px'; hole.style.height = (r.height + 12) + 'px';
+          var vv = window.visualViewport;
+          var visL = vv ? vv.offsetLeft : 0, visT = vv ? vv.offsetTop : 0;
+          var visW = vv ? vv.width : window.innerWidth, visH = vv ? vv.height : window.innerHeight;
+          var tw = Math.min(280, Math.max(180, visW - 24));
+          tip.style.width = tw + 'px';
+          var th = tip.offsetHeight;
+          var lo = visL + 12, hi = visL + visW - tw - 12;
+          var left = hi < lo ? visL + (visW - tw) / 2 : Math.max(lo, Math.min(hi, r.left + r.width / 2 - tw / 2));
+          var rt = r.top - visT, rb = r.bottom - visT, top;
+          if (rb + 16 + th <= visH - 10) top = rb + 16;
+          else if (rt - 16 - th >= 10) top = rt - 16 - th;
+          else top = visH - th - 12;
+          top = Math.max(10, Math.min(visH - th - 10, top));
+          tip.style.left = Math.round(left + ox) + 'px';
+          tip.style.top = Math.round(visT + top + oy) + 'px';
+        }
+        var raf = 0;
+        function schedule(){ if (raf) return; raf = requestAnimationFrame(function(){ raf = 0; place(); }); }
+        function closeHint(){
+          window.removeEventListener('hashchange', closeHint);
+          window.removeEventListener('resize', schedule);
+          window.removeEventListener('scroll', schedule, true);
+          if (window.visualViewport){ window.visualViewport.removeEventListener('resize', schedule); window.visualViewport.removeEventListener('scroll', schedule); }
+          if (layer.parentNode) layer.parentNode.removeChild(layer);
+        }
         layer.addEventListener('click', function(e){ if (e.target === layer) closeHint(); });
         /* 戻るボタンなどで別の画面に移ったら閉じる */
         window.addEventListener('hashchange', closeHint);
+        window.addEventListener('resize', schedule);
+        window.addEventListener('scroll', schedule, true);
+        if (window.visualViewport){ window.visualViewport.addEventListener('resize', schedule); window.visualViewport.addEventListener('scroll', schedule); }
         document.body.appendChild(layer);
+        place();
+        /* 中身の読み込みで高さが変わることがあるので、少しあとにも置き直す */
+        [200, 700].forEach(function(ms){ setTimeout(place, ms); });
       }, 450);
     }, 400);
   }
