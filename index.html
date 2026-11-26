@@ -775,24 +775,44 @@
   .import-mode-tag.is-quick{background:#2f9be0;}
   .import-mode-tag.is-all{background:#5b6b7a;}
   /* ---- 極・将・神・舞舞・覇の印 ----
-     FC・AP・FDX の印と同じ形：プレートの色で塗った丸い札に、白い太字（書体も同じ） */
+     しおり：左にプレートの色の帯が付いた札。色は彩（PRiSM PLUS）のプレートに合わせる
+     極＝空色→ラベンダー、将＝ローズ→コーラル、神＝金、舞舞＝プリズムの虹、覇＝覇者プレートの紫。
+     --pm-strip：帯（縦のグラデーション）／--pm-tint：札の地にうっすら重ねる色／--pm-line：枠／--pm-ink：文字 */
   .pm-badge{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;box-sizing:border-box;
     font-family:var(--font-body);font-weight:900;font-size:13px;line-height:1.2;letter-spacing:.04em;
-    padding:2px 10px;border-radius:999px;white-space:nowrap;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.18);
-    background:var(--border-strong);}
-  /* 色はプレート難易度表のバーの色（上を少し明るく、下を少し濃く） */
-  .pm-kiwami{background:linear-gradient(180deg,#6fd0fa,#1f9fd8);}
-  .pm-sho{background:linear-gradient(180deg,#e2457f,#a5124a);}
-  .pm-shin{background:linear-gradient(180deg,#f1d063,#c9980f);}
-  .pm-hasha{background:linear-gradient(180deg,#b29bea,#7f5cc8);}
-  .pm-other{background:var(--border-strong);}
-  /* 舞舞：プレート難易度表のバーと同じ虹（白い文字が読めるよう少し濃いめにし、彩度は控えめに） */
-  .pm-maimai{background:linear-gradient(90deg,#dc8fa4,#deb17e,#ccba61,#7cb78f,#6ea9cc,#a192ca,#d999b8);text-shadow:0 1px 1.5px rgba(0,0,0,.3);}
+    padding:2px 8px 2px 12px;border-radius:4px;white-space:nowrap;color:var(--pm-ink,var(--text));
+    border:1px solid var(--pm-line,var(--border-ctl));
+    background:var(--pm-strip,linear-gradient(var(--border-strong),var(--border-strong))) left top / 5px 100% no-repeat,
+      linear-gradient(var(--pm-tint,transparent),var(--pm-tint,transparent)),var(--panel-2);}
+  .pm-kiwami{--pm-strip:linear-gradient(180deg,#9fe0ff,#6fa8f5 48%,#a98cf2);--pm-tint:rgba(111,168,245,.10);--pm-line:#bcd2f5;--pm-ink:#3d6bd0;}
+  .pm-sho{--pm-strip:linear-gradient(180deg,#ffb3c8,#f0507f 50%,#f58a6a);--pm-tint:rgba(240,80,127,.08);--pm-line:#f3c0cf;--pm-ink:#cf3567;}
+  .pm-shin{--pm-strip:linear-gradient(180deg,#fff0a8,#f2c037 45%,#c8860e);--pm-tint:rgba(242,192,55,.12);--pm-line:#ecd497;--pm-ink:#a06f05;}
+  /* 覇：帯・地・文字とも紫（覇者プレートの夜祭りの藍→紫→ラベンダー）。文字は帯のまん中の紫に揃える */
+  .pm-hasha{--pm-strip:linear-gradient(180deg,#2f2a86,#8a52d8 58%,#c4a2ff);--pm-tint:rgba(138,82,216,.10);--pm-line:#d2c2f2;--pm-ink:#7a45d6;}
+  .pm-maimai{--pm-strip:linear-gradient(180deg,#ff9cc8,#ffd36e,#8fe3b0,#82c6ff,#b89cff);--pm-tint:rgba(184,156,255,.10);--pm-line:#e3cfe8;}
+  html[data-theme="dark"] .pm-kiwami{--pm-tint:rgba(111,168,245,.16);--pm-line:rgba(130,180,250,.45);--pm-ink:#a3c8ff;}
+  html[data-theme="dark"] .pm-sho{--pm-tint:rgba(240,80,127,.15);--pm-line:rgba(250,120,160,.45);--pm-ink:#ff9fbd;}
+  html[data-theme="dark"] .pm-shin{--pm-tint:rgba(242,192,55,.14);--pm-line:rgba(242,192,55,.45);--pm-ink:#f6d264;}
+  html[data-theme="dark"] .pm-hasha{--pm-tint:rgba(138,82,216,.22);--pm-line:rgba(170,130,240,.5);--pm-ink:#b994f5;}
+  html[data-theme="dark"] .pm-maimai{--pm-tint:rgba(184,156,255,.14);--pm-line:rgba(200,170,240,.45);}
+  /* 舞舞の文字はプリズムの虹（ダークは淡く、ライトは読めるよう濃いめ） */
+  .pm-maimai .pm-text{background:linear-gradient(90deg,#ff8fc0,#ffcf5e,#7fe0a8,#7cc4ff,#b99cff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  html:not([data-theme="dark"]) .pm-maimai .pm-text{background:linear-gradient(90deg,#e0407a,#d98a10,#2e9e5e,#1f86c8,#7a55d6);-webkit-background-clip:text;background-clip:text;}
   .pm-none{font-weight:800;}
+  /* ボタンと一体化したしおり：ボタンの左に色の帯、文字はプレートの色。中の札の枠と地は消す */
+  .range-btn.is-pm{background:var(--pm-strip) left top / 6px 100% no-repeat,linear-gradient(var(--pm-tint),var(--pm-tint)),var(--panel-2);
+    border-color:var(--pm-line,var(--border-ctl));border-radius:6px;padding-left:15px;color:var(--pm-ink,var(--text));}
+  .range-btn.is-pm .range-label .pm-badge{background:none;border:0;padding:0;font-size:14px;}
+  .range-btn.is-pm .range-caret{color:var(--pm-ink,var(--text-dim));}
+  .range-btn.is-pm.pm-maimai .range-caret{color:var(--text-dim);}
   .pm-row{display:inline-flex;gap:5px;margin:0 4px;vertical-align:middle;flex-wrap:wrap;}
-  .range-label .pm-badge{font-size:12.5px;padding:2px 9px;}
-  .wheel-item .pm-badge{font-size:15px;padding:3px 14px;}
-  .tour-line .pm-badge{font-size:12px;padding:2px 8px;margin:0 1px;}
+  .range-label .pm-badge{font-size:12.5px;padding:2px 8px 2px 11px;}
+  .wheel-item .pm-badge{font-size:15px;padding:3px 12px 3px 16px;}
+  .cw-row{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;width:100%;padding:0 10px;box-sizing:border-box;}
+  .cw-badge{display:flex;justify-content:center;align-items:center;}
+  .cw-plate{display:flex;justify-content:flex-end;}
+  .wheel-item .cw-plate .pm-badge{font-size:11.5px;padding:2px 7px 2px 10px;}
+  .tour-line .pm-badge{font-size:12px;padding:1px 7px 1px 10px;margin:0 1px;}
   .tour-mk .mode-badge{display:inline-flex;align-items:center;gap:2px;}
   .tour-mk .mode-badge-rank{font-size:16px;min-width:0;}
   .tour-mk .sd-badge{min-width:0;padding:1px 7px;font-size:11px;}
@@ -1420,8 +1440,7 @@
   .fill-pick-row{display:flex;align-items:center;gap:8px;}
   .fill-pick-check{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border-ctl);display:inline-flex;align-items:center;justify-content:center;
     font-size:13px;font-weight:900;color:var(--accent-ink);}
-  .fill-pick.is-on{border-color:var(--accent);background:var(--accent-soft);}
-  .fill-pick.is-on .fill-pick-check{background:var(--accent);border-color:var(--accent);}
+  .fill-pick-list{max-height:none;overflow:visible;max-width:640px;}
   .fill-sum-list{margin:-4px 0 14px;}
   .fill-sum-list-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;}
   .ver-chips{display:flex;flex-wrap:wrap;gap:6px;}
@@ -1492,6 +1511,18 @@
   .todo-grid{display:flex;flex-wrap:wrap;gap:6px;}
   .todo-summary-shown{font-size:12.5px;color:var(--text-dim);font-weight:700;}
   .todo-cut-row{margin:-4px 0 12px;}
+  .todo-ver-row{margin:-4px 0 12px;gap:8px;align-items:center;}
+  .todo-ver-label{font-size:12.5px;font-weight:800;color:var(--text-dim);}
+  .todo-ver-picker .range-btn{max-width:calc(100vw - 120px);}
+  .todo-ver-picker .range-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .todo-ver-name{font-weight:800;}
+  .todo-ver-name.is-none{color:var(--text-dim);}
+  .todo-ver-swatch{height:16px;width:5px;}
+  .pin-swatch.is-blank{box-shadow:none;}
+  .pin-name-head{font-weight:900;margin-right:8px;}
+  .plate-pick-list .pin-name{display:flex;align-items:baseline;min-width:0;}
+  .plate-pick-list .pin-name-head{flex:none;}
+  .plate-pick-list .pin-name > span{min-width:0;font-size:12px;word-break:keep-all;line-height:1.45;color:var(--text-dim);}
   /* n〜n の右にすぐ並べる（未達成楽曲一覧の FC〜FDX+、回数と日付の 極・将・神・舞） */
   .todo-cut-row, .count-cut-row{gap:8px;}
   /* 実績プレート表の一覧：2段目（達成済みを表示・n〜n・極将神舞）をスマホ幅でも1行に収める */
@@ -2175,7 +2206,7 @@
     }
     return { lv: lv, dec: Math.floor(dec * 10) / 10, next: lv < 7 ? lv + 1 : 0, need: lv < 7 ? dxNeed(max, lv + 1) - dx : 0 };
   }
-  /* 星の絵：0＝枠だけ、1・2＝緑、3・4＝橙、5＝金、6＝虹、7＝パール */
+  /* 星の絵：0＝枠だけ、1・2＝緑、3・4＝橙、5＝金、6＝パール、7＝虹 */
   var dxStarSeq = 0;
   function dxStarSvg(lv, size){
     var ns = 'http://www.w3.org/2000/svg', id = 'dxs' + (++dxStarSeq);
@@ -2186,19 +2217,19 @@
     path.setAttribute('d', 'M12 1.5c.9 5.1 2.6 7.6 9.5 10.5-6.9 2.9-8.6 5.4-9.5 10.5-.9-5.1-2.6-7.6-9.5-10.5 6.9-2.9 8.6-5.4 9.5-10.5z');
     path.setAttribute('stroke-linejoin', 'round');
     var stops = null;
-    if (lv === 7) stops = [['0', '#ffb3d9'], ['.2', '#fff0f8'], ['.38', '#c7a8ff'], ['.55', '#9fdcff'], ['.7', '#f4fbff'], ['.85', '#ffd09e'], ['1', '#ff9fcf']];   /* ☆7 パール：ピンク・薄紫・水色・桃の強い光沢 */
-    if (lv === 6) stops = [['0', '#ff7aa8'], ['.2', '#ffc06a'], ['.38', '#ffe36a'], ['.55', '#7ee0a6'], ['.72', '#6cc8ff'], ['.88', '#9b8cff'], ['1', '#e07aff']];   /* ☆6 透ける虹ガラス：中が白く透けて、縁に虹が残る */
+    if (lv === 6) stops = [['0', '#ffb3d9'], ['.2', '#fff0f8'], ['.38', '#c7a8ff'], ['.55', '#9fdcff'], ['.7', '#f4fbff'], ['.85', '#ffd09e'], ['1', '#ff9fcf']];   /* ☆6 パール：ピンク・薄紫・水色・桃の強い光沢 */
+    if (lv === 7) stops = [['0', '#ff7aa8'], ['.2', '#ffc06a'], ['.38', '#ffe36a'], ['.55', '#7ee0a6'], ['.72', '#6cc8ff'], ['.88', '#9b8cff'], ['1', '#e07aff']];   /* ☆7 透ける虹ガラス：中が白く透けて、縁に虹が残る */
     if (stops){
       var defs = document.createElementNS(ns, 'defs'), g = document.createElementNS(ns, 'linearGradient');
       g.setAttribute('id', id);
       /* 虹は星のまん中に6色がすべて入るよう、真ん中の範囲だけで色を変える */
-      if (lv === 6){ g.setAttribute('x1', '.2'); g.setAttribute('y1', '.2'); g.setAttribute('x2', '.8'); g.setAttribute('y2', '.8'); }
+      if (lv === 7){ g.setAttribute('x1', '.2'); g.setAttribute('y1', '.2'); g.setAttribute('x2', '.8'); g.setAttribute('y2', '.8'); }
       else { g.setAttribute('x1', '0'); g.setAttribute('y1', '0'); g.setAttribute('x2', '1'); g.setAttribute('y2', '1'); }
       stops.forEach(function(st){ var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', st[1]); g.appendChild(e); });
       defs.appendChild(g); svg.appendChild(defs);
       path.setAttribute('fill', 'url(#' + id + ')');
-      if (lv === 7){ path.setAttribute('stroke', '#8a5fb8'); path.setAttribute('stroke-width', '1.4'); }
-      else { path.setAttribute('fill-opacity', '.7'); }
+      if (lv === 6){ path.setAttribute('stroke', '#8a5fb8'); path.setAttribute('stroke-width', '1.4'); }
+      else { path.setAttribute('fill-opacity', '.8'); }
     } else if (lv === 0){
       path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '1.6');
     } else {
@@ -2206,11 +2237,11 @@
       path.setAttribute('fill', c); path.setAttribute('stroke', '#ffffff'); path.setAttribute('stroke-width', '1.2');
     }
     svg.appendChild(path);
-    /* ☆6（透ける虹ガラス）：まん中を白く透かし、縁を虹色の線でなぞる */
-    if (lv === 6){
+    /* ☆7（透ける虹ガラス）：まん中を白く透かし、縁を虹色の線でなぞる */
+    if (lv === 7){
       var wid = id + 'w', rg = document.createElementNS(ns, 'radialGradient');
       rg.setAttribute('id', wid); rg.setAttribute('cx', '.5'); rg.setAttribute('cy', '.5'); rg.setAttribute('r', '.5');
-      [['0', .85], ['.55', .45], ['1', 0]].forEach(function(st){
+      [['0', .72], ['.55', .36], ['1', 0]].forEach(function(st){
         var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); rg.appendChild(e);
       });
       svg.querySelector('defs').appendChild(rg);
@@ -2231,7 +2262,7 @@
       var cpath = document.createElementNS(ns, 'path'); cpath.setAttribute('d', path.getAttribute('d'));
       cp.appendChild(cpath);
       var bg = document.createElementNS(ns, 'linearGradient'); bg.setAttribute('id', gid);
-      [['0', 0], ['.5', lv === 7 ? 1 : .8], ['1', 0]].forEach(function(st){
+      [['0', 0], ['.5', lv === 6 ? 1 : .8], ['1', 0]].forEach(function(st){
         var e = document.createElementNS(ns, 'stop'); e.setAttribute('offset', st[0]); e.setAttribute('stop-color', '#ffffff'); e.setAttribute('stop-opacity', String(st[1])); bg.appendChild(e);
       });
       var dfs = svg.querySelector('defs'); dfs.appendChild(cp); dfs.appendChild(bg);
@@ -2357,6 +2388,17 @@
       box.appendChild(el('span', {class:'sd-badge is-' + TODO_BADGE[key], text: key}));
     } else box.textContent = key;
     return box;
+  }
+  /* スクロールで選ぶ画面の1行：まん中に条件の印、右に対応するプレート（説明文は付けない） */
+  var TODO_PLATE = { 'FC':'極', 'SSS':'将', 'AP':'神', 'AP+':'神', 'FDX':'舞舞', 'FDX+':'舞舞' };
+  function todoWheelRender(k){
+    var row = el('span', {class:'cw-row'});
+    row.appendChild(el('span', {class:'cw-side'}));
+    var bc = el('span', {class:'cw-badge'}); bc.appendChild(todoModeBadge(k)); row.appendChild(bc);
+    var pc = el('span', {class:'cw-side cw-plate'});
+    if (TODO_PLATE[k]) pc.appendChild(plateModeBadge(TODO_PLATE[k]));
+    row.appendChild(pc);
+    return row;
   }
   /* 1譜面ぶんの「自分の記録」。rec＝取り込んだ記録（無ければ null）、未プレイは「-」 */
   function myRecordBlock(r, hasAnyRecords){
@@ -2916,10 +2958,10 @@
   function openPlatePicker(category, onPick, usedNames){
     usedNames = usedNames || {};
     var backdrop = el('div', {class:'modal-backdrop'});
-    var box = el('div', {class:'modal-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
-    box.appendChild(el('p', {text:'「' + category + '」プレートから選択', style:{marginBottom:'8px'}}));
+    var box = el('div', {class:'modal-box pin-box', style:{maxWidth:'420px', maxHeight:'82vh', display:'flex', flexDirection:'column'}});
+    box.appendChild(el('div', {class:'pin-title', text:'「' + category + '」プレートから選択'}));
 
-    var listWrap = el('div', {class:'song-picker-list'});
+    var listWrap = el('div', {class:'pin-list plate-pick-list'});
     box.appendChild(listWrap);
 
     var closeBtn = el('div', {class:'modal-actions', style:{marginTop:'10px'}});
@@ -2938,12 +2980,11 @@
         listWrap.appendChild(el('div', {class:'note', text:'追加できるプレートがありません（すべて配置済みです）'}));
         return;
       }
+      /* 「上に固定」と同じ見た目：左に丸、バージョンの色のバー、プレート名とバージョン名 */
       matches.forEach(function(p){
-        listWrap.appendChild(el('button', {
-          class:'song-pick-row',
-          text: p.name + '　（' + p.ver + '）',
-          onclick: function(){ closeModal(backdrop); onPick(p); }
-        }));
+        listWrap.appendChild(verListRow({ color: verNameColor(p.ver), head: p.name,
+          label: p.ver === '舞 ＆ 覇者対象Re:MASTER' ? p.ver : versionTemplateLabel(p.ver, p.pre),
+          onclick: function(){ closeModal(backdrop); onPick(p); } }));
       });
     }
     renderResults();
@@ -3383,6 +3424,52 @@
     wrap.appendChild(b);
     return wrap;
   }
+  /* バージョン名（プレート側 or 楽曲データ側）から一覧バーの色 */
+  function verNameColor(ver){
+    if (!ver) return '';
+    if (ver === 'maimai' || ver === 'maimai PLUS') ver = 'maimai ＆ maimai PLUS';
+    return VERSION_COLOR_SPEC[ver] || VERSION_COLOR_SPEC[ver.replace(/ PLUS$/, '')] || '';
+  }
+  /* 楽曲データ側のバージョン名 →「maimai GreeN〈超ver.〉」の形 */
+  function songVerLabel(ver){
+    var pv = (ver === 'maimai' || ver === 'maimai PLUS') ? 'maimai ＆ maimai PLUS' : ver;
+    var pre = PLATE_VERSION_SHORT[pv];
+    return pre ? ver + '〈' + pre + 'ver.〉' : ver;
+  }
+  /* 「上に固定」と同じ見た目の1行（左に丸、色のバー、名前）。mark：丸の中の文字（✓ や 1・2…） */
+  function verListRow(o){
+    var row = el('button', {type:'button', class:'pin-row' + (o.on ? ' is-on' : '') + (o.cls ? ' ' + o.cls : ''),
+      'aria-pressed': o.on ? 'true' : 'false', onclick: o.onclick});
+    row.appendChild(el('span', {class:'pin-num', text: o.on ? (o.mark || '✓') : ''}));
+    row.appendChild(el('span', {class:'pin-swatch' + (o.color ? '' : ' is-blank'), style:{background: o.color || 'transparent'}}));
+    var nm = el('span', {class:'pin-name'});
+    if (o.head) nm.appendChild(el('b', {class:'pin-name-head', text: o.head}));
+    nm.appendChild(el('span', {text: o.label}));
+    row.appendChild(nm);
+    return row;
+  }
+  /* 1つ選ぶ一覧（バージョンなど）。items = [{value, label, color}]。押したらすぐ閉じる */
+  function openVerListPicker(title, items, cur, onPick){
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box pin-box', role:'dialog', 'aria-modal':'true', 'aria-label': title});
+    box.appendChild(el('div', {class:'pin-title', text: title}));
+    var list = el('div', {class:'pin-list'});
+    var curRow = null;
+    items.forEach(function(it){
+      var r = verListRow({ on: it.value === cur, color: it.color, label: it.label,
+        onclick: function(){ closeModal(backdrop); onPick(it.value); } });
+      if (it.value === cur) curRow = r;
+      list.appendChild(r);
+    });
+    box.appendChild(list);
+    var actions = el('div', {class:'modal-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'キャンセル', onclick: function(){ closeModal(backdrop); }}));
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    if (curRow) setTimeout(function(){ try{ curRow.scrollIntoView({ block: 'center' }); }catch(e){} }, 0);
+  }
   /* 1つだけ選ぶスクロール式のボタン（極・将・神・舞／FC・SSS…）。items = [[値, 表示], …] */
   function makeWheelPicker(o){
     var wrap = el('div', {class:'cut-picker wheel-picker' + (o.cls ? ' ' + o.cls : ''), role:'group', 'aria-label': o.title || ''});
@@ -3396,11 +3483,15 @@
       o.current = x; lab.textContent = '';
       if (o.render){ var k = o.items.some(function(i){ return i[0] === x; }) ? x : (o.items[0] ? o.items[0][0] : ''); lab.appendChild(o.render(k)); }
       else lab.textContent = labelOf(x);
+      /* 極・将・神・舞舞・覇を選んでいるときは、ボタンそのものを「しおり」の札にする（中に札を入れ子にしない） */
+      var pm = lab.querySelector('.pm-badge');
+      b.className = b.className.replace(/\s*(is-pm|pm-\w+)/g, '');
+      if (pm){ b.classList.add('is-pm'); pm.className.split(/\s+/).forEach(function(c){ if (/^pm-(?!badge)/.test(c)) b.classList.add(c); }); }
       wrap.classList.toggle('is-none', !x);
     };
     wrap.__set(o.current);
     b.addEventListener('click', function(){
-      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); }, o.render);
+      openSingleWheel(o.title || '選ぶ', o.items, o.current, function(x){ wrap.__set(x); o.onPick(x); }, o.itemRender || o.render);
     });
     wrap.appendChild(b);
     return wrap;
@@ -3581,7 +3672,7 @@
      「全」は今までの赤線。それ以外は「表のID::プレート種別」で別々に保存する。 */
   var PLATE_MODE_ORDER = ['極', '将', '神', '舞舞', '覇者'];
   var PLATE_MODE_LABEL = { '':'全', '極':'極', '将':'将', '神':'神', '舞舞':'舞舞', '覇者':'覇' };
-  /* 極・将・神・舞舞・覇の印：プレート難易度表のバーと同じ色の文字を、楕円の線で囲む */
+  /* 極・将・神・舞舞・覇の印：左に色の帯が付いた「しおり」の札 */
   var PM_CLASS = { '極':'kiwami', '将':'sho', '神':'shin', '舞舞':'maimai', '覇者':'hasha' };
   function plateModeBadge(mode){
     var b = el('span', {class:'pm-badge pm-' + (PM_CLASS[mode] || 'other')});
@@ -5076,10 +5167,11 @@
   var JEWEL_BAR_GRADIENT = 'linear-gradient(90deg,#e8455f,#f0862a,#f5d02e,#3fc46a,#2aa8e0,#5b57d6,#b446c8)';
 
   function plateCategorySwatch(cat){
-    if (cat === '極') return '#4fc3f7';                                   /* 水色 */
-    if (cat === '将') return '#c2185b';                                   /* 赤紫 */
-    if (cat === '神') return '#e8c24a';                                   /* 金寄りの黄 */
-    if (cat === '舞舞') return 'linear-gradient(90deg,#f2b8c6,#f6d9b0,#f2eeb3,#bfe3c6,#b8d8ee,#cfc2e8,#eebfd6)';  /* 淡い虹 */
+    /* 極・将・神・舞舞の印（しおり）と同じ、彩（PRiSM PLUS）のプレートの色 */
+    if (cat === '極') return 'linear-gradient(90deg,#9fe0ff,#6fa8f5 48%,#a98cf2)';            /* 空色→ラベンダー */
+    if (cat === '将') return 'linear-gradient(90deg,#ffb3c8,#f0507f 50%,#f58a6a)';            /* ローズ→コーラル */
+    if (cat === '神') return 'linear-gradient(90deg,#fff0a8,#f2c037 45%,#c8860e)';            /* 金 */
+    if (cat === '舞舞') return 'linear-gradient(90deg,#ff9cc8,#ffd36e,#8fe3b0,#82c6ff,#b89cff)';  /* プリズムの虹 */
     return '#7ee787';
   }
 
@@ -8566,21 +8658,16 @@
     sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'すべて外す', onclick: function(){ setFillSumIds([]); renderApp(); }}));
     sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm btn-ghost', text:'やめる', onclick: function(){ fillSelecting = false; renderApp(); }}));
     root.appendChild(sumBar);
-    var grid = el('div', {class:'versions-grid simple-grid'});
+    /* 「上に固定」と同じ見た目の一覧（左に丸、色のバー、バージョン名） */
+    var grid = el('div', {class:'pin-list fill-pick-list'});
     docs.forEach(function(v){
       var on = picked.indexOf(v.id) >= 0;
-      var card = el('button', {type:'button', class:'version-card simple-card fill-pick' + (on ? ' is-on' : ''), 'aria-pressed': on ? 'true' : 'false',
+      grid.appendChild(verListRow({ on: on, cls: 'fill-pick', color: specVersionColor(v) || v.themeColor, label: v.versionName || '（名前のない表）',
         onclick: function(){
           var a = picked.slice(), i = a.indexOf(v.id);
           if (i >= 0) a.splice(i, 1); else a.push(v.id);
           setFillSumIds(a); renderApp();
-        }});
-      card.appendChild(el('div', {class:'vc-swatch', style:{background: specVersionColor(v) || v.themeColor}}));
-      var row = el('div', {class:'fill-pick-row'});
-      row.appendChild(el('span', {class:'fill-pick-check', text: on ? '✓' : ''}));
-      row.appendChild(el('span', {class:'vc-title', text: v.versionName}));
-      card.appendChild(row);
-      grid.appendChild(card);
+        } }));
     });
     root.appendChild(grid);
   }
@@ -8825,6 +8912,23 @@
   var TODO_SHOWDONE_KEY = 'mmplate_todo_showdone_v1';
   var todoShowDone = (function(){ try{ return localStorage.getItem(TODO_SHOWDONE_KEY) === '1'; }catch(e){ return false; } })();
   function setTodoShowDone(on){ todoShowDone = !!on; try{ localStorage.setItem(TODO_SHOWDONE_KEY, on ? '1' : '0'); }catch(e){} }
+  /* 未達成楽曲一覧（MASTER）のバージョン絞り込み。'' ＝なし（全バージョン）。タブを開いている間だけ覚える */
+  var TODO_VER_KEY = 'mmplate_todo_ver_v1';
+  var todoVer = (function(){ try{ return sessionStorage.getItem(TODO_VER_KEY) || ''; }catch(e){ return ''; } })();
+  function setTodoVer(v){ todoVer = v || ''; try{ sessionStorage.setItem(TODO_VER_KEY, todoVer); }catch(e){} }
+  /* 発売順（楽曲データの並びは発売順ではないので、ここで並べ直す） */
+  var SONG_VER_ORDER = ['maimai', 'maimai PLUS', 'maimai GreeN', 'maimai GreeN PLUS', 'maimai ORANGE', 'maimai ORANGE PLUS',
+    'maimai PiNK', 'maimai PiNK PLUS', 'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'maimai MiLK PLUS', 'maimai FiNALE',
+    'maimai でらっくす', 'maimai でらっくす PLUS', 'maimai でらっくす Splash', 'maimai でらっくす Splash PLUS',
+    'maimai でらっくす UNiVERSE', 'maimai でらっくす UNiVERSE PLUS', 'maimai でらっくす FESTiVAL', 'maimai でらっくす FESTiVAL PLUS',
+    'maimai でらっくす BUDDiES', 'maimai でらっくす BUDDiES PLUS', 'maimai でらっくす PRiSM', 'maimai でらっくす PRiSM PLUS',
+    'maimai でらっくす CiRCLE', 'maimai でらっくす CiRCLE PLUS', 'maimai でらっくす MAGiCAL'];
+  function todoVerList(){
+    var seen = [];
+    SONG_MASTER_LIST.forEach(function(x){ [x.ver, x.ver2].forEach(function(v){ if (v && seen.indexOf(v) < 0) seen.push(v); }); });
+    var rank = function(v){ var i = SONG_VER_ORDER.indexOf(v); return i < 0 ? 999 : i; };
+    return seen.sort(function(a, b){ return rank(a) - rank(b); });
+  }
   function goTodo(kind){ section = 'todo'; todoKind = kind || null; renderApp(); scrollToTopNow(); }
   /* 定数の「↓ ON/OFF」：ON＝すべて表示／OFF＝その定数とそれより下をすべて隠す
      （▼で選んだだけでは表示は変わらない。MASTER と 舞・覇者で別々に覚える） */
@@ -8955,7 +9059,7 @@
     var cardRef = null;
     bar.appendChild(makeSaveGroup(function(base, b){
       if (!cardRef) return;
-      var nm = K.label.replace(/[\\/:*?"<>|・]/g, '') + '_' + todoMode + '未達成.png';
+      var nm = K.label.replace(/[\\/:*?"<>|・]/g, '') + (verOn ? '_' + verOn.replace(/[\\/:*?"<>|\s]/g, '') : '') + '_' + todoMode + '未達成.png';
       confirmBigSave(cardRef, function(){ captureNodePNG(cardRef, nm, tStatus, b, 'todo-export', base); });
     }));
     bar.appendChild(tStatus);
@@ -8971,6 +9075,26 @@
     cutRow.appendChild(makeRangePicker(todoRangeKind(kind)));
     cutRow.appendChild(seg);
     root.appendChild(cutRow);
+    /* MASTER だけ：バージョンで絞り込む（なし・maimai・maimai PLUS…） */
+    var verOn = '';
+    if (kind === 'master'){
+      var vers = todoVerList();
+      verOn = vers.indexOf(todoVer) >= 0 ? todoVer : '';
+      var verRow = el('div', {class:'mark-toggle-bar todo-ver-row'});
+      verRow.appendChild(el('span', {class:'todo-ver-label', text:'バージョン'}));
+      var vItems = [{ value: '', label: 'なし（すべてのバージョン）', color: '' }].concat(vers.map(function(v){
+        return { value: v, label: songVerLabel(v), color: verNameColor(v) };
+      }));
+      var vWrap = el('div', {class:'cut-picker todo-ver-picker'});
+      var vBtn = el('button', {type:'button', class:'btn btn-sm range-btn', 'aria-haspopup':'dialog', title:'バージョン',
+        onclick: function(){ openVerListPicker('バージョン', vItems, verOn, function(v){ setTodoVer(v); renderApp(); }); }});
+      if (verOn) vBtn.appendChild(el('span', {class:'pin-swatch todo-ver-swatch', style:{background: verNameColor(verOn) || 'transparent'}}));
+      vBtn.appendChild(el('span', {class:'range-label todo-ver-name' + (verOn ? '' : ' is-none'), text: verOn ? songVerLabel(verOn) : 'なし'}));
+      vBtn.appendChild(el('span', {class:'range-caret', 'aria-hidden':'true', text:'▼'}));
+      vWrap.appendChild(vBtn);
+      verRow.appendChild(vWrap);
+      root.appendChild(verRow);
+    }
     var rec = myRecordIndex();
     if (!rec){ needImportNote(root, 'maimai NET から記録を取り込むと、未達成の楽曲が表示されます。\n取り込めない方は、実績プレート表で楽曲画像を長押しして達成済みを登録すると、ここにも反映されます。'); return; }
 
@@ -8984,6 +9108,7 @@
     }
     var cond = mode.test || PLATE_COND[mode.cond];
     var all = todoCharts(kind);
+    if (verOn) all = all.filter(function(x){ return songInVer(x.s, verOn); });
     var left = all.filter(function(x){
       var r = rec.idx[normSongName(x.s.name) + '|' + x.s.type + '|' + K.diff];
       return !(r && cond(r));
@@ -9018,7 +9143,7 @@
     /* 保存画像にだけ出す見出し */
     var et = el('div', {class:'export-only-title todo-export-title'});
     et.appendChild(el('span', {style:{color: col}, text: K.label}));
-    et.appendChild(el('span', {class:'todo-export-sub', text:'　' + mode.key + ' 未達成 ' + left.length + '譜面'}));
+    et.appendChild(el('span', {class:'todo-export-sub', text:'　' + (verOn ? verOn + '　' : '') + mode.key + ' 未達成 ' + left.length + '譜面'}));
     card.appendChild(et);
     var curKey = null, grid = null;
     var keyOf = function(y){ return y.k >= 0 ? y.k.toFixed(1) : '?'; };
