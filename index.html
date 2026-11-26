@@ -5029,10 +5029,16 @@
 
     function targetAt(pt){
       if (ghost) ghost.style.display = 'none';
-      var elAt = document.elementFromPoint(pt.x, pt.y);
+      /* 使い方ガイドの板（光っていない所を覆う）は通り抜けて、その下の置き場所を探す */
+      var list = document.elementsFromPoint ? document.elementsFromPoint(pt.x, pt.y) : [document.elementFromPoint(pt.x, pt.y)];
       if (ghost) ghost.style.display = '';
-      while (elAt && !elAt.__dropInfo) elAt = elAt.parentNode;
-      return elAt;
+      for (var k = 0; k < list.length; k++){
+        var elAt = list[k];
+        if (!elAt || (elAt.closest && elAt.closest('.tour-layer'))) continue;
+        while (elAt && !elAt.__dropInfo) elAt = elAt.parentNode;
+        return elAt;
+      }
+      return null;
     }
 
     function highlight(pt){
@@ -9723,6 +9729,8 @@
       text:'表示する楽曲の範囲を選べます。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-cut-row .todo-done-btn', title:'達成済みを表示',
       text:'プレート表と同じです。\n[ui:ON] にすると、APやFDX等を達成済みの楽曲が薄く表示されるようになります。\n[ui:OFF] にすると、薄くなった楽曲が非表示になり未達成の楽曲のみを表示します。' },
+    { sec:4, go:R('#/todo/master'), sel:'#app .todo-ver-row', title:'バージョンで絞り込む',
+      text:'MASTER全譜面では、バージョンを選んで、そのバージョンの楽曲だけに絞り込めます。\n[go:なし] にすると、すべてのバージョンに戻ります。' },
     { sec:4, go:R('#/todo/master'), sel:'#app .todo-card-body .todo-thumb', title:'楽曲の詳細',
       text:'楽曲画像を [tap] すると、楽曲の詳細情報を見ることができます。',
       alt:{ sel:'#app .fill-import-btn', text:'記録を取り込むと、ここに未達成の譜面が並びます。' } },
@@ -9764,8 +9772,8 @@
     /* ---- 下埋め進捗 ---- */
     { sec:8, go:R('#/fill'), sel:'#app .version-card', title:'バージョンを選ぶ',
       text:'押すと、そのプレート取得までに必要な BASIC〜EXPERT（下埋め）の残りの譜面数等を見ることができます。' },
-    { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', noTouch:true, title:'合計を見る',
-      text:'押してからバージョンをいくつか選ぶと、その合計の進捗を見ることができます。' },
+    { sec:8, go:R('#/fill'), sel:'#app .fill-sum-bar .btn', title:'合計を見る',
+      text:'押すとバージョンの一覧が開きます。いくつか選んで [go:合計を見る] を押すと、その合計の進捗を見ることができます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-actions .mode-picker', title:'見るプレートを選ぶ',
       text:'[pm:極]・[pm:将]・[pm:神]・[pm:舞舞] から、下埋め進捗を見るプレートを選びます。' },
     { sec:8, go:tourFillDetail, sel:'#app .fill-card .fill-bar-row || #app .fill-card .fill-legend', noTouch:true, title:'帯の見方',
@@ -10058,6 +10066,7 @@
       var inside = L.__target.some(function(x){ return x && x.contains && x.contains(e.target); });
       if (!inside) return;
       tourMarkTried();
+      L.__clickHash = location.hash; L.__clickStep = L.__stepIndex;
       /* 押したことで照らす所の大きさが変わる（色の選択が出るなど）ことがあるので、少しあとで置き直す */
       [80, 320].forEach(function(ms){ setTimeout(function(){ if (tourLayer === L && L.__place) L.__place(); }, ms); });
       var h0 = location.hash, idx = L.__stepIndex, run = tourRun;
@@ -10076,6 +10085,14 @@
       var was = tourLayer.classList.contains('is-paused');
       tourLayer.classList.toggle('is-paused', open);
       if (was && !open && tourLayer.__place){ setTimeout(function(){ if (tourLayer && tourLayer.__place) tourLayer.__place(); }, 60); }
+      /* 開いた画面の中で決めて別の画面へ移った（例：合計を見る）ときは、次の説明へ進む */
+      if (was && !open && tourLayer.__clickHash != null && tourLayer.__clickStep === tourLayer.__stepIndex){
+        var L2 = tourLayer, h1 = L2.__clickHash, st = L2.__clickStep;
+        setTimeout(function(){
+          if (tourLayer !== L2 || L2.__stepIndex !== st) return;
+          if (location.hash !== h1){ L2.__clickHash = null; runTour(st + 1); }
+        }, 250);
+      }
     });
     tourLayer.__obs.observe(document.body, { childList: true });
     tourLayer.__key = function(e){
@@ -10099,10 +10116,52 @@
     parts.slice(1).forEach(function(q){ var e = document.querySelector(q.trim()); if (e) out.push(e); });
     return out;
   }
+  /* 光らせる枠は、中身（ボタン・カード・文字など）にぴったり合わせる。
+     PC の広い画面だと、並びの入れ物は横いっぱいに広がるので、入れ物の大きさのままだと
+     右側の何も無い所まで光ってしまう。背景や枠線のある部品・画像・入力欄はそのままの大きさで数え、
+     それ以外は中をのぞいて、見えている物だけを囲む */
+  var TOUR_LEAF_TAGS = { IMG:1, SVG:1, CANVAS:1, INPUT:1, BUTTON:1, SELECT:1, TEXTAREA:1, VIDEO:1, svg:1 };
+  function tourBoxy(cs){
+    var bg = cs.backgroundColor;
+    return (bg && bg !== 'transparent' && !/^rgba\(\s*0,\s*0,\s*0,\s*0\s*\)$/.test(bg)) || (cs.backgroundImage && cs.backgroundImage !== 'none') ||
+      parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0 || (cs.boxShadow && cs.boxShadow !== 'none');
+  }
+  function tourContentBox(node, acc, depth){
+    if (depth > 8) return;
+    Array.prototype.forEach.call(node.childNodes, function(c){
+      if (c.nodeType === 3){
+        if (!/\S/.test(c.nodeValue)) return;
+        var rg = document.createRange(); rg.selectNodeContents(c);
+        Array.prototype.forEach.call(rg.getClientRects(), function(x){ if (x.width > 0 && x.height > 0) acc.push(x); });
+        return;
+      }
+      if (c.nodeType !== 1) return;
+      var cs = getComputedStyle(c);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') return;
+      var x = c.getBoundingClientRect();
+      if (TOUR_LEAF_TAGS[c.tagName] || tourBoxy(cs)){ if (x.width > 0 && x.height > 0) acc.push(x); return; }
+      tourContentBox(c, acc, depth + 1);
+    });
+  }
+  function tourFitRect(e){
+    var r = e.getBoundingClientRect();
+    if (!(r.width > 0 && r.height > 0) || TOUR_LEAF_TAGS[e.tagName]) return r;
+    if (tourBoxy(getComputedStyle(e))) return r;
+    var acc = [];
+    tourContentBox(e, acc, 0);
+    if (!acc.length) return r;
+    var l = Infinity, t = Infinity, rr = -Infinity, b = -Infinity;
+    acc.forEach(function(x){ l = Math.min(l, x.left); t = Math.min(t, x.top); rr = Math.max(rr, x.right); b = Math.max(b, x.bottom); });
+    /* 入れ物とほぼ同じ大きさなら、入れ物のまま（余白も含めて光らせる） */
+    if ((rr - l) >= r.width * 0.88 && (b - t) >= r.height * 0.88) return r;
+    var pad = 8;
+    l = Math.max(r.left, l - pad); t = Math.max(r.top, t - pad); rr = Math.min(r.right, rr + pad); b = Math.min(r.bottom, b + pad);
+    return { left: l, top: t, right: rr, bottom: b, width: rr - l, height: b - t };
+  }
   function tourRect(els){
     var l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
     /* 隠れている部品（大きさ0）は数えない（例：テーマの色は「カラフル」を選ぶまで隠れている） */
-    var rs = els.map(function(e){ return e.getBoundingClientRect(); });
+    var rs = els.map(function(e){ return tourFitRect(e); });
     var shown = rs.filter(function(x){ return x.width > 0 || x.height > 0; });
     (shown.length ? shown : rs.slice(0, 1)).forEach(function(x){ l = Math.min(l, x.left); t = Math.min(t, x.top); r = Math.max(r, x.right); b = Math.max(b, x.bottom); });
     return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
@@ -10141,7 +10200,8 @@
     all.style.display = 'none';
     var de = document.documentElement;
     var W = Math.max(de.scrollWidth, window.innerWidth), H = Math.max(de.scrollHeight, window.innerHeight);
-    function put(e, l, tp, w, h){ e.style.display = ''; e.style.left = l + 'px'; e.style.top = tp + 'px'; e.style.width = Math.max(0, w) + 'px'; e.style.height = Math.max(0, h) + 'px'; }
+    /* display は 'block' にする（'' だと CSS の display:none に戻って板が出ず、光っていない所も押せてしまう） */
+    function put(e, l, tp, w, h){ e.style.display = 'block'; e.style.left = l + 'px'; e.style.top = tp + 'px'; e.style.width = Math.max(0, w) + 'px'; e.style.height = Math.max(0, h) + 'px'; }
     put(bs.t, 0, 0, W, rect.t);
     put(bs.b, 0, rect.b, W, H - rect.b);
     put(bs.l, 0, rect.t, rect.l, rect.b - rect.t);
@@ -10153,7 +10213,7 @@
     var hint = tip.querySelector('.tour-try');
     var ok = el('div', {class:'tour-tried'});
     ok.appendChild(el('i', {'aria-hidden':'true', text:'✓'}));
-    ok.appendChild(document.createTextNode('実際に操作できました'));
+    ok.appendChild(document.createTextNode('操作できました'));
     if (hint) hint.parentNode.replaceChild(ok, hint); else tip.insertBefore(ok, tip.querySelector('.tour-nav'));
   }
   function runTour(i, dir){
@@ -10209,7 +10269,7 @@
       layer.__touch = touchable; layer.__target = target;
       if (touchable){
         var tryEl = el('div', {class:'tour-try'});
-        tryEl.appendChild(document.createTextNode('光っている所は、実際に押して試せます'));
+        tryEl.appendChild(document.createTextNode('ハイライト部分は押して試せます'));
         tip.appendChild(tryEl);
       }
       var nav = el('div', {class:'tour-nav'});
