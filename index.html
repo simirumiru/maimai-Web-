@@ -1440,7 +1440,8 @@
   .fill-pick-row{display:flex;align-items:center;gap:8px;}
   .fill-pick-check{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border-ctl);display:inline-flex;align-items:center;justify-content:center;
     font-size:13px;font-weight:900;color:var(--accent-ink);}
-  .fill-pick-list{max-height:none;overflow:visible;max-width:640px;}
+  .fill-sum-box .fill-sum-hint{margin:0 0 10px;font-size:12.5px;color:var(--text-dim);font-weight:700;}
+  .fill-sum-actions{flex-wrap:wrap;}
   .fill-sum-list{margin:-4px 0 14px;}
   .fill-sum-list-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;}
   .ver-chips{display:flex;flex-wrap:wrap;gap:6px;}
@@ -8641,35 +8642,59 @@
 
     /* 合計：バージョンを選んで、その合計の下埋めを見る */
     var sumBar = el('div', {class:'fill-sum-bar'});
-    if (!fillSelecting){
-      sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'選んだバージョンの合計を見る',
-        onclick: function(){ fillSelecting = true; renderApp(); }}));
-      root.appendChild(sumBar);
-      renderSimpleVersionList(root, withMai, goFill, fillAnchor);
-      fillAnchor = null;
-      return;
-    }
-    var picked = fillSumIds.filter(function(id){ return !!findVersion(id) && docs.indexOf(findVersion(id)) >= 0; });
-    sumBar.appendChild(el('span', {class:'fill-sum-hint', text:'合計に入れるバージョンを選んでください（' + picked.length + '個選択中）'}));
-    var goBtn = el('button', {type:'button', class:'btn btn-sm btn-primary', text:'合計を見る',
-      onclick: function(){ if (!picked.length) return; fillSelecting = false; goFill(SUM_FILL_ID); }});
-    goBtn.disabled = !picked.length;
-    sumBar.appendChild(goBtn);
-    sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'すべて外す', onclick: function(){ setFillSumIds([]); renderApp(); }}));
-    sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm btn-ghost', text:'やめる', onclick: function(){ fillSelecting = false; renderApp(); }}));
+    sumBar.appendChild(el('button', {type:'button', class:'btn btn-sm', text:'選んだバージョンの合計を見る',
+      onclick: function(){ openFillSumPicker(); }}));
     root.appendChild(sumBar);
-    /* 「上に固定」と同じ見た目の一覧（左に丸、色のバー、バージョン名） */
-    var grid = el('div', {class:'pin-list fill-pick-list'});
+    renderSimpleVersionList(root, withMai, goFill, fillAnchor);
+    fillAnchor = null;
+    /* 合計の画面の「選び直す」から来たときは、一覧を出したあとに選ぶ画面を開く */
+    if (fillSelecting){ fillSelecting = false; setTimeout(openFillSumPicker, 0); }
+  }
+
+  /* 合計に入れるバージョンを選ぶ画面（重ねて出す。「上に固定」と同じ見た目の一覧で、押すたびに ✓ が付く／外れる） */
+  function openFillSumPicker(){
+    var docs = fillDocs();
+    var picked = fillSumIds.filter(function(id){ return !!findVersion(id) && docs.indexOf(findVersion(id)) >= 0; });
+    var backdrop = el('div', {class:'modal-backdrop'});
+    var box = el('div', {class:'modal-box pin-box fill-sum-box', role:'dialog', 'aria-modal':'true', 'aria-label':'合計に入れるバージョン'});
+    box.appendChild(el('div', {class:'pin-title', text:'合計に入れるバージョン'}));
+    var hint = el('p', {class:'pin-hint fill-sum-hint'});
+    box.appendChild(hint);
+    var list = el('div', {class:'pin-list fill-pick-list'});
+    var rows = [];
+    function save(){ setFillSumIds(picked); }
+    function refresh(){
+      hint.textContent = '✓ を付けたバージョンを合計します（' + picked.length + '個選択中）';
+      goBtn.disabled = !picked.length;
+      rows.forEach(function(r){
+        var on = picked.indexOf(r.id) >= 0;
+        r.row.classList.toggle('is-on', on);
+        r.row.setAttribute('aria-pressed', on ? 'true' : 'false');
+        r.row.querySelector('.pin-num').textContent = on ? '✓' : '';
+      });
+    }
     docs.forEach(function(v){
-      var on = picked.indexOf(v.id) >= 0;
-      grid.appendChild(verListRow({ on: on, cls: 'fill-pick', color: specVersionColor(v) || v.themeColor, label: v.versionName || '（名前のない表）',
+      var row = verListRow({ on: false, cls: 'fill-pick', color: specVersionColor(v) || v.themeColor, label: v.versionName || '（名前のない表）',
         onclick: function(){
-          var a = picked.slice(), i = a.indexOf(v.id);
-          if (i >= 0) a.splice(i, 1); else a.push(v.id);
-          setFillSumIds(a); renderApp();
-        } }));
+          var i = picked.indexOf(v.id);
+          if (i >= 0) picked.splice(i, 1); else picked.push(v.id);
+          save(); refresh();
+        } });
+      rows.push({ id: v.id, row: row });
+      list.appendChild(row);
     });
-    root.appendChild(grid);
+    box.appendChild(list);
+    var actions = el('div', {class:'modal-actions fill-sum-actions'});
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'すべて外す', onclick: function(){ picked = []; save(); refresh(); }}));
+    actions.appendChild(el('button', {class:'btn btn-ghost', type:'button', text:'やめる', onclick: function(){ closeModal(backdrop); }}));
+    var goBtn = el('button', {class:'btn btn-primary', type:'button', text:'合計を見る',
+      onclick: function(){ if (!picked.length) return; closeModal(backdrop); goFill(SUM_FILL_ID); }});
+    actions.appendChild(goBtn);
+    box.appendChild(actions);
+    backdrop.appendChild(box);
+    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(backdrop); });
+    document.body.appendChild(backdrop);
+    refresh();
   }
 
   function renderFillDetail(root, v){
