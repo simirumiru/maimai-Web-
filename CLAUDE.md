@@ -86,7 +86,7 @@ maimai でらっくすの実績プレート表・未達成楽曲一覧・定数�
 | `s.mas` / `s.rem` | MASTER / Re:MASTER の譜面情報 |
 | `d` | 譜面作者 |
 | `n` | ノーツ数 `[TAP, HOLD, SLIDE, TOUCH, BREAK, TOTAL]`（分からないものは `null`。ST は TOUCH が `null`） |
-| `bk` | BREAK の内訳 `[通常ブレイク, ブレイクスライド・EXブレイク]`（分かるときだけ） |
+| `bk` | BREAK の内訳 `[通常ブレイク, ブレイクスライド・EXブレイク]`（分かるときだけ。分からないときは `bk` を入れない → 曲の詳細では各マークの横が「-」になる。ユーザーの指示でこの表示を続ける） |
 
 - 最大コンボ ＝ TOTAL。でらっくすスコアの最大 ＝ TOTAL × 3。
 - ノーツの内訳・BPM・譜面作者は、otoge-db（https://github.com/zvuc/otoge-db の `maimai/data/music-ex.json`）に入るのを待って取り込むことが多い。
