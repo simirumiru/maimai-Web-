@@ -91,6 +91,10 @@ maimai でらっくすの実績プレート表・未達成楽曲一覧・定数�
 - 最大コンボ ＝ TOTAL。でらっくすスコアの最大 ＝ TOTAL × 3。
 - ノーツの内訳・BPM・譜面作者は、otoge-db（https://github.com/zvuc/otoge-db の `maimai/data/music-ex.json`）に入るのを待って取り込むことが多い。
 
+## プレートの決まり
+
+- 真（maimai ＆ maimai PLUS）には真将のプレートが無い。プレート表では将の進捗（SSS の薄い表示・取り込みの記録）は付けるが、将を選んだときはプレート画像を出さない。回数と日付・下埋め進捗では将を出さない（`selectablePlateModes` は将を含む、`countModesFor` と下埋めは真の将を外す）。
+
 ## ジャケット画像のファイル名
 
 - `songs/曲名.webp`。曲名の中の `\ / : * ? " < > |` は `_` に置き換え、末尾のピリオドと空白は消す。
