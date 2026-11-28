@@ -140,7 +140,7 @@ function readAll(diffs){
 /* \u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304b\u3089\u8aad\u307f\u59cb\u3081\u308b\u3002\u30b9\u30d4\u30fc\u30c9\uff1dMASTER\u30fbRe:MASTER \u3060\u3051\uff08\u901f\u3044\uff09\uff0f\u3059\u3079\u3066\uff1dBASIC\u301cRe:MASTER\uff08\u4e0b\u57cb\u3081\u9032\u6357\u3082\u4f7f\u3048\u308b\uff09 */
 function choose(){
   return new Promise(function(resolve){
-    say('mai \u30d7\u30ec\u30fc\u30c8\uff1a\u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044');
+    say('mai\u30c4\u30fc\u30eb\uff1a\u53d6\u308a\u8fbc\u307f\u65b9\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044');
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;justify-content:center';
     function b(label, sub, bg, m){
@@ -155,16 +155,44 @@ function choose(){
     box.appendChild(row);
   });
 }
+/* \u7d71\u8a08\uff08\u533f\u540d\uff09\u7528\u306e ID\uff1a\u30d5\u30ec\u30f3\u30c9\u30b3\u30fc\u30c9\u3092\u8aad\u307f\u3001\u5143\u306b\u623b\u305b\u306a\u3044\u5f62\uff08SHA-256\uff09\u306b\u3057\u3066\u304b\u3089 mai\u30c4\u30fc\u30eb\u3078\u6e21\u3059\u3002
+   \u30d5\u30ec\u30f3\u30c9\u30b3\u30fc\u30c9\u305d\u306e\u3082\u306e\u306f mai\u30c4\u30fc\u30eb\u3078\u9001\u3089\u306a\u3044\u3002\u8aad\u3081\u306a\u304f\u3066\u3082\u53d6\u308a\u8fbc\u307f\u306f\u7d9a\u3051\u308b */
+function statsId(){
+  return new Promise(function(resolve){
+    var done = false, tm = setTimeout(function(){ if (!done){ done = true; resolve(''); } }, 8000);
+    function end(v){ if (done) return; done = true; clearTimeout(tm); resolve(v || ''); }
+    try{
+      fetch('/maimai-mobile/friend/userFriendCode/', { credentials: 'include' }).then(function(r){ return r.ok ? r.text() : ''; }).then(function(t){
+        if (!t) return end('');
+        var doc = new DOMParser().parseFromString(t, 'text/html'), code = '';
+        var all = doc.body ? doc.body.querySelectorAll('*') : [];
+        for (var i = 0; i < all.length && !code; i++){
+          if (all[i].children.length) continue;
+          var x = (all[i].textContent || '').replace(/\s+/g, '');
+          if (/^\d{13,16}$/.test(x)) code = x;
+        }
+        if (!code || !window.crypto || !crypto.subtle || !window.TextEncoder) return end('');
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode('maitool-stats-v1:' + code)).then(function(buf){
+          end(Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0' + b.toString(16)).slice(-2); }).join(''));
+        });
+      }).catch(function(){ end(''); });
+    }catch(e){ end(''); }
+  });
+}
+var sid = '';
 choose().then(function(m){
   if (stale()) throw new Error('stale');
   mode = m; tot = m === 'quick' ? 2 : 5; started = true; pageStart = Date.now();
   return readAll(m === 'quick' ? [3, 4] : [0, 1, 2, 3, 4]);
+}).then(function(a){
+  return statsId().then(function(v){ sid = v; return a; });
 }).then(function(a){
   fin = true;
   if (stale()) return;
   var rec = [].concat.apply([], a);
   if (!rec.length){ fail('\u8a18\u9332\u3092\u8aad\u307f\u53d6\u308c\u307e\u305b\u3093\u3067\u3057\u305f\u3002maimai\u3067\u3089\u3063\u304f\u3059NET\u306b\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u3044\u308b\u304b\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002'); return; }
   var p = { type: 'maiplate-import', v: 2, mode: mode, at: Date.now(), records: rec };
+  if (sid) p.uid = sid;
   var ok = false, sending = null;
   window.addEventListener('message', function(e){ if (e.origin === O && e.data === 'maiplate-ack') ok = true; });
   function done(){

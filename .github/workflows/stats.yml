@@ -1,0 +1,36 @@
+# maiツールの統計（匿名）を毎日まとめて、stats ブランチに stats.json / test_stats.json を置く
+name: stats
+
+on:
+  schedule:
+    - cron: '17 18 * * *'   # 毎日 3:17（日本時間）
+  workflow_dispatch: {}      # GitHub の画面から手動でも動かせる
+
+permissions:
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install google-auth requests
+      - name: 集計
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+        run: |
+          mkdir -p out
+          python tools/aggregate_stats.py --out out
+      - name: stats ブランチに置く
+        run: |
+          cd out
+          git init -q
+          git checkout -q -b stats
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stats.json test_stats.json
+          git commit -q -m "統計を更新（$(date -u +%Y-%m-%d)）"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" stats

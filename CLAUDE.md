@@ -103,3 +103,11 @@ maimai でらっくすの実績プレート表・未達成楽曲一覧・定数�
 - 変更したら、実際にブラウザで開いて画面を確かめてから渡す（Playwright が使える）。
 - 使い方ガイド（チュートリアル）を変えたときは、ハイライトの外が押せないこと、全ステップが正しい場所を指すことを確かめる。
 - 定数表の画像保存は、関係ない変更で見た目が変わっていないかを確かめる。
+
+## 統計（完全匿名）
+
+- 参加：更新情報のあとに「参加する／しない」を聞く（答えるまで閉じない）。ホームの「統計に参加（匿名）」で切り替え。保存キー `mmplate_stats_optin_v1`（'1'／'0'）。
+- ID：import.js が NET のフレンドコードのページを読み、`SHA-256("maitool-stats-v1:" + フレンドコード)` にして渡す。フレンドコードそのものは maiツールに渡さない。保存キー `mmplate_stats_uid_v1`。
+- 送るもの：Firestore の `stats_users`（テストは `test_stats_users`）の ID の文書に `{v, at, r}` を上書き。`r` は `[[曲名|種類|難易度, 達成率×10000, FC段階, FS段階, 星], …]` の JSON（MASTER・Re:MASTER の遊んだ譜面だけ）。参加をやめたら文書を消す。
+- 集計：GitHub Actions（`.github/workflows/stats.yml` → `tools/aggregate_stats.py`）が毎日 3:17 に全部読み、`stats` ブランチに `stats.json`／`test_stats.json` を置く。ありえない記録・全く同じ中身は数えない。読み込みの鍵は GitHub の Secrets `FIREBASE_SA`（ユーザーが登録。Claude は扱わない）。
+- 表示：曲の詳細の「maiツール利用者の達成率」。遊んだ人が `STATS_MIN_PLAYERS`（20）人未満の譜面は%を出さず「集計中」と出す。見出しの横は「11/28 集計」のような集計日だけ（人数は出さない）。
