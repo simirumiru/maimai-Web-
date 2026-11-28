@@ -1,6 +1,6 @@
 {
-  "name": "maiプレート",
-  "short_name": "maiプレート",
+  "name": "maiツール",
+  "short_name": "maiツール",
   "description": "maimai でらっくすの実績プレート表・定数表・未達成楽曲一覧をまとめたツール。maimai NET から記録を取り込んで、プレートの進捗や未達成の譜面をひと目で確認・画像保存できます。",
   "lang": "ja",
   "dir": "ltr",
