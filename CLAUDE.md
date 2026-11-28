@@ -42,7 +42,7 @@ maimai でらっくすの実績プレート表・未達成楽曲一覧・定数�
 
 ### 更新したら
 
-- ユーザー用の更新セット `Ver2.4_更新ファイル/`（index.html・import.js・songs.json・songinfo.json）を差し替え、`Ver2.4_更新ファイル.zip` を作り直して渡す。
+- ユーザー用の更新セット `Ver2.5_更新ファイル/`（index.html・import.js・songs.json・songinfo.json）を差し替え、`Ver2.5_更新ファイル.zip` を作り直して渡す。
 
 ## データの形
 
@@ -110,4 +110,5 @@ maimai でらっくすの実績プレート表・未達成楽曲一覧・定数�
 - ID：import.js が NET のフレンドコードのページを読み、`SHA-256("maitool-stats-v1:" + フレンドコード)` にして渡す。フレンドコードそのものは maiツールに渡さない。保存キー `mmplate_stats_uid_v1`。
 - 送るもの：Firestore の `stats_users`（テストは `test_stats_users`）の ID の文書に `{v, at, r}` を上書き。`r` は `[[曲名|種類|難易度, 達成率×10000, FC段階, FS段階, 星], …]` の JSON（MASTER・Re:MASTER の遊んだ譜面だけ）。参加をやめたら文書を消す。
 - 集計：GitHub Actions（`.github/workflows/stats.yml` → `tools/aggregate_stats.py`）が毎日 0:00（日本時間）に全部読み、`stats` ブランチに `stats.json`／`test_stats.json` を置く。ありえない記録・全く同じ中身は数えない。読み込みの鍵は GitHub の Secrets `FIREBASE_SA`（ユーザーが登録。Claude は扱わない）。
-- 表示：曲の詳細の「maiツール利用者の達成率」。遊んだ人が `STATS_MIN_PLAYERS`（20）人未満の譜面は%を出さず「集計中」と出す。見出しの横は「11/28 集計」のような集計日だけ（人数は出さない）。
+- 表示：曲の詳細の「maiツール利用者の達成率」。遊んだ人が `STATS_MIN_PLAYERS`（20）人未満の譜面は%を出さず「集計中」と出す。見出しの横は「11/28 集計」のような集計日だけ（人数は出さない）。項目は SSS・SSS+・FC・FC+・AP・AP+・FDX・FDX+・☆4〜☆7（見出しは文字でなくマーク）。達成した人が `STATS_FEW`（9）人以下なら人数も出し、統計に参加していて自分も入っていれば👑と「あなた含む」、自分1人なら「あなただけ！」と金色の枠。1人以上いて0.1%に届かないときは「0.1%未満」。表示する場所はノーツ数の次。
+- 取り込みコードの版：今のブックマーク（取り込みコード）は `window.__maiplateLV=3` を渡す。import.js と サイトは、これが無い（Ver2.2以前の）コードからの取り込みを止めて「取り込みコードを最新のものに編集したうえで再度お試し下さい。」と出す。取り込みコードを変えたら数字を上げる。

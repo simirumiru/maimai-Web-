@@ -47,6 +47,15 @@ function fail(t){
   try{ if (w && !w.closed) w.postMessage({ type: 'maiplate-progress', error: 1, msg: t }, O); }catch(e){}
 }
 
+/* \u53e4\u3044\u53d6\u308a\u8fbc\u307f\u30b3\u30fc\u30c9\uff08Ver2.2\u4ee5\u524d\uff09\u306e\u30d6\u30c3\u30af\u30de\u30fc\u30af\u304b\u3089\u958b\u304b\u308c\u305f\u3068\u304d\u306f\u3001\u8aad\u307f\u53d6\u308a\u3092\u59cb\u3081\u305a\u306b\u6848\u5185\u3059\u308b\u3002
+   \u65b0\u3057\u3044\u53d6\u308a\u8fbc\u307f\u30b3\u30fc\u30c9\u306f window.__maiplateLV\uff08\u53d6\u308a\u8fbc\u307f\u30b3\u30fc\u30c9\u306e\u7248\uff09\u3092\u6e21\u3057\u3066\u304f\u308b */
+var CODE_LV = 3;
+if (!(window.__maiplateLV >= CODE_LV)){
+  msg.style.whiteSpace = 'pre-line';
+  fail('\u53d6\u308a\u8fbc\u307f\u30b3\u30fc\u30c9\u3092\u6700\u65b0\u306e\u3082\u306e\u306b\u7de8\u96c6\u3057\u305f\u3046\u3048\u3067\u518d\u5ea6\u304a\u8a66\u3057\u4e0b\u3055\u3044\u3002\nmai\u30c4\u30fc\u30eb\u306e\u300cmaimai NET \u304b\u3089\u53d6\u308a\u8fbc\u3080\u300d\u3067\u3001\u6700\u65b0\u306e\u53d6\u308a\u8fbc\u307f\u30b3\u30fc\u30c9\u3092\u30b3\u30d4\u30fc\u3067\u304d\u307e\u3059\u3002');
+  return;
+}
+
 /* ---- 1\u30da\u30fc\u30b8\u5206\u3092\u8aad\u3080\uff08\u6642\u9593\u304c\u304b\u304b\u308a\u3059\u304e\u305f\u30891\u56de\u3060\u3051\u3084\u308a\u76f4\u3059\uff09 ---- */
 function ic(r, re){ var m = r.querySelectorAll('img'); for (var i = 0; i < m.length; i++){ var x = re.exec(String(m[i].src).replace(/[?#].*$/, '')); if (x) return x[1]; } return ''; }
 /* 1\u30da\u30fc\u30b8\u3092\u8aad\u3080\u3002\u6642\u9593\u5207\u308c\uff0860\u79d2\uff09\u3084 NET \u306e\u30a8\u30e9\u30fc\u753b\u9762\u306e\u3068\u304d\u306f\u3001\u5c11\u3057\u5f85\u3063\u30662\u56de\u307e\u3067\u3084\u308a\u76f4\u3059 */
@@ -147,12 +156,19 @@ function choose(){
       var x = document.createElement('button');
       x.style.cssText = 'appearance:none;-webkit-appearance:none;border:0;border-radius:14px;background:' + bg + ';color:#fff;font:bold 15px/1.35 sans-serif;padding:9px 16px;cursor:pointer;min-width:140px';
       x.innerHTML = label + '<br><span style="font-size:11.5px;font-weight:normal;opacity:.9">' + sub + '</span>';
-      x.onclick = function(){ row.remove(); resolve(m); };
+      x.onclick = function(){ wrap.remove(); resolve(m); };
       row.appendChild(x);
     }
     b('\u30b9\u30d4\u30fc\u30c9', 'MASTER\u30fbRe:MASTER\uff08\u901f\u3044\uff09', '#2f9be0', 'quick');
     b('\u3059\u3079\u3066', 'BASIC\u301cRe:MASTER\uff08\u4e0b\u57cb\u3081\u9032\u6357\u3082\uff09', '#5b6b7a', 'all');
-    box.appendChild(row);
+    var wrap = document.createElement('div');
+    wrap.appendChild(row);
+    /* \u53d6\u308a\u8fbc\u307f\u304c\u9045\u3044\u3068\u304d\u306e\u6848\u5185\uff08\u8d64\u3067\u76ee\u7acb\u305f\u305b\u308b\uff09 */
+    var tip = document.createElement('div');
+    tip.style.cssText = 'margin-top:10px;padding:7px 10px;border-radius:10px;border:1.5px solid #ff5c5c;background:rgba(255,92,92,.14);color:#ff6b6b;font:bold 12.5px/1.5 sans-serif;text-align:center';
+    tip.textContent = '\u53d6\u308a\u8fbc\u307f\u304c\u9045\u3044\u3068\u304d\u306f\u3001\u901a\u4fe1\u72b6\u6cc1\u3092\u78ba\u8a8d\u3059\u308b\u304b Wi-Fi \u306b\u3064\u306a\u3044\u3067\u304b\u3089\u3001\u3082\u3046\u4e00\u5ea6\u304a\u8a66\u3057\u304f\u3060\u3055\u3044\u3002';
+    wrap.appendChild(tip);
+    box.appendChild(wrap);
   });
 }
 /* \u7d71\u8a08\uff08\u533f\u540d\uff09\u7528\u306e ID\uff1a\u30d5\u30ec\u30f3\u30c9\u30b3\u30fc\u30c9\u3092\u8aad\u307f\u3001\u5143\u306b\u623b\u305b\u306a\u3044\u5f62\uff08SHA-256\uff09\u306b\u3057\u3066\u304b\u3089 mai\u30c4\u30fc\u30eb\u3078\u6e21\u3059\u3002
@@ -191,7 +207,7 @@ choose().then(function(m){
   if (stale()) return;
   var rec = [].concat.apply([], a);
   if (!rec.length){ fail('\u8a18\u9332\u3092\u8aad\u307f\u53d6\u308c\u307e\u305b\u3093\u3067\u3057\u305f\u3002maimai\u3067\u3089\u3063\u304f\u3059NET\u306b\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u3044\u308b\u304b\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002'); return; }
-  var p = { type: 'maiplate-import', v: 2, mode: mode, at: Date.now(), records: rec };
+  var p = { type: 'maiplate-import', v: 2, lv: CODE_LV, mode: mode, at: Date.now(), records: rec };
   if (sid) p.uid = sid;
   var ok = false, sending = null;
   window.addEventListener('message', function(e){ if (e.origin === O && e.data === 'maiplate-ack') ok = true; });
