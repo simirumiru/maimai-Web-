@@ -3,7 +3,7 @@ name: stats
 
 on:
   schedule:
-    - cron: '17 18 * * *'   # 毎日 3:17（日本時間）
+    - cron: '0 15 * * *'    # 毎日 0:00（日本時間）。GitHub が混んでいると数分〜数十分遅れることがある
   workflow_dispatch: {}      # GitHub の画面から手動でも動かせる
 
 permissions:
